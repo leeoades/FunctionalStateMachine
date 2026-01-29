@@ -1,0 +1,70 @@
+using FunctionalStateMachine;
+
+namespace FunctionalStateMachine.Samples;
+
+public static class SubMachineSample
+{
+    public static StateMachine<SessionState, SessionTrigger, SessionData, SessionCommand> Build()
+    {
+        var authBuilder = new StateMachineBuilder<AuthState, SessionTrigger, AuthData, SessionCommand>()
+            .StartWith(AuthState.Anonymous);
+
+        authBuilder.For(AuthState.Anonymous)
+            .On(SessionTrigger.Login)
+                .TransitionTo(AuthState.Authenticated)
+                .Execute(() => new AuthCommand("Login"));
+
+        authBuilder.For(AuthState.Authenticated)
+            .On(SessionTrigger.Logout)
+                .TransitionTo(AuthState.Anonymous)
+                .Execute(() => new AuthCommand("Logout"));
+
+        var authMachine = authBuilder.Build();
+
+        var builder = new StateMachineBuilder<SessionState, SessionTrigger, SessionData, SessionCommand>()
+            .StartWith(SessionState.Active);
+
+        builder.For(SessionState.Active)
+            .WithSubStateMachine(
+                authMachine,
+                data => data.Auth,
+                (data, sub) => data with { Auth = sub })
+            .On(SessionTrigger.Timeout)
+                .TransitionTo(SessionState.Expired)
+                .Execute(() => new SessionCommandBase("Timeout"));
+
+        builder.For(SessionState.Expired)
+            .OnEntry(state => new SessionCommandBase("ExpiredEntry"));
+
+        return builder.Build();
+    }
+}
+
+public enum SessionState
+{
+    Active,
+    Expired
+}
+
+public enum AuthState
+{
+    Anonymous,
+    Authenticated
+}
+
+public enum SessionTrigger
+{
+    Login,
+    Logout,
+    Timeout
+}
+
+public sealed record SessionData(SubState<AuthState, AuthData> Auth);
+
+public sealed record AuthData(string UserId);
+
+public abstract record SessionCommand;
+
+public sealed record AuthCommand(string Action) : SessionCommand;
+
+public sealed record SessionCommandBase(string Name) : SessionCommand;

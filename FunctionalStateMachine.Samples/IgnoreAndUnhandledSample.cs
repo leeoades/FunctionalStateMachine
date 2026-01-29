@@ -1,0 +1,48 @@
+using FunctionalStateMachine;
+
+namespace FunctionalStateMachine.Samples;
+
+public static class IgnoreAndUnhandledSample
+{
+    public static StateMachine<QueueState, QueueTrigger, QueueData, QueueCommand> Build()
+    {
+        var builder = new StateMachineBuilder<QueueState, QueueTrigger, QueueData, QueueCommand>()
+            .StartWith(QueueState.Empty)
+            .OnUnhandled((trigger, state) => state.Data.Log.Add($"Unhandled:{trigger}"));
+
+        var empty = builder.For(QueueState.Empty);
+        empty.On(QueueTrigger.Enqueue)
+            .TransitionTo(QueueState.HasItems)
+            .Execute(state => new EnqueueCommand(state.Data.QueueId));
+        empty.On(QueueTrigger.Peek)
+            .Ignore();
+
+        builder.For(QueueState.HasItems)
+            .On(QueueTrigger.Dequeue)
+                .TransitionTo(QueueState.Empty)
+                .Execute(state => new DequeueCommand(state.Data.QueueId));
+
+        return builder.Build();
+    }
+}
+
+public enum QueueState
+{
+    Empty,
+    HasItems
+}
+
+public enum QueueTrigger
+{
+    Enqueue,
+    Dequeue,
+    Peek
+}
+
+public sealed record QueueData(string QueueId, List<string> Log);
+
+public abstract record QueueCommand;
+
+public sealed record EnqueueCommand(string QueueId) : QueueCommand;
+
+public sealed record DequeueCommand(string QueueId) : QueueCommand;

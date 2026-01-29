@@ -32,32 +32,24 @@ Features:
 ## Example Usage
 
 ```csharp
+var builder = new StateMachineBuilder<MyState, MyTrigger, MyData, CommandBase>()
+    .StartWith(MyState.Initial);
 
-var stateMachine = new StateMachine<MyState>()
-    .StartWith(MyState.Initial)
-    .For(MyState.Initial, Behaviour.AllowReentry)
-        .OnEntry(state => Command.DoSomething(state.Id))
-        .OnExit(state => Command.DoSomethingElse(state.Id))
-        .On(MyTrigger.Trigger1)
-            .TransitionTo(MyState.State1)
-            .Execute(state => Command.DoSomething(state.Id))
-        .On(MyTrigger.Trigger2)
-            .If((trigger, state) => !state.MyList.Contains(trigger.Id))
-                .TransitionTo(MyState.State2)
-                // Store additional information
-                .Store((trigger, state) => state.MyList.Add(trigger.Id))
-                .Execute(state => Command.DoSomething(state.Id))
-            .If((trigger, state) => state.MyList.Count > 10)
-                // No transition
-                .Execute(state => Command.DoSomethingElse(state.Id))
-            .Otherwise()
-                // Fall through condition
-                .Execute(state => Command.DoSomethingElse(state.Id))
-        .On(MyTrigger.Trigger3)
-            .TransitionTo(MyState.Initial) // Reentry
-    ;
+var initial = builder.For(MyState.Initial);
+initial.OnEntry(state => Command.DoSomething(state.Data.Id))
+    .OnExit(state => Command.DoSomethingElse(state.Data.Id));
+initial.On(MyTrigger.Trigger1)
+    .TransitionTo(MyState.State1)
+    .Execute((state, trigger) => Command.DoSomething(state.Data.Id));
+initial.On(MyTrigger.Trigger2)
+    .Guard((state, trigger) => !state.Data.SeenIds.Contains(trigger.Id))
+    .WithData((state, trigger) => state.Data with { SeenIds = state.Data.SeenIds.Add(trigger.Id) })
+    .TransitionTo(MyState.State2)
+    .Execute((state, trigger) => Command.DoSomething(state.Data.Id));
+initial.On(MyTrigger.Trigger3)
+    .TransitionTo(MyState.Initial);
 
-var state = MyState.Initial;
-var trigger = MyTrigger.Trigger1;
-var (newState, commands) = stateMachine.Fire(trigger, state);
+var stateMachine = builder.Build();
+var current = new State<MyState, MyData>(MyState.Initial, new MyData("abc-123"));
+var (newState, commands) = stateMachine.Fire(MyTrigger.Trigger1, current);
 ```

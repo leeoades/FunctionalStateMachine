@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionalStateMachine.Core
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionalStateMachine.Core.Tests", "FunctionalStateMachine.Core.Tests\FunctionalStateMachine.Core.Tests.csproj", "{4D89E683-D2D1-41DF-90A2-32A861C973E4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionalStateMachine.Samples", "FunctionalStateMachine.Samples\FunctionalStateMachine.Samples.csproj", "{E7D8C5B2-1B74-4F9E-8B1F-9B5E8B0A6E3C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{4D89E683-D2D1-41DF-90A2-32A861C973E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4D89E683-D2D1-41DF-90A2-32A861C973E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4D89E683-D2D1-41DF-90A2-32A861C973E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7D8C5B2-1B74-4F9E-8B1F-9B5E8B0A6E3C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7D8C5B2-1B74-4F9E-8B1F-9B5E8B0A6E3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7D8C5B2-1B74-4F9E-8B1F-9B5E8B0A6E3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7D8C5B2-1B74-4F9E-8B1F-9B5E8B0A6E3C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
