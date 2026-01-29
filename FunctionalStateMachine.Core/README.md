@@ -35,12 +35,27 @@ Features:
 
 var stateMachine = new StateMachine<MyState>()
     .StartWith(MyState.Initial)
-    .For(MyState.Initial)
-    .OnEntry(state => Command.DoSomething(state.Id))
-    .OnExit(state => Command.DoSomethingElse(state.Id))
-    .On(MyTrigger.Trigger1)
-        .TransitionTo(MyState.State1)
-        .Execute(state => Command.DoSomething(state.Id));
+    .For(MyState.Initial, Behaviour.AllowReentry)
+        .OnEntry(state => Command.DoSomething(state.Id))
+        .OnExit(state => Command.DoSomethingElse(state.Id))
+        .On(MyTrigger.Trigger1)
+            .TransitionTo(MyState.State1)
+            .Execute(state => Command.DoSomething(state.Id))
+        .On(MyTrigger.Trigger2)
+            .If((trigger, state) => !state.MyList.Contains(trigger.Id))
+                .TransitionTo(MyState.State2)
+                // Store additional information
+                .Store((trigger, state) => state.MyList.Add(trigger.Id))
+                .Execute(state => Command.DoSomething(state.Id))
+            .If((trigger, state) => state.MyList.Count > 10)
+                // No transition
+                .Execute(state => Command.DoSomethingElse(state.Id))
+            .Otherwise()
+                // Fall through condition
+                .Execute(state => Command.DoSomethingElse(state.Id))
+        .On(MyTrigger.Trigger3)
+            .TransitionTo(MyState.Initial) // Reentry
+    ;
 
 var state = MyState.Initial;
 var trigger = MyTrigger.Trigger1;
