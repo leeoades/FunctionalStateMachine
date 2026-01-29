@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 
-namespace FunctionalStateMachine;
+namespace FunctionalStateMachine.Core;
 
 public sealed class StateMachine<TState, TTrigger, TData, TCommand>
     where TState : notnull

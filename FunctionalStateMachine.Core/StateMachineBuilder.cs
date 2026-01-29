@@ -1,4 +1,4 @@
-namespace FunctionalStateMachine;
+namespace FunctionalStateMachine.Core;
 
 public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
     where TState : notnull
