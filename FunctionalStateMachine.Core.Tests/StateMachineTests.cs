@@ -144,7 +144,7 @@ public class StateMachineTests
                 .On(OrderTrigger.Pay)
                     .Execute(() => new LogCommand("NoArgs"))
                     .Execute((OrderTrigger trigger) => new LogCommand($"Trigger:{trigger}"))
-                    .Execute((State<OrderState, OrderData> state) => new LogCommand($"State:{state.Value}"))
+                    .Execute(state => new LogCommand($"State:{state.Value}"))
                     .Execute((state, trigger) => new LogCommand($"Both:{state.Value}:{trigger}"))
             .Build();
         var current = new State<OrderState, OrderData>(OrderState.Created, new OrderData("A-700", "none"));
