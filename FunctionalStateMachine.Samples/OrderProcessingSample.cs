@@ -9,15 +9,15 @@ public static class OrderProcessingSample
         return StateMachine<OrderState, OrderTrigger, OrderData, OrderCommand>.Create()
             .StartWith(OrderState.Created)
             .For(OrderState.Created)
-                .OnEntry(state => new OrderCommand.Audit($"Entering {state.Value}"))
-                .OnExit(state => new OrderCommand.Audit($"Leaving {state.Value}"))
+                .OnEntry(state => new OrderCommand.RecordAudit($"Entering {state.Value}"))
+                .OnExit(state => new OrderCommand.RecordAudit($"Leaving {state.Value}"))
                 .On(OrderTrigger.Pay)
                     .TransitionTo(OrderState.Paid)
-                    .Execute(state => new OrderCommand.Charge(state.Data.OrderId))
+                    .Execute(state => new OrderCommand.ChargePayment(state.Data.OrderId))
                 .For(OrderState.Paid)
                     .On(OrderTrigger.Ship)
                         .TransitionTo(OrderState.Shipped)
-                        .Execute(state => new OrderCommand.Ship(state.Data.OrderId))
+                        .Execute(state => new OrderCommand.ShipOrder(state.Data.OrderId))
             .Build();
     }
 }
@@ -39,7 +39,7 @@ public sealed record OrderData(string OrderId);
 
 public abstract record OrderCommand
 {
-    public sealed record Audit(string Message) : OrderCommand;
-    public sealed record Charge(string OrderId) : OrderCommand;
-    public sealed record Ship(string OrderId) : OrderCommand;
+    public sealed record RecordAudit(string Message) : OrderCommand;
+    public sealed record ChargePayment(string OrderId) : OrderCommand;
+    public sealed record ShipOrder(string OrderId) : OrderCommand;
 }

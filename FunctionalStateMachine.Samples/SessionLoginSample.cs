@@ -11,11 +11,11 @@ public static class SessionLoginSample
             .For(AuthState.Anonymous)
                 .On(SessionTrigger.Login)
                     .TransitionTo(AuthState.Authenticated)
-                    .Execute(() => new AuthCommand.Login())
+                    .Execute(() => new AuthCommand.PerformLogin())
                 .For(AuthState.Authenticated)
                     .On(SessionTrigger.Logout)
                         .TransitionTo(AuthState.Anonymous)
-                        .Execute(() => new AuthCommand.Logout())
+                        .Execute(() => new AuthCommand.PerformLogout())
             .Build();
 
         return StateMachine<SessionState, SessionTrigger, SessionData, SessionCommand>.Create()
@@ -27,9 +27,9 @@ public static class SessionLoginSample
                     (data, sub) => data with { Auth = sub })
                 .On(SessionTrigger.Timeout)
                     .TransitionTo(SessionState.Expired)
-                    .Execute(() => new SessionCommand.Timeout())
+                    .Execute(() => new SessionCommand.HandleTimeout())
                 .For(SessionState.Expired)
-                    .OnEntry(() => new SessionCommand.ExpiredEntry())
+                    .OnEntry(() => new SessionCommand.DisplayExpiredMessage())
             .Build();
     }
 }
@@ -59,12 +59,12 @@ public sealed record AuthData(string UserId);
 
 public abstract record SessionCommand
 {
-    public sealed record Timeout : SessionCommand;
-    public sealed record ExpiredEntry : SessionCommand;
+    public sealed record HandleTimeout : SessionCommand;
+    public sealed record DisplayExpiredMessage : SessionCommand;
 }
 
 public abstract record AuthCommand : SessionCommand
 {
-    public sealed record Login : AuthCommand;
-    public sealed record Logout : AuthCommand;
+    public sealed record PerformLogin : AuthCommand;
+    public sealed record PerformLogout : AuthCommand;
 }

@@ -10,11 +10,11 @@ public static class LightSwitchSample
             .For(LightState.Off)
                 .On(LightTrigger.Toggle)
                     .TransitionTo(LightState.On)
-                    .Execute(() => new LightCommand.SwitchOn())
+                    .Execute(() => new LightCommand.TurnOn())
             .For(LightState.On)
                 .On(LightTrigger.Toggle)
                     .TransitionTo(LightState.Off)
-                    .Execute(() => new LightCommand.SwitchOff())
+                    .Execute(() => new LightCommand.TurnOff())
             .Build();
 }
 
@@ -31,6 +31,6 @@ public enum LightTrigger
 
 public abstract record LightCommand
 {
-    public record SwitchOn : LightCommand;
-    public record SwitchOff : LightCommand;
+    public record TurnOn : LightCommand;
+    public record TurnOff : LightCommand;
 }

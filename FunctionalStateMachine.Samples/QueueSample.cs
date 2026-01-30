@@ -12,13 +12,13 @@ public static class QueueSample
             .For(QueueState.Empty)
                 .On(QueueTrigger.Enqueue)
                     .TransitionTo(QueueState.HasItems)
-                    .Execute(state => new QueueCommand.Enqueue(state.Data.QueueId))
+                    .Execute(state => new QueueCommand.EnqueueItem(state.Data.QueueId))
             .On(QueueTrigger.Peek)
                 .Ignore()
             .For(QueueState.HasItems)
                 .On(QueueTrigger.Dequeue)
                     .TransitionTo(QueueState.Empty)
-                    .Execute(state => new QueueCommand.Dequeue(state.Data.QueueId))
+                    .Execute(state => new QueueCommand.DequeueItem(state.Data.QueueId))
             .Build();
     }
 }
@@ -40,6 +40,6 @@ public sealed record QueueData(string QueueId, List<string> Log);
 
 public abstract record QueueCommand
 {
-    public sealed record Enqueue(string QueueId) : QueueCommand;
-    public sealed record Dequeue(string QueueId) : QueueCommand;
+    public sealed record EnqueueItem(string QueueId) : QueueCommand;
+    public sealed record DequeueItem(string QueueId) : QueueCommand;
 }
