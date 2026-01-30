@@ -2,9 +2,9 @@ namespace FunctionalStateMachine.Samples;
 
 public static class ShoppingTrolleySample
 {
-    public static global::FunctionalStateMachine.Core.StateMachine<ShopState, CartTrigger, CartSession, ShopCommand> Build()
+    public static Core.StateMachine<ShopState, CartTrigger, CartSession, ShopCommand> Build()
     {
-        var shopBuilder = new global::FunctionalStateMachine.Core.StateMachineBuilder<ShopPhase, CartTrigger, ShopData, ShopCommand>()
+        var shopBuilder = new Core.StateMachineBuilder<ShopPhase, CartTrigger, ShopData, ShopCommand>()
             .StartWith(ShopPhase.Shopping);
 
         var shopping = shopBuilder.For(ShopPhase.Shopping);
@@ -18,7 +18,7 @@ public static class ShoppingTrolleySample
                 }
                 return state.Data with { Items = items };
             })
-            .Execute((state, trigger) => new CartUpdatedCommand(state.Data.Items));
+            .Execute(state => new CartUpdatedCommand(state.Data.Items));
 
         shopping.On(CartTrigger.ForKind(CartTriggerKind.RemoveItem))
             .WithData((state, trigger) =>
@@ -30,7 +30,7 @@ public static class ShoppingTrolleySample
                 }
                 return state.Data with { Items = items };
             })
-            .Execute((state, trigger) => new CartUpdatedCommand(state.Data.Items));
+            .Execute(state => new CartUpdatedCommand(state.Data.Items));
 
         shopping.On(CartTrigger.ForKind(CartTriggerKind.GoToCheckout))
             .TransitionTo(ShopPhase.CheckingOut)
@@ -39,7 +39,7 @@ public static class ShoppingTrolleySample
         shopBuilder.For(ShopPhase.CheckingOut)
             .On(CartTrigger.ForKind(CartTriggerKind.Pay))
                 .TransitionTo(ShopPhase.PaymentPending)
-                .WithData((state, trigger) => state.Data with { PaymentAttempts = state.Data.PaymentAttempts + 1 })
+                .WithData(state => state.Data with { PaymentAttempts = state.Data.PaymentAttempts + 1 })
                 .Execute(() => new PaymentRequestedCommand());
 
         shopBuilder.For(ShopPhase.PaymentPending)
@@ -49,16 +49,16 @@ public static class ShoppingTrolleySample
 
         var shopMachine = shopBuilder.Build();
 
-        var builder = new global::FunctionalStateMachine.Core.StateMachineBuilder<ShopState, CartTrigger, CartSession, ShopCommand>()
+        var builder = new Core.StateMachineBuilder<ShopState, CartTrigger, CartSession, ShopCommand>()
             .StartWith(ShopState.Outside);
 
         builder.For(ShopState.Outside)
             .On(CartTrigger.ForKind(CartTriggerKind.StartShopping))
-                .WithData((state, trigger) => state.Data with
+                .WithData(state => state.Data with
                 {
-                    Shop = new global::FunctionalStateMachine.Core.SubState<ShopPhase, ShopData>(
+                    Shop = new Core.SubState<ShopPhase, ShopData>(
                         ShopPhase.Shopping,
-                        new ShopData(new List<LineItem>(), 0))
+                        new ShopData([], 0))
                 })
                 .TransitionTo(ShopState.InStore);
 
@@ -69,11 +69,11 @@ public static class ShoppingTrolleySample
                 (data, sub) => data with { Shop = sub });
 
         inStore.On(CartTrigger.ForKind(CartTriggerKind.Cancel))
-            .WithData((state, trigger) => state.Data with
+            .WithData(state => state.Data with
             {
-                Shop = new global::FunctionalStateMachine.Core.SubState<ShopPhase, ShopData>(
+                Shop = new Core.SubState<ShopPhase, ShopData>(
                     ShopPhase.Shopping,
-                    new ShopData(new List<LineItem>(), 0))
+                    new ShopData([], 0))
             })
             .TransitionTo(ShopState.Outside);
 
@@ -99,7 +99,7 @@ public enum ShopPhase
     PaymentPending
 }
 
-public sealed record CartSession(global::FunctionalStateMachine.Core.SubState<ShopPhase, ShopData> Shop);
+public sealed record CartSession(Core.SubState<ShopPhase, ShopData> Shop);
 
 public sealed record ShopData(List<LineItem> Items, int PaymentAttempts)
 {

@@ -13,7 +13,7 @@ public class StateMachineTests
         builder.For(OrderState.Created)
             .On(OrderTrigger.Pay)
                 .TransitionTo(OrderState.Paid)
-                .Execute((state, trigger) => new ChargeCommand(state.Data.OrderId));
+                .Execute(state => new ChargeCommand(state.Data.OrderId));
 
         var machine = builder.Build();
         var current = new State<OrderState, OrderData>(OrderState.Created, new OrderData("A-100", "none"));
@@ -34,7 +34,7 @@ public class StateMachineTests
             .OnExit(state => new LogCommand($"Exit:{state.Value}"))
             .On(OrderTrigger.Pay)
                 .TransitionTo(OrderState.Paid)
-                .Execute((state, trigger) => new LogCommand($"Transition:{state.Value}"));
+                .Execute(state => new LogCommand($"Transition:{state.Value}"));
 
         builder.For(OrderState.Paid)
             .OnEntry(state => new LogCommand($"Entry:{state.Value}"));
@@ -77,7 +77,7 @@ public class StateMachineTests
 
         builder.For(OrderState.Created)
             .On(OrderTrigger.Pay)
-                .WithData((state, trigger) => state.Data with { LastEvent = "paid" })
+                .WithData(state => state.Data with { LastEvent = "paid" })
                 .TransitionTo(OrderState.Paid);
 
         var machine = builder.Build();
@@ -124,12 +124,12 @@ public class StateMachineTests
         workerBuilder.For(WorkerState.Idle)
             .On(WorkerTrigger.StartWork)
                 .TransitionTo(WorkerState.Busy)
-                .Execute((state, trigger) => new LogCommand("Start"));
+                .Execute(() => new LogCommand("Start"));
 
         workerBuilder.For(WorkerState.Busy)
             .On(WorkerTrigger.CompleteWork)
                 .TransitionTo(WorkerState.Idle)
-                .Execute((state, trigger) => new LogCommand("Complete"));
+                .Execute(() => new LogCommand("Complete"));
 
         var workerMachine = workerBuilder.Build();
         var builder = new StateMachineBuilder<ParentState, WorkerTrigger, ParentData, TestCommand>();

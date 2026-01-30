@@ -11,11 +11,11 @@ public static class InternalTransitionSample
             .StartWith(TimerState.Running);
 
         builder.For(TimerState.Running)
-            .OnEntry(state => new TimerLogCommand("Start"))
-            .OnExit(state => new TimerLogCommand("Stop"))
+            .OnEntry(() => new TimerLogCommand("Start"))
+            .OnExit(() => new TimerLogCommand("Stop"))
             .On(TimerTrigger.Tick)
-                .WithData((state, trigger) => state.Data with { Ticks = state.Data.Ticks + 1 })
-                .Execute((state, trigger) => new TimerLogCommand($"Tick:{state.Data.Ticks + 1}"));
+                .WithData(state => state.Data with { Ticks = state.Data.Ticks + 1 })
+                .Execute(state => new TimerLogCommand($"Tick:{state.Data.Ticks + 1}"));
 
         builder.For(TimerState.Paused)
             .On(TimerTrigger.Resume)

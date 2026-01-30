@@ -16,12 +16,12 @@ builder.For(OrderState.Created)
     .OnEntry(state => new AuditCommand($"Entering {state.Value}"))
     .On(OrderTrigger.Pay)
         .TransitionTo(OrderState.Paid)
-        .Execute((state, trigger) => new ChargeCommand(state.Data.OrderId));
+        .Execute(state => new ChargeCommand(state.Data.OrderId));
 
 builder.For(OrderState.Paid)
     .On(OrderTrigger.Ship)
         .TransitionTo(OrderState.Shipped)
-        .Execute((state, trigger) => new ShipCommand(state.Data.OrderId));
+        .Execute(state => new ShipCommand(state.Data.OrderId));
 
 var machine = builder.Build();
 
@@ -71,8 +71,8 @@ Entry and exit actions yield commands when state changes.
 
 ```csharp
 builder.For(State.Ready)
-    .OnEntry(state => new LogCommand("Enter Ready"))
-    .OnExit(state => new LogCommand("Exit Ready"));
+    .OnEntry(() => new LogCommand("Enter Ready"))
+    .OnExit(() => new LogCommand("Exit Ready"));
 ```
 
 ### 4) Guards and multiple transitions
@@ -96,7 +96,7 @@ Attach data to your state and update it as transitions happen.
 ```csharp
 builder.For(State.Pending)
     .On(Trigger.Submit)
-        .WithData((state, trigger) => state.Data with { Notes = "High risk" })
+    .WithData(state => state.Data with { Notes = "High risk" })
         .TransitionTo(State.Manual);
 ```
 
@@ -150,7 +150,7 @@ If you omit `TransitionTo`, you stay in the same state (entry/exit do not run).
 
 ```csharp
 builder.For(State.Running).On(Trigger.Tick)
-    .WithData((state, trigger) => state.Data with { Count = state.Data.Count + 1 })
+    .WithData(state => state.Data with { Count = state.Data.Count + 1 })
     .Execute(state => new LogCommand($"Tick {state.Data.Count + 1}"));
 ```
 

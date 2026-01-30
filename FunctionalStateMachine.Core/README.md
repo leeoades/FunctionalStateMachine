@@ -40,12 +40,12 @@ initial.OnEntry(state => Command.DoSomething(state.Data.Id))
     .OnExit(state => Command.DoSomethingElse(state.Data.Id));
 initial.On(MyTrigger.Trigger1)
     .TransitionTo(MyState.State1)
-    .Execute((state, trigger) => Command.DoSomething(state.Data.Id));
+    .Execute(state => Command.DoSomething(state.Data.Id));
 initial.On(MyTrigger.Trigger2)
     .Guard((state, trigger) => !state.Data.SeenIds.Contains(trigger.Id))
     .WithData((state, trigger) => state.Data with { SeenIds = state.Data.SeenIds.Add(trigger.Id) })
     .TransitionTo(MyState.State2)
-    .Execute((state, trigger) => Command.DoSomething(state.Data.Id));
+    .Execute(state => Command.DoSomething(state.Data.Id));
 initial.On(MyTrigger.Trigger3)
     .TransitionTo(MyState.Initial);
 

@@ -43,8 +43,8 @@ public class StateMachineAdditionalTests
         var builder = new StateMachineBuilder<State, Trigger, Data, CommandBase>();
 
         builder.For(State.Ready)
-            .OnEntry(state => new LogCommand("Entry"))
-            .OnExit(state => new LogCommand("Exit"))
+            .OnEntry(() => new LogCommand("Entry"))
+            .OnExit(() => new LogCommand("Exit"))
             .On(Trigger.Tick)
                 .Execute(() => new LogCommand("Tick"));
 
@@ -65,11 +65,11 @@ public class StateMachineAdditionalTests
         builder.For(State.Ready)
             .On(Trigger.Start)
                 .TransitionTo(State.Running)
-                .Execute(() => new CommandBase[]
-                {
-                    new LogCommand("One"),
+                .Execute(() =>
+            [
+                new LogCommand("One"),
                     new LogCommand("Two")
-                });
+            ]);
 
         var machine = builder.Build();
         var current = new State<State, Data>(State.Ready, new Data("x"));

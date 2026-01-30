@@ -92,7 +92,7 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
             if (transition.IsIgnored)
             {
                 newState = current;
-                commands = Array.Empty<TCommand>();
+                commands = [];
                 return true;
             }
 
@@ -137,7 +137,7 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
         {
             _onUnhandled(trigger, current);
             newState = current;
-            commands = Array.Empty<TCommand>();
+            commands = [];
             return true;
         }
 
@@ -147,7 +147,7 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
         }
 
         newState = current;
-        commands = Array.Empty<TCommand>();
+        commands = [];
         return false;
     }
 
@@ -169,7 +169,7 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
     {
         foreach (var action in actions)
         {
-            foreach (var command in action(state) ?? Array.Empty<TCommand>())
+            foreach (var command in action(state) ?? [])
             {
                 commands.Add(command);
             }
@@ -184,7 +184,7 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
     {
         foreach (var action in actions)
         {
-            foreach (var command in action(state, trigger) ?? Array.Empty<TCommand>())
+            foreach (var command in action(state, trigger) ?? [])
             {
                 commands.Add(command);
             }
@@ -206,7 +206,19 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
 
         public StateConfiguration OnEntry(Func<State<TState, TData>, TCommand> action)
         {
-            _definition.EntryActions.Add(state => new[] { action(state) });
+            _definition.EntryActions.Add(state => [action(state)]);
+            return this;
+        }
+
+        public StateConfiguration OnEntry(Func<TState, TCommand> action)
+        {
+            _definition.EntryActions.Add(state => [action(state.Value)]);
+            return this;
+        }
+
+        public StateConfiguration OnEntry(Func<TCommand> action)
+        {
+            _definition.EntryActions.Add(state => [action()]);
             return this;
         }
 
@@ -216,15 +228,51 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
             return this;
         }
 
+        public StateConfiguration OnEntry(Func<TState, IEnumerable<TCommand>> action)
+        {
+            _definition.EntryActions.Add(state => action(state.Value));
+            return this;
+        }
+
+        public StateConfiguration OnEntry(Func<IEnumerable<TCommand>> action)
+        {
+            _definition.EntryActions.Add(state => action());
+            return this;
+        }
+
         public StateConfiguration OnExit(Func<State<TState, TData>, TCommand> action)
         {
-            _definition.ExitActions.Add(state => new[] { action(state) });
+            _definition.ExitActions.Add(state => [action(state)]);
+            return this;
+        }
+
+        public StateConfiguration OnExit(Func<TState, TCommand> action)
+        {
+            _definition.ExitActions.Add(state => [action(state.Value)]);
+            return this;
+        }
+
+        public StateConfiguration OnExit(Func<TCommand> action)
+        {
+            _definition.ExitActions.Add(state => [action()]);
             return this;
         }
 
         public StateConfiguration OnExit(Func<State<TState, TData>, IEnumerable<TCommand>> action)
         {
             _definition.ExitActions.Add(action);
+            return this;
+        }
+
+        public StateConfiguration OnExit(Func<TState, IEnumerable<TCommand>> action)
+        {
+            _definition.ExitActions.Add(state => action(state.Value));
+            return this;
+        }
+
+        public StateConfiguration OnExit(Func<IEnumerable<TCommand>> action)
+        {
+            _definition.ExitActions.Add(state => action());
             return this;
         }
 
@@ -272,15 +320,27 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
             return this;
         }
 
+        public TransitionConfiguration Guard(Func<State<TState, TData>, bool> guard)
+        {
+            _transition.Guard = (state, trigger) => guard(state);
+            return this;
+        }
+
         public TransitionConfiguration WithData(Func<State<TState, TData>, TTrigger, TData> updater)
         {
             _transition.DataUpdater = updater;
             return this;
         }
 
+        public TransitionConfiguration WithData(Func<State<TState, TData>, TData> updater)
+        {
+            _transition.DataUpdater = (state, trigger) => updater(state);
+            return this;
+        }
+
         public TransitionConfiguration Execute(Func<State<TState, TData>, TTrigger, TCommand> action)
         {
-            _transition.Actions.Add((state, trigger) => new[] { action(state, trigger) });
+            _transition.Actions.Add((state, trigger) => [action(state, trigger)]);
             return this;
         }
 
@@ -292,7 +352,7 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
 
         public TransitionConfiguration Execute(Func<State<TState, TData>, TCommand> action)
         {
-            _transition.Actions.Add((state, trigger) => new[] { action(state) });
+            _transition.Actions.Add((state, trigger) => [action(state)]);
             return this;
         }
 
@@ -304,7 +364,7 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
 
         public TransitionConfiguration Execute(Func<TTrigger, TCommand> action)
         {
-            _transition.Actions.Add((state, trigger) => new[] { action(trigger) });
+            _transition.Actions.Add((state, trigger) => [action(trigger)]);
             return this;
         }
 
@@ -316,7 +376,7 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
 
         public TransitionConfiguration Execute(Func<TCommand> action)
         {
-            _transition.Actions.Add((state, trigger) => new[] { action() });
+            _transition.Actions.Add((state, trigger) => [action()]);
             return this;
         }
 
@@ -349,9 +409,9 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
 
         public TState State { get; }
 
-        public List<Func<State<TState, TData>, IEnumerable<TCommand>>> EntryActions { get; } = new();
+        public List<Func<State<TState, TData>, IEnumerable<TCommand>>> EntryActions { get; } = [];
 
-        public List<Func<State<TState, TData>, IEnumerable<TCommand>>> ExitActions { get; } = new();
+        public List<Func<State<TState, TData>, IEnumerable<TCommand>>> ExitActions { get; } = [];
 
         public ISubStateMachine? SubStateMachine { get; set; }
 
@@ -359,7 +419,7 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
         {
             if (!_transitions.TryGetValue(trigger, out var list))
             {
-                list = new List<TransitionDefinition>();
+                list = [];
                 _transitions.Add(trigger, list);
             }
 
@@ -391,7 +451,7 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
 
         public Func<State<TState, TData>, TTrigger, TData>? DataUpdater { get; set; }
 
-        public List<Func<State<TState, TData>, TTrigger, IEnumerable<TCommand>>> Actions { get; } = new();
+        public List<Func<State<TState, TData>, TTrigger, IEnumerable<TCommand>>> Actions { get; } = [];
 
         public void SetTargetState(TState state)
         {
@@ -464,7 +524,7 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
         return this;
     }
 
-    internal StateMachine<TState, TTrigger, TCommand>.StateConfiguration For(TState state)
+    internal StateConfiguration For(TState state)
     {
         return new StateConfiguration(_inner.For(state));
     }
@@ -509,7 +569,30 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
             return this;
         }
 
+        public StateConfiguration OnEntry(Func<TState, TCommand> action)
+        {
+            _inner.OnEntry(action);
+            return this;
+        }
+
+        public StateConfiguration OnEntry(Func<TCommand> action)
+        {
+            _inner.OnEntry(action);
+            return this;
+        }
+
         public StateConfiguration OnEntry(Func<State<TState, NoData>, IEnumerable<TCommand>> action)
+        {
+            _inner.OnEntry(action);
+            return this;
+        }
+
+        public StateConfiguration OnEntry(Func<TState, IEnumerable<TCommand>> action)
+        {
+            _inner.OnEntry(action);
+            return this;
+        }
+        public StateConfiguration OnEntry(Func<IEnumerable<TCommand>> action)
         {
             _inner.OnEntry(action);
             return this;
@@ -521,7 +604,31 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
             return this;
         }
 
+        public StateConfiguration OnExit(Func<TState, TCommand> action)
+        {
+            _inner.OnExit(action);
+            return this;
+        }
+
+        public StateConfiguration OnExit(Func<TCommand> action)
+        {
+            _inner.OnExit(action);
+            return this;
+        }
+
         public StateConfiguration OnExit(Func<State<TState, NoData>, IEnumerable<TCommand>> action)
+        {
+            _inner.OnExit(action);
+            return this;
+        }
+
+        public StateConfiguration OnExit(Func<TState, IEnumerable<TCommand>> action)
+        {
+            _inner.OnExit(action);
+            return this;
+        }
+
+        public StateConfiguration OnExit(Func<IEnumerable<TCommand>> action)
         {
             _inner.OnExit(action);
             return this;
@@ -558,6 +665,12 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
             return this;
         }
 
+        public TransitionConfiguration Guard(Func<State<TState, NoData>, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
         public TransitionConfiguration Execute(Func<State<TState, NoData>, TTrigger, TCommand> action)
         {
             _inner.Execute(action);
@@ -579,6 +692,12 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
         public TransitionConfiguration Execute(Func<State<TState, NoData>, IEnumerable<TCommand>> action)
         {
             _inner.Execute(action);
+            return this;
+        }
+
+        public TransitionConfiguration WithData(Func<State<TState, NoData>, NoData> updater)
+        {
+            _inner.WithData(updater);
             return this;
         }
 

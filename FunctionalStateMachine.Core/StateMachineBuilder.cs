@@ -41,7 +41,31 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
             return this;
         }
 
+        public StateConfiguration OnEntry(Func<TState, TCommand> action)
+        {
+            _inner.OnEntry(action);
+            return this;
+        }
+
+        public StateConfiguration OnEntry(Func<TCommand> action)
+        {
+            _inner.OnEntry(action);
+            return this;
+        }
+
         public StateConfiguration OnEntry(Func<State<TState, TData>, IEnumerable<TCommand>> action)
+        {
+            _inner.OnEntry(action);
+            return this;
+        }
+
+        public StateConfiguration OnEntry(Func<TState, IEnumerable<TCommand>> action)
+        {
+            _inner.OnEntry(action);
+            return this;
+        }
+
+        public StateConfiguration OnEntry(Func<IEnumerable<TCommand>> action)
         {
             _inner.OnEntry(action);
             return this;
@@ -53,7 +77,31 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
             return this;
         }
 
+        public StateConfiguration OnExit(Func<TState, TCommand> action)
+        {
+            _inner.OnExit(action);
+            return this;
+        }
+
+        public StateConfiguration OnExit(Func<TCommand> action)
+        {
+            _inner.OnExit(action);
+            return this;
+        }
+
         public StateConfiguration OnExit(Func<State<TState, TData>, IEnumerable<TCommand>> action)
+        {
+            _inner.OnExit(action);
+            return this;
+        }
+
+        public StateConfiguration OnExit(Func<TState, IEnumerable<TCommand>> action)
+        {
+            _inner.OnExit(action);
+            return this;
+        }
+
+        public StateConfiguration OnExit(Func<IEnumerable<TCommand>> action)
         {
             _inner.OnExit(action);
             return this;
@@ -100,7 +148,19 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
             return this;
         }
 
+        public TransitionConfiguration Guard(Func<State<TState, TData>, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
         public TransitionConfiguration WithData(Func<State<TState, TData>, TTrigger, TData> updater)
+        {
+            _inner.WithData(updater);
+            return this;
+        }
+
+        public TransitionConfiguration WithData(Func<State<TState, TData>, TData> updater)
         {
             _inner.WithData(updater);
             return this;
@@ -209,7 +269,30 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
             return this;
         }
 
+        public StateConfiguration OnEntry(Func<TState, TCommand> action)
+        {
+            _inner.OnEntry(action);
+            return this;
+        }
+
+        public StateConfiguration OnEntry(Func<TCommand> action)
+        {
+            _inner.OnEntry(action);
+            return this;
+        }
+
         public StateConfiguration OnEntry(Func<State<TState, NoData>, IEnumerable<TCommand>> action)
+        {
+            _inner.OnEntry(action);
+            return this;
+        }
+
+        public StateConfiguration OnEntry(Func<TState, IEnumerable<TCommand>> action)
+        {
+            _inner.OnEntry(action);
+            return this;
+        }
+        public StateConfiguration OnEntry(Func<IEnumerable<TCommand>> action)
         {
             _inner.OnEntry(action);
             return this;
@@ -221,7 +304,31 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
             return this;
         }
 
+        public StateConfiguration OnExit(Func<TState, TCommand> action)
+        {
+            _inner.OnExit(action);
+            return this;
+        }
+
+        public StateConfiguration OnExit(Func<TCommand> action)
+        {
+            _inner.OnExit(action);
+            return this;
+        }
+
         public StateConfiguration OnExit(Func<State<TState, NoData>, IEnumerable<TCommand>> action)
+        {
+            _inner.OnExit(action);
+            return this;
+        }
+
+        public StateConfiguration OnExit(Func<TState, IEnumerable<TCommand>> action)
+        {
+            _inner.OnExit(action);
+            return this;
+        }
+
+        public StateConfiguration OnExit(Func<IEnumerable<TCommand>> action)
         {
             _inner.OnExit(action);
             return this;
@@ -258,6 +365,12 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
             return this;
         }
 
+        public TransitionConfiguration Guard(Func<State<TState, NoData>, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
         public TransitionConfiguration Execute(Func<State<TState, NoData>, TTrigger, TCommand> action)
         {
             _inner.Execute(action);
@@ -279,6 +392,12 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
         public TransitionConfiguration Execute(Func<State<TState, NoData>, IEnumerable<TCommand>> action)
         {
             _inner.Execute(action);
+            return this;
+        }
+
+        public TransitionConfiguration WithData(Func<State<TState, NoData>, NoData> updater)
+        {
+            _inner.WithData(updater);
             return this;
         }
 

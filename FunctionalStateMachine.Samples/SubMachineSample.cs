@@ -35,7 +35,7 @@ public static class SubMachineSample
                 .Execute(() => new SessionCommandBase("Timeout"));
 
         builder.For(SessionState.Expired)
-            .OnEntry(state => new SessionCommandBase("ExpiredEntry"));
+            .OnEntry(() => new SessionCommandBase("ExpiredEntry"));
 
         return builder.Build();
     }
