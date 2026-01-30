@@ -121,6 +121,11 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
             return _builder.For(state);
         }
 
+        public StateMachine<TState, TTrigger, TData, TCommand> Build()
+        {
+            return _builder.Build();
+        }
+
         public StateConfiguration WithSubStateMachine<TSubState, TSubData>(
             StateMachine<TSubState, TTrigger, TSubData, TCommand> subMachine,
             Func<TData, SubState<TSubState, TSubData>> getSubState,
@@ -244,6 +249,11 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
         {
             return _parent.For(state);
         }
+
+        public StateMachine<TState, TTrigger, TData, TCommand> Build()
+        {
+            return _parent.Build();
+        }
     }
 }
 
@@ -366,6 +376,11 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
         {
             return _builder.For(state);
         }
+
+        public StateMachine<TState, TTrigger, TCommand> Build()
+        {
+            return _builder.Build();
+        }
     }
 
     public sealed class TransitionConfiguration
@@ -473,6 +488,11 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
         public StateConfiguration For(TState state)
         {
             return _parent.For(state);
+        }
+
+        public StateMachine<TState, TTrigger, TCommand> Build()
+        {
+            return _parent.Build();
         }
     }
 }

@@ -7,22 +7,20 @@ public static class IgnoreAndUnhandledSample
 {
     public static StateMachine<QueueState, QueueTrigger, QueueData, QueueCommand> Build()
     {
-        var builder = StateMachine<QueueState, QueueTrigger, QueueData, QueueCommand>.Create()
+        return StateMachine<QueueState, QueueTrigger, QueueData, QueueCommand>.Create()
             .StartWith(QueueState.Empty)
-            .OnUnhandled((trigger, state) => state.Data.Log.Add($"Unhandled:{trigger}"));
-
-        builder.For(QueueState.Empty)
-            .On(QueueTrigger.Enqueue)
-                .TransitionTo(QueueState.HasItems)
-                .Execute(state => new EnqueueCommand(state.Data.QueueId))
-            .On(QueueTrigger.Peek)
-                .Ignore()
-            .For(QueueState.HasItems)
-                .On(QueueTrigger.Dequeue)
-                    .TransitionTo(QueueState.Empty)
-                    .Execute(state => new DequeueCommand(state.Data.QueueId));
-
-        return builder.Build();
+            .OnUnhandled((trigger, state) => state.Data.Log.Add($"Unhandled:{trigger}"))
+            .For(QueueState.Empty)
+                .On(QueueTrigger.Enqueue)
+                    .TransitionTo(QueueState.HasItems)
+                    .Execute(state => new EnqueueCommand(state.Data.QueueId))
+                .On(QueueTrigger.Peek)
+                    .Ignore()
+                .For(QueueState.HasItems)
+                    .On(QueueTrigger.Dequeue)
+                        .TransitionTo(QueueState.Empty)
+                        .Execute(state => new DequeueCommand(state.Data.QueueId))
+            .Build();
     }
 }
 

@@ -7,29 +7,27 @@ public static class FraudReviewSample
 {
     public static StateMachine<ReviewState, ReviewTrigger, ReviewData, ReviewCommand> Build()
     {
-        var builder = StateMachine<ReviewState, ReviewTrigger, ReviewData, ReviewCommand>.Create()
-            .StartWith(ReviewState.Pending);
-
-        builder.For(ReviewState.Pending)
-            .On(ReviewTrigger.Submit)
-                .Guard(state => state.Data.RiskScore > 70)
-                .WithData(state => state.Data with { Notes = "High risk" })
-                .TransitionTo(ReviewState.Manual)
-                .Execute(state => new AuditReviewCommand($"Escalated {state.Data.CaseId}"))
-            .On(ReviewTrigger.Submit)
-                .Guard(state => state.Data.RiskScore <= 70)
-                .TransitionTo(ReviewState.AutoApproved)
-                .Execute(() => new NotifyCommand("Auto-approved"))
-                .Execute((ReviewTrigger trigger) => new AuditReviewCommand($"Trigger:{trigger}"))
-                .Execute(state => new AuditReviewCommand($"Case:{state.Data.CaseId}"))
-                .Execute(state => new NotifyCommand($"Approved {state.Data.CaseId}"))
-            .For(ReviewState.Manual)
-                .On(ReviewTrigger.Approve)
-                    .TransitionTo(ReviewState.Completed)
-                    .Execute(state => new ReviewCompletedCommand(state.Data.CaseId))
-                    .Execute(() => [new NotifyCommand("Manual approved"), new AuditReviewCommand("Manual path")]);
-
-        return builder.Build();
+        return StateMachine<ReviewState, ReviewTrigger, ReviewData, ReviewCommand>.Create()
+            .StartWith(ReviewState.Pending)
+            .For(ReviewState.Pending)
+                .On(ReviewTrigger.Submit)
+                    .Guard(state => state.Data.RiskScore > 70)
+                    .WithData(state => state.Data with { Notes = "High risk" })
+                    .TransitionTo(ReviewState.Manual)
+                    .Execute(state => new AuditReviewCommand($"Escalated {state.Data.CaseId}"))
+                .On(ReviewTrigger.Submit)
+                    .Guard(state => state.Data.RiskScore <= 70)
+                    .TransitionTo(ReviewState.AutoApproved)
+                    .Execute(() => new NotifyCommand("Auto-approved"))
+                    .Execute((ReviewTrigger trigger) => new AuditReviewCommand($"Trigger:{trigger}"))
+                    .Execute(state => new AuditReviewCommand($"Case:{state.Data.CaseId}"))
+                    .Execute(state => new NotifyCommand($"Approved {state.Data.CaseId}"))
+                .For(ReviewState.Manual)
+                    .On(ReviewTrigger.Approve)
+                        .TransitionTo(ReviewState.Completed)
+                        .Execute(state => new ReviewCompletedCommand(state.Data.CaseId))
+                        .Execute(() => [new NotifyCommand("Manual approved"), new AuditReviewCommand("Manual path")])
+            .Build();
     }
 }
 

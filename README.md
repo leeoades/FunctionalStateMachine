@@ -9,10 +9,9 @@ That keeps the state machine pure, easy to test, and great for rehydrated or act
 Build the machine with a fluent builder, then call `Build()` to freeze the configuration.
 
 ```csharp
-var builder = StateMachine<OrderState, OrderTrigger, OrderData, OrderCommand>.Create()
-    .StartWith(OrderState.Created);
-
-builder.For(OrderState.Created)
+var machine = StateMachine<OrderState, OrderTrigger, OrderData, OrderCommand>.Create()
+    .StartWith(OrderState.Created)
+    .For(OrderState.Created)
     .OnEntry(state => new AuditCommand($"Entering {state.Value}"))
     .On(OrderTrigger.Pay)
         .TransitionTo(OrderState.Paid)
@@ -20,9 +19,8 @@ builder.For(OrderState.Created)
     .For(OrderState.Paid)
         .On(OrderTrigger.Ship)
             .TransitionTo(OrderState.Shipped)
-            .Execute(state => new ShipCommand(state.Data.OrderId));
-
-var machine = builder.Build();
+            .Execute(state => new ShipCommand(state.Data.OrderId))
+    .Build();
 
 var current = new State<OrderState, OrderData>(OrderState.Created, new OrderData("A-100"));
 var (next, commands) = machine.Fire(OrderTrigger.Pay, current);
@@ -57,9 +55,11 @@ The state machine returns these commands for your handler to execute.
 Configuration is done up front and `Build()` seals the machine.
 
 ```csharp
-var builder = StateMachine<State, Trigger, Data, Command>.Create();
-builder.For(State.Ready).On(Trigger.Start).TransitionTo(State.Running);
-var machine = builder.Build();
+var machine = StateMachine<State, Trigger, Data, Command>.Create()
+    .For(State.Ready)
+        .On(Trigger.Start)
+            .TransitionTo(State.Running)
+    .Build();
 ```
 
 After `Build()`, no more configuration is possible.
@@ -69,9 +69,11 @@ After `Build()`, no more configuration is possible.
 Entry and exit actions yield commands when state changes.
 
 ```csharp
-builder.For(State.Ready)
-    .OnEntry(() => new LogCommand("Enter Ready"))
-    .OnExit(() => new LogCommand("Exit Ready"));
+var machine = StateMachine<State, Trigger, Data, Command>.Create()
+    .For(State.Ready)
+        .OnEntry(() => new LogCommand("Enter Ready"))
+        .OnExit(() => new LogCommand("Exit Ready"))
+    .Build();
 ```
 
 ### 4) Guards and multiple transitions
@@ -79,13 +81,15 @@ builder.For(State.Ready)
 You can define multiple transitions for a trigger and gate them with guards.
 
 ```csharp
-builder.For(State.Pending)
-    .On(Trigger.Submit)
-        .Guard((state, trigger) => state.Data.Score > 70)
-        .TransitionTo(State.Manual)
-    .On(Trigger.Submit)
-        .Guard((state, trigger) => state.Data.Score <= 70)
-        .TransitionTo(State.Approved);
+var machine = StateMachine<State, Trigger, Data, Command>.Create()
+    .For(State.Pending)
+        .On(Trigger.Submit)
+            .Guard((state, trigger) => state.Data.Score > 70)
+            .TransitionTo(State.Manual)
+        .On(Trigger.Submit)
+            .Guard((state, trigger) => state.Data.Score <= 70)
+            .TransitionTo(State.Approved)
+    .Build();
 ```
 
 ### 5) Update state data during transitions
@@ -93,10 +97,12 @@ builder.For(State.Pending)
 Attach data to your state and update it as transitions happen.
 
 ```csharp
-builder.For(State.Pending)
-    .On(Trigger.Submit)
-    .WithData(state => state.Data with { Notes = "High risk" })
-        .TransitionTo(State.Manual);
+var machine = StateMachine<State, Trigger, Data, Command>.Create()
+    .For(State.Pending)
+        .On(Trigger.Submit)
+            .WithData(state => state.Data with { Notes = "High risk" })
+            .TransitionTo(State.Manual)
+    .Build();
 ```
 
 ### 6) Multiple Execute overloads
@@ -104,11 +110,14 @@ builder.For(State.Pending)
 Choose the most convenient `Execute` shape for each case.
 
 ```csharp
-builder.For(State.Ready).On(Trigger.Start)
-    .Execute(() => new LogCommand("No args"))
-    .Execute((Trigger trigger) => new LogCommand($"Trigger: {trigger}"))
-    .Execute((State<State, Data> state) => new LogCommand($"State: {state.Value}"))
-    .Execute((state, trigger) => new LogCommand("Both"));
+var machine = StateMachine<State, Trigger, Data, Command>.Create()
+    .For(State.Ready)
+        .On(Trigger.Start)
+            .Execute(() => new LogCommand("No args"))
+            .Execute((Trigger trigger) => new LogCommand($"Trigger: {trigger}"))
+            .Execute((State<State, Data> state) => new LogCommand($"State: {state.Value}"))
+            .Execute((state, trigger) => new LogCommand("Both"))
+    .Build();
 ```
 
 ### 7) Multiple commands from a single action
@@ -116,12 +125,15 @@ builder.For(State.Ready).On(Trigger.Start)
 Return one or many commands from a transition.
 
 ```csharp
-builder.For(State.Ready).On(Trigger.Start)
-    .Execute(() => new Command[]
-    {
-        new LogCommand("One"),
-        new LogCommand("Two")
-    });
+var machine = StateMachine<State, Trigger, Data, Command>.Create()
+    .For(State.Ready)
+        .On(Trigger.Start)
+            .Execute(() => new Command[]
+            {
+                new LogCommand("One"),
+                new LogCommand("Two")
+            })
+    .Build();
 ```
 
 ### 8) Ignore triggers
@@ -129,9 +141,11 @@ builder.For(State.Ready).On(Trigger.Start)
 Ignore a trigger cleanly without a state change.
 
 ```csharp
-builder.For(State.Ready)
-    .On(Trigger.Ping)
-        .Ignore();
+var machine = StateMachine<State, Trigger, Data, Command>.Create()
+    .For(State.Ready)
+        .On(Trigger.Ping)
+            .Ignore()
+    .Build();
 ```
 
 ### 9) Unhandled trigger policy
@@ -139,8 +153,9 @@ builder.For(State.Ready)
 Provide a handler or let it throw.
 
 ```csharp
-var builder = StateMachine<State, Trigger, Data, Command>.Create()
-    .OnUnhandled((trigger, state) => state.Data.Log.Add($"Unhandled:{trigger}"));
+var machine = StateMachine<State, Trigger, Data, Command>.Create()
+    .OnUnhandled((trigger, state) => state.Data.Log.Add($"Unhandled:{trigger}"))
+    .Build();
 ```
 
 ### 10) Internal transitions
@@ -148,9 +163,12 @@ var builder = StateMachine<State, Trigger, Data, Command>.Create()
 If you omit `TransitionTo`, you stay in the same state (entry/exit do not run).
 
 ```csharp
-builder.For(State.Running).On(Trigger.Tick)
-    .WithData(state => state.Data with { Count = state.Data.Count + 1 })
-    .Execute(state => new LogCommand($"Tick {state.Data.Count + 1}"));
+var machine = StateMachine<State, Trigger, Data, Command>.Create()
+    .For(State.Running)
+        .On(Trigger.Tick)
+            .WithData(state => state.Data with { Count = state.Data.Count + 1 })
+            .Execute(state => new LogCommand($"Tick {state.Data.Count + 1}"))
+    .Build();
 ```
 
 ### 11) Sub-state machines
@@ -158,13 +176,15 @@ builder.For(State.Running).On(Trigger.Tick)
 Compose a state machine inside another with shared triggers.
 
 ```csharp
-builder.For(ParentState.Active)
-    .WithSubStateMachine(
-        childMachine,
-        data => data.Child,
-        (data, sub) => data with { Child = sub })
-    .On(Trigger.Timeout)
-        .TransitionTo(ParentState.Expired);
+var machine = StateMachine<ParentState, Trigger, ParentData, Command>.Create()
+    .For(ParentState.Active)
+        .WithSubStateMachine(
+            childMachine,
+            data => data.Child,
+            (data, sub) => data with { Child = sub })
+        .On(Trigger.Timeout)
+            .TransitionTo(ParentState.Expired)
+    .Build();
 ```
 
 ### 12) No extra data case
@@ -172,8 +192,9 @@ builder.For(ParentState.Active)
 If you do not need extra data, use the NoData builder.
 
 ```csharp
-var builder = StateMachine<State, Trigger, Command>.Create()
-    .StartWith(State.Off);
+var machine = StateMachine<State, Trigger, Command>.Create()
+    .StartWith(State.Off)
+    .Build();
 ```
 
 ## Where to look next

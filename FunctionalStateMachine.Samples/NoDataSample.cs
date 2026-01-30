@@ -7,19 +7,17 @@ public static class NoDataSample
 {
     public static StateMachine<LightState, LightTrigger, LightCommand> Build()
     {
-        var builder = StateMachine<LightState, LightTrigger, LightCommand>.Create()
-            .StartWith(LightState.Off);
-
-        builder.For(LightState.Off)
-            .On(LightTrigger.Toggle)
-                .TransitionTo(LightState.On)
-                .Execute(() => new LightCommandBase("On"))
-            .For(LightState.On)
+        return StateMachine<LightState, LightTrigger, LightCommand>.Create()
+            .StartWith(LightState.Off)
+            .For(LightState.Off)
                 .On(LightTrigger.Toggle)
-                    .TransitionTo(LightState.Off)
-                    .Execute(() => new LightCommandBase("Off"));
-
-        return builder.Build();
+                    .TransitionTo(LightState.On)
+                    .Execute(() => new LightCommandBase("On"))
+                .For(LightState.On)
+                    .On(LightTrigger.Toggle)
+                        .TransitionTo(LightState.Off)
+                        .Execute(() => new LightCommandBase("Off"))
+            .Build();
     }
 }
 

@@ -7,20 +7,18 @@ public static class InternalTransitionSample
 {
     public static StateMachine<TimerState, TimerTrigger, TimerData, TimerCommand> Build()
     {
-        var builder = StateMachine<TimerState, TimerTrigger, TimerData, TimerCommand>.Create()
-            .StartWith(TimerState.Running);
-
-        builder.For(TimerState.Running)
-            .OnEntry(() => new TimerLogCommand("Start"))
-            .OnExit(() => new TimerLogCommand("Stop"))
-            .On(TimerTrigger.Tick)
-                .WithData(state => state.Data with { Ticks = state.Data.Ticks + 1 })
-                .Execute(state => new TimerLogCommand($"Tick:{state.Data.Ticks + 1}"))
-            .For(TimerState.Paused)
-                .On(TimerTrigger.Resume)
-                    .TransitionTo(TimerState.Running);
-
-        return builder.Build();
+        return StateMachine<TimerState, TimerTrigger, TimerData, TimerCommand>.Create()
+            .StartWith(TimerState.Running)
+            .For(TimerState.Running)
+                .OnEntry(() => new TimerLogCommand("Start"))
+                .OnExit(() => new TimerLogCommand("Stop"))
+                .On(TimerTrigger.Tick)
+                    .WithData(state => state.Data with { Ticks = state.Data.Ticks + 1 })
+                    .Execute(state => new TimerLogCommand($"Tick:{state.Data.Ticks + 1}"))
+                .For(TimerState.Paused)
+                    .On(TimerTrigger.Resume)
+                        .TransitionTo(TimerState.Running)
+            .Build();
     }
 }
 

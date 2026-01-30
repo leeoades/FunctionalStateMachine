@@ -32,24 +32,23 @@ Features:
 ## Example Usage
 
 ```csharp
-var builder = StateMachine<MyState, MyTrigger, MyData, CommandBase>.Create()
-    .StartWith(MyState.Initial);
+var stateMachine = StateMachine<MyState, MyTrigger, MyData, CommandBase>.Create()
+    .StartWith(MyState.Initial)
+    .For(MyState.Initial)
+        .OnEntry(state => Command.DoSomething(state.Data.Id))
+        .OnExit(state => Command.DoSomethingElse(state.Data.Id))
+        .On(MyTrigger.Trigger1)
+            .TransitionTo(MyState.State1)
+            .Execute(state => Command.DoSomething(state.Data.Id))
+        .On(MyTrigger.Trigger2)
+            .Guard((state, trigger) => !state.Data.SeenIds.Contains(trigger.Id))
+            .WithData((state, trigger) => state.Data with { SeenIds = state.Data.SeenIds.Add(trigger.Id) })
+            .TransitionTo(MyState.State2)
+            .Execute(state => Command.DoSomething(state.Data.Id))
+        .On(MyTrigger.Trigger3)
+            .TransitionTo(MyState.Initial)
+    .Build();
 
-builder.For(MyState.Initial)
-    .OnEntry(state => Command.DoSomething(state.Data.Id))
-    .OnExit(state => Command.DoSomethingElse(state.Data.Id))
-    .On(MyTrigger.Trigger1)
-        .TransitionTo(MyState.State1)
-        .Execute(state => Command.DoSomething(state.Data.Id))
-    .On(MyTrigger.Trigger2)
-        .Guard((state, trigger) => !state.Data.SeenIds.Contains(trigger.Id))
-        .WithData((state, trigger) => state.Data with { SeenIds = state.Data.SeenIds.Add(trigger.Id) })
-        .TransitionTo(MyState.State2)
-        .Execute(state => Command.DoSomething(state.Data.Id))
-    .On(MyTrigger.Trigger3)
-        .TransitionTo(MyState.Initial);
-
-var stateMachine = builder.Build();
 var current = new State<MyState, MyData>(MyState.Initial, new MyData("abc-123"));
 var (newState, commands) = stateMachine.Fire(MyTrigger.Trigger1, current);
 ```
