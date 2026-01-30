@@ -54,7 +54,7 @@ var stateMachine = StateMachine<MyState, MyTrigger, MyData, CommandBase>.Create(
             .Execute(state => Command.DoSomething(state.Data.Id))
         .On<MyTrigger.Trigger2>()
             .Guard((state, trigger) => !state.Data.SeenIds.Contains(trigger.Id))
-            .WithData((state, trigger) => state.Data with { SeenIds = state.Data.SeenIds.Add(trigger.Id) })
+            .ModifyData((state, trigger) => state.Data with { SeenIds = state.Data.SeenIds.Add(trigger.Id) })
             .TransitionTo(MyState.State2)
             .Execute(state => Command.DoSomething(state.Data.Id))
         .On(MyTrigger.Trigger3)

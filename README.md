@@ -111,13 +111,13 @@ var machine = StateMachine<State, Trigger, Data, Command>.Create()
 
 ### 5) Update state data during transitions
 
-Attach data to your state and update it as transitions happen.
+Attach data to your state and update it as transitions happen. The order of `ModifyData` and `Execute` calls is preserved.
 
 ```csharp
 var machine = StateMachine<State, Trigger, Data, Command>.Create()
     .For(State.Pending)
         .On(Trigger.Submit)
-            .WithData(state => state.Data with { Notes = "High risk" })
+            .ModifyData(state => state.Data with { Notes = "High risk" })
             .TransitionTo(State.Manual)
     .Build();
 ```
@@ -183,7 +183,7 @@ If you omit `TransitionTo`, you stay in the same state (entry/exit do not run).
 var machine = StateMachine<State, Trigger, Data, Command>.Create()
     .For(State.Running)
         .On(Trigger.Tick)
-            .WithData(state => state.Data with { Count = state.Data.Count + 1 })
+            .ModifyData(state => state.Data with { Count = state.Data.Count + 1 })
             .Execute(state => new LogCommand($"Tick {state.Data.Count + 1}"))
     .Build();
 ```

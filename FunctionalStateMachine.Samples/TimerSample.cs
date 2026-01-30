@@ -12,7 +12,7 @@ public static class TimerSample
                 .OnEntry(() => new TimerCommand.WriteLog("Start"))
                 .OnExit(() => new TimerCommand.WriteLog("Stop"))
                 .On<TimerTrigger.TickTrigger>()
-                    .WithData(state => state.Data with { Ticks = state.Data.Ticks + 1 })
+                    .ModifyData(state => state.Data with { Ticks = state.Data.Ticks + 1 })
                     .Execute(state => new TimerCommand.WriteLog($"Tick:{state.Data.Ticks + 1}"))
                 .For(TimerState.Paused)
                     .On<TimerTrigger.ResumeTrigger>()

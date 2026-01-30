@@ -66,7 +66,7 @@ public class StateMachineTests
         var machine = StateMachine<OrderState, OrderTrigger, OrderData, TestCommand>.Create()
             .For(OrderState.Created)
                 .On(OrderTrigger.Pay)
-                    .WithData(state => state.Data with { LastEvent = "paid" })
+                    .ModifyData(state => state.Data with { LastEvent = "paid" })
                     .TransitionTo(OrderState.Paid)
             .Build();
         var current = new State<OrderState, OrderData>(OrderState.Created, new OrderData("A-400", "none"));

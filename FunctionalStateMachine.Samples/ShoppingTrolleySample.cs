@@ -12,21 +12,21 @@ public static class ShoppingTrolleySample
             .For(ShopState.InStore)
                 .StartsWith(ShopState.Shopping)
                 .On<CartTrigger.CancelTrigger>()
-                    .WithData(state => state.Data with { Shop = new ShopData([], 0) })
+                    .ModifyData(state => state.Data with { Shop = new ShopData([], 0) })
                     .TransitionTo(ShopState.Outside)
                 .On<CartTrigger.PaymentSucceededTrigger>()
                     .Guard(state => state.Value == ShopState.PaymentPending)
-                    .WithData(state => state.Data with { Shop = new ShopData([], 0) })
-                    .TransitionTo(ShopState.Outside)
                     .Execute(state => new ShopCommand.GrantItemOwnership(state.Data.Shop.Items))
+                    .ModifyData(state => state.Data with { Shop = new ShopData([], 0) })
+                    .TransitionTo(ShopState.Outside)
             .For(ShopState.Outside)
                 .On<CartTrigger.StartShoppingTrigger>()
-                    .WithData(state => state.Data with { Shop = new ShopData([], 0) })
+                    .ModifyData(state => state.Data with { Shop = new ShopData([], 0) })
                     .TransitionTo(ShopState.Shopping)
             .For(ShopState.Shopping)
                 .SubStateOf(ShopState.InStore)
                 .On<CartTrigger.AddItemTrigger>()
-                    .WithData((state, trigger) =>
+                    .ModifyData((state, trigger) =>
                     {
                         var items = new List<LineItem>(state.Data.Shop.Items);
                         items.Add(trigger.Item);
@@ -35,7 +35,7 @@ public static class ShoppingTrolleySample
                     })
                     .Execute(state => new ShopCommand.UpdateCartItems(state.Data.Shop.Items))
                 .On<CartTrigger.RemoveItemTrigger>()
-                    .WithData((state, trigger) =>
+                    .ModifyData((state, trigger) =>
                     {
                         var items = new List<LineItem>(state.Data.Shop.Items);
                         items.RemoveAll(item => item.Sku == trigger.Sku);
@@ -50,7 +50,7 @@ public static class ShoppingTrolleySample
                 .SubStateOf(ShopState.InStore)
                 .On<CartTrigger.PayTrigger>()
                     .TransitionTo(ShopState.PaymentPending)
-                    .WithData(state => state.Data with
+                    .ModifyData(state => state.Data with
                     {
                         Shop = state.Data.Shop with { PaymentAttempts = state.Data.Shop.PaymentAttempts + 1 }
                     })

@@ -73,12 +73,12 @@ public class StateMachineAdditionalTests
     }
 
     [Fact]
-    public void Execute_UsesUpdatedDataFromWithData()
+    public void Execute_UsesUpdatedDataFromModifyData()
     {
         var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
             .For(State.Ready)
                 .On(Trigger.Start)
-                    .WithData(state => state.Data with { Id = "updated" })
+                    .ModifyData(state => state.Data with { Id = "updated" })
                     .Execute(state => new LogCommand(state.Data.Id))
             .Build();
         var current = new State<State, Data>(State.Ready, new Data("original"));
@@ -103,6 +103,24 @@ public class StateMachineAdditionalTests
 
         Assert.Single(commands);
         Assert.Equal("new-id", ((LogCommand)commands[0]).Message);
+    }
+
+    [Fact]
+    public void Execute_UsesDataBasedOnOrdering()
+    {
+        var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
+            .For(State.Ready)
+                .On(Trigger.Start)
+                    .Execute(state => new LogCommand($"Before:{state.Data.Id}"))
+                    .ModifyData(state => state.Data with { Id = "updated" })
+                    .Execute(state => new LogCommand($"After:{state.Data.Id}"))
+            .Build();
+        var current = new State<State, Data>(State.Ready, new Data("original"));
+
+        var (_, commands) = machine.Fire(Trigger.Start, current);
+
+        Assert.Equal("Before:original", ((LogCommand)commands[0]).Message);
+        Assert.Equal("After:updated", ((LogCommand)commands[1]).Message);
     }
 
     [Fact]

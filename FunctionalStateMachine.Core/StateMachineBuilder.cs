@@ -180,15 +180,15 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
             return this;
         }
 
-        public TransitionConfiguration WithData(Func<State<TState, TData>, TTrigger, TData> updater)
+        public TransitionConfiguration ModifyData(Func<State<TState, TData>, TTrigger, TData> updater)
         {
-            _inner.WithData(updater);
+            _inner.ModifyData(updater);
             return this;
         }
 
-        public TransitionConfiguration WithData(Func<State<TState, TData>, TData> updater)
+        public TransitionConfiguration ModifyData(Func<State<TState, TData>, TData> updater)
         {
-            _inner.WithData(updater);
+            _inner.ModifyData(updater);
             return this;
         }
 
@@ -307,16 +307,16 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
             return this;
         }
 
-        public TransitionConfiguration<TDerivedTrigger> WithData(
+        public TransitionConfiguration<TDerivedTrigger> ModifyData(
             Func<State<TState, TData>, TDerivedTrigger, TData> updater)
         {
-            _inner.WithData(updater);
+            _inner.ModifyData(updater);
             return this;
         }
 
-        public TransitionConfiguration<TDerivedTrigger> WithData(Func<State<TState, TData>, TData> updater)
+        public TransitionConfiguration<TDerivedTrigger> ModifyData(Func<State<TState, TData>, TData> updater)
         {
-            _inner.WithData(updater);
+            _inner.ModifyData(updater);
             return this;
         }
 
@@ -610,9 +610,9 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
             return this;
         }
 
-        public TransitionConfiguration WithData(Func<State<TState, NoData>, NoData> updater)
+        public TransitionConfiguration ModifyData(Func<State<TState, NoData>, NoData> updater)
         {
-            _inner.WithData(updater);
+            _inner.ModifyData(updater);
             return this;
         }
 
@@ -734,9 +734,9 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
             return this;
         }
 
-        public TransitionConfiguration<TDerivedTrigger> WithData(Func<State<TState, NoData>, NoData> updater)
+        public TransitionConfiguration<TDerivedTrigger> ModifyData(Func<State<TState, NoData>, NoData> updater)
         {
-            _inner.WithData(updater);
+            _inner.ModifyData(updater);
             return this;
         }
 
