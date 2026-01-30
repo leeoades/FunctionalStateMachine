@@ -17,9 +17,9 @@ public static class ShoppingTrolleySample
                         }
                         return state.Data with { Items = items };
                     })
-                    .Execute(state => new CartUpdatedCommand(state.Data.Items))
-                .On(CartTrigger.ForKind(CartTriggerKind.RemoveItem))
-                    .WithData((state, trigger) =>
+                    .Execute(state => new ShopCommand.CartUpdated(state.Data.Items))
+            .On(CartTrigger.ForKind(CartTriggerKind.RemoveItem))
+                .WithData((state, trigger) =>
                     {
                         var items = new List<LineItem>(state.Data.Items);
                         if (!string.IsNullOrWhiteSpace(trigger.Sku))
@@ -28,19 +28,19 @@ public static class ShoppingTrolleySample
                         }
                         return state.Data with { Items = items };
                     })
-                    .Execute(state => new CartUpdatedCommand(state.Data.Items))
-                .On(CartTrigger.ForKind(CartTriggerKind.GoToCheckout))
-                    .TransitionTo(ShopPhase.CheckingOut)
-                    .Execute(state => new TotalCalculatedCommand(state.Data.TotalPrice()))
-                .For(ShopPhase.CheckingOut)
-                    .On(CartTrigger.ForKind(CartTriggerKind.Pay))
-                        .TransitionTo(ShopPhase.PaymentPending)
-                        .WithData(state => state.Data with { PaymentAttempts = state.Data.PaymentAttempts + 1 })
-                        .Execute(() => new PaymentRequestedCommand())
-                    .For(ShopPhase.PaymentPending)
-                        .On(CartTrigger.ForKind(CartTriggerKind.PaymentFailed))
-                            .TransitionTo(ShopPhase.CheckingOut)
-                            .Execute(() => new PaymentFailedCommand())
+                    .Execute(state => new ShopCommand.CartUpdated(state.Data.Items))
+            .On(CartTrigger.ForKind(CartTriggerKind.GoToCheckout))
+                .TransitionTo(ShopPhase.CheckingOut)
+                .Execute(state => new ShopCommand.TotalCalculated(state.Data.TotalPrice()))
+            .For(ShopPhase.CheckingOut)
+                .On(CartTrigger.ForKind(CartTriggerKind.Pay))
+                    .TransitionTo(ShopPhase.PaymentPending)
+                    .WithData(state => state.Data with { PaymentAttempts = state.Data.PaymentAttempts + 1 })
+                    .Execute(() => new ShopCommand.PaymentRequested())
+                .For(ShopPhase.PaymentPending)
+                    .On(CartTrigger.ForKind(CartTriggerKind.PaymentFailed))
+                        .TransitionTo(ShopPhase.CheckingOut)
+                        .Execute(() => new ShopCommand.PaymentFailed())
             .Build();
 
         return Core.StateMachine<ShopState, CartTrigger, CartSession, ShopCommand>.Create()
@@ -70,7 +70,7 @@ public static class ShoppingTrolleySample
                     .On(CartTrigger.ForKind(CartTriggerKind.PaymentSucceeded))
                         .Guard(state => state.Data.Shop.Value == ShopPhase.PaymentPending)
                         .TransitionTo(ShopState.Outside)
-                        .Execute(state => new OwnershipGrantedCommand(state.Data.Shop.Data.Items))
+                        .Execute(state => new ShopCommand.OwnershipGranted(state.Data.Shop.Data.Items))
             .Build();
     }
 }
@@ -149,14 +149,11 @@ public sealed class CartTrigger : IEquatable<CartTrigger>
     public override int GetHashCode() => (int)Kind;
 }
 
-public abstract record ShopCommand;
-
-public sealed record CartUpdatedCommand(IReadOnlyList<LineItem> Items) : ShopCommand;
-
-public sealed record TotalCalculatedCommand(decimal Total) : ShopCommand;
-
-public sealed record PaymentRequestedCommand() : ShopCommand;
-
-public sealed record PaymentFailedCommand() : ShopCommand;
-
-public sealed record OwnershipGrantedCommand(IReadOnlyList<LineItem> Items) : ShopCommand;
+public abstract record ShopCommand
+{
+    public sealed record CartUpdated(IReadOnlyList<LineItem> Items) : ShopCommand;
+    public sealed record TotalCalculated(decimal Total) : ShopCommand;
+    public sealed record PaymentRequested : ShopCommand;
+    public sealed record PaymentFailed : ShopCommand;
+    public sealed record OwnershipGranted(IReadOnlyList<LineItem> Items) : ShopCommand;
+}

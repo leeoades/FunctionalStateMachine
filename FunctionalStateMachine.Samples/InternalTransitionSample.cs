@@ -9,11 +9,11 @@ public static class InternalTransitionSample
         return StateMachine<TimerState, TimerTrigger, TimerData, TimerCommand>.Create()
             .StartWith(TimerState.Running)
             .For(TimerState.Running)
-                .OnEntry(() => new TimerLogCommand("Start"))
-                .OnExit(() => new TimerLogCommand("Stop"))
+                .OnEntry(() => new TimerCommand.Log("Start"))
+                .OnExit(() => new TimerCommand.Log("Stop"))
                 .On(TimerTrigger.Tick)
                     .WithData(state => state.Data with { Ticks = state.Data.Ticks + 1 })
-                    .Execute(state => new TimerLogCommand($"Tick:{state.Data.Ticks + 1}"))
+                    .Execute(state => new TimerCommand.Log($"Tick:{state.Data.Ticks + 1}"))
                 .For(TimerState.Paused)
                     .On(TimerTrigger.Resume)
                         .TransitionTo(TimerState.Running)
@@ -35,6 +35,7 @@ public enum TimerTrigger
 
 public sealed record TimerData(int Ticks);
 
-public abstract record TimerCommand;
-
-public sealed record TimerLogCommand(string Message) : TimerCommand;
+public abstract record TimerCommand
+{
+    public sealed record Log(string Message) : TimerCommand;
+}

@@ -12,13 +12,13 @@ public static class IgnoreAndUnhandledSample
             .For(QueueState.Empty)
                 .On(QueueTrigger.Enqueue)
                     .TransitionTo(QueueState.HasItems)
-                    .Execute(state => new EnqueueCommand(state.Data.QueueId))
-                .On(QueueTrigger.Peek)
-                    .Ignore()
-                .For(QueueState.HasItems)
-                    .On(QueueTrigger.Dequeue)
-                        .TransitionTo(QueueState.Empty)
-                        .Execute(state => new DequeueCommand(state.Data.QueueId))
+                    .Execute(state => new QueueCommand.Enqueue(state.Data.QueueId))
+            .On(QueueTrigger.Peek)
+                .Ignore()
+            .For(QueueState.HasItems)
+                .On(QueueTrigger.Dequeue)
+                    .TransitionTo(QueueState.Empty)
+                    .Execute(state => new QueueCommand.Dequeue(state.Data.QueueId))
             .Build();
     }
 }
@@ -38,8 +38,8 @@ public enum QueueTrigger
 
 public sealed record QueueData(string QueueId, List<string> Log);
 
-public abstract record QueueCommand;
-
-public sealed record EnqueueCommand(string QueueId) : QueueCommand;
-
-public sealed record DequeueCommand(string QueueId) : QueueCommand;
+public abstract record QueueCommand
+{
+    public sealed record Enqueue(string QueueId) : QueueCommand;
+    public sealed record Dequeue(string QueueId) : QueueCommand;
+}
