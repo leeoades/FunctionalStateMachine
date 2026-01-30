@@ -1,5 +1,3 @@
-using FunctionalStateMachine;
-
 namespace FunctionalStateMachine.Core.Tests;
 
 public class StateMachineTests

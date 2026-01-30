@@ -1,4 +1,3 @@
-using FunctionalStateMachine;
 using FunctionalStateMachine.Core;
 
 namespace FunctionalStateMachine.Samples;
