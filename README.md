@@ -1,39 +1,49 @@
 # Functional State Machine
 
 Welcome! This library provides a functional, persistence-friendly state machine for .NET.
-Instead of executing side effects directly, transitions return commands that your app can handle later.
-That keeps the state machine pure, easy to test, and great for rehydrated or actor-style systems.
+Instead of executing side effects directly, transitions return commands that your app can handle separately.
+That keeps the state machine pure, easy to test, and great for actor-style systems.
 
 ## Quick Start
 
-Build the machine with a fluent builder, then call `Build()` to freeze the configuration.
+Build the machine with a fluent builder.
 
 ```csharp
-var machine = StateMachine<OrderState, OrderTrigger, OrderData, OrderCommand>.Create()
-    .StartWith(OrderState.Created)
-    .For(OrderState.Created)
-    .OnEntry(state => new AuditCommand($"Entering {state.Value}"))
-    .On(OrderTrigger.Pay)
-        .TransitionTo(OrderState.Paid)
-        .Execute(state => new ChargeCommand(state.Data.OrderId))
-    .For(OrderState.Paid)
-        .On(OrderTrigger.Ship)
-            .TransitionTo(OrderState.Shipped)
-            .Execute(state => new ShipCommand(state.Data.OrderId))
-    .Build();
+public enum LightState
+{
+    Off,
+    On
+}
 
-var current = new State<OrderState, OrderData>(OrderState.Created, new OrderData("A-100"));
-var (next, commands) = machine.Fire(OrderTrigger.Pay, current);
+public enum LightTrigger
+{
+    Toggle
+}
+
+var stateMachine = 
+    StateMachine<LightState, LightTrigger, LightCommand>
+        .Create()
+            .StartWith(LightState.Off)
+            .For(LightState.Off)
+                .On(LightTrigger.Toggle)
+                    .TransitionTo(LightState.On)
+                    .Execute(() => new LightCommand.SwitchOn())
+            .For(LightState.On)
+                .On(LightTrigger.Toggle)
+                    .TransitionTo(LightState.Off)
+                    .Execute(() => new LightCommand.SwitchOff())
+            .Build();
+
 ```
 
 ## Why this State Machine?
 
 Compared to traditional state machines (including popular libraries like Stateless), this library:
 
-- Returns commands instead of performing side effects.
+- Returns logical commands instead of performing side effects.
 - Keeps transitions pure and deterministic.
 - Makes unit testing straightforward (no mocked services).
-- Supports rehydration (persist state + data, rebuild machine at runtime).
+- No "Rehydration" - current state is passed in, not locked in.  
 - Allows extra data to travel with the state.
 
 ## Features and Examples
@@ -43,14 +53,19 @@ Compared to traditional state machines (including popular libraries like Statele
 Commands are logical descriptions of work to do, not the work itself.
 
 ```csharp
-public abstract record OrderCommand;
-public sealed record ChargeCommand(string OrderId) : OrderCommand;
-public sealed record ShipCommand(string OrderId) : OrderCommand;
+public abstract record ShopCommand
+{
+    public sealed record CartUpdated(IReadOnlyList<LineItem> Items) : ShopCommand;
+    public sealed record TotalCalculated(decimal Total) : ShopCommand;
+    public sealed record PaymentRequested : ShopCommand;
+    public sealed record PaymentFailed : ShopCommand;
+    public sealed record OwnershipGranted(IReadOnlyList<LineItem> Items) : ShopCommand;
+}
 ```
 
 The state machine returns these commands for your handler to execute.
 
-### 2) Fluent configuration with a build step
+### 2) Fluent configuration
 
 Configuration is done up front and `Build()` seals the machine.
 

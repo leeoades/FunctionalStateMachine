@@ -2,7 +2,7 @@ using FunctionalStateMachine.Core;
 
 namespace FunctionalStateMachine.Samples;
 
-public static class NoDataSample
+public static class LightSwitchSample
 {
     public static StateMachine<LightState, LightTrigger, LightCommand> Build() =>
         StateMachine<LightState, LightTrigger, LightCommand>.Create()

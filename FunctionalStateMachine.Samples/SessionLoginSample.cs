@@ -2,7 +2,7 @@ using FunctionalStateMachine.Core;
 
 namespace FunctionalStateMachine.Samples;
 
-public static class SubMachineSample
+public static class SessionLoginSample
 {
     public static StateMachine<SessionState, SessionTrigger, SessionData, SessionCommand> Build()
     {

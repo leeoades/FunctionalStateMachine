@@ -2,7 +2,7 @@ using FunctionalStateMachine.Core;
 
 namespace FunctionalStateMachine.Samples;
 
-public static class InternalTransitionSample
+public static class TimerSample
 {
     public static StateMachine<TimerState, TimerTrigger, TimerData, TimerCommand> Build()
     {

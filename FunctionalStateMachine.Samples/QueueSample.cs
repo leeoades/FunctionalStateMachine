@@ -2,7 +2,7 @@ using FunctionalStateMachine.Core;
 
 namespace FunctionalStateMachine.Samples;
 
-public static class IgnoreAndUnhandledSample
+public static class QueueSample
 {
     public static StateMachine<QueueState, QueueTrigger, QueueData, QueueCommand> Build()
     {
