@@ -1,0 +1,173 @@
+namespace FunctionalStateMachine.Samples;
+
+public static class ShoppingTrolleySample
+{
+    public static global::FunctionalStateMachine.Core.StateMachine<ShopState, CartTrigger, CartSession, ShopCommand> Build()
+    {
+        var shopBuilder = new global::FunctionalStateMachine.Core.StateMachineBuilder<ShopPhase, CartTrigger, ShopData, ShopCommand>()
+            .StartWith(ShopPhase.Shopping);
+
+        var shopping = shopBuilder.For(ShopPhase.Shopping);
+        shopping.On(CartTrigger.ForKind(CartTriggerKind.AddItem))
+            .WithData((state, trigger) =>
+            {
+                var items = new List<LineItem>(state.Data.Items);
+                if (trigger.Item != null)
+                {
+                    items.Add(trigger.Item);
+                }
+                return state.Data with { Items = items };
+            })
+            .Execute((state, trigger) => new CartUpdatedCommand(state.Data.Items));
+
+        shopping.On(CartTrigger.ForKind(CartTriggerKind.RemoveItem))
+            .WithData((state, trigger) =>
+            {
+                var items = new List<LineItem>(state.Data.Items);
+                if (!string.IsNullOrWhiteSpace(trigger.Sku))
+                {
+                    items.RemoveAll(item => item.Sku == trigger.Sku);
+                }
+                return state.Data with { Items = items };
+            })
+            .Execute((state, trigger) => new CartUpdatedCommand(state.Data.Items));
+
+        shopping.On(CartTrigger.ForKind(CartTriggerKind.GoToCheckout))
+            .TransitionTo(ShopPhase.CheckingOut)
+            .Execute(state => new TotalCalculatedCommand(state.Data.TotalPrice()));
+
+        shopBuilder.For(ShopPhase.CheckingOut)
+            .On(CartTrigger.ForKind(CartTriggerKind.Pay))
+                .TransitionTo(ShopPhase.PaymentPending)
+                .WithData((state, trigger) => state.Data with { PaymentAttempts = state.Data.PaymentAttempts + 1 })
+                .Execute(() => new PaymentRequestedCommand());
+
+        shopBuilder.For(ShopPhase.PaymentPending)
+            .On(CartTrigger.ForKind(CartTriggerKind.PaymentFailed))
+                .TransitionTo(ShopPhase.CheckingOut)
+                .Execute(() => new PaymentFailedCommand());
+
+        var shopMachine = shopBuilder.Build();
+
+        var builder = new global::FunctionalStateMachine.Core.StateMachineBuilder<ShopState, CartTrigger, CartSession, ShopCommand>()
+            .StartWith(ShopState.Outside);
+
+        builder.For(ShopState.Outside)
+            .On(CartTrigger.ForKind(CartTriggerKind.StartShopping))
+                .WithData((state, trigger) => state.Data with
+                {
+                    Shop = new global::FunctionalStateMachine.Core.SubState<ShopPhase, ShopData>(
+                        ShopPhase.Shopping,
+                        new ShopData(new List<LineItem>(), 0))
+                })
+                .TransitionTo(ShopState.InStore);
+
+        var inStore = builder.For(ShopState.InStore)
+            .WithSubStateMachine(
+                shopMachine,
+                data => data.Shop,
+                (data, sub) => data with { Shop = sub });
+
+        inStore.On(CartTrigger.ForKind(CartTriggerKind.Cancel))
+            .WithData((state, trigger) => state.Data with
+            {
+                Shop = new global::FunctionalStateMachine.Core.SubState<ShopPhase, ShopData>(
+                    ShopPhase.Shopping,
+                    new ShopData(new List<LineItem>(), 0))
+            })
+            .TransitionTo(ShopState.Outside);
+
+        inStore.On(CartTrigger.ForKind(CartTriggerKind.PaymentSucceeded))
+            .Guard((state, trigger) => state.Data.Shop.Value == ShopPhase.PaymentPending)
+            .TransitionTo(ShopState.Outside)
+            .Execute(state => new OwnershipGrantedCommand(state.Data.Shop.Data.Items));
+
+        return builder.Build();
+    }
+}
+
+public enum ShopState
+{
+    Outside,
+    InStore
+}
+
+public enum ShopPhase
+{
+    Shopping,
+    CheckingOut,
+    PaymentPending
+}
+
+public sealed record CartSession(global::FunctionalStateMachine.Core.SubState<ShopPhase, ShopData> Shop);
+
+public sealed record ShopData(List<LineItem> Items, int PaymentAttempts)
+{
+    public decimal TotalPrice() => Items.Sum(item => item.Price);
+}
+
+public sealed record LineItem(string Sku, decimal Price);
+
+public enum CartTriggerKind
+{
+    StartShopping,
+    AddItem,
+    RemoveItem,
+    GoToCheckout,
+    Pay,
+    PaymentFailed,
+    PaymentSucceeded,
+    Cancel
+}
+
+public sealed class CartTrigger : IEquatable<CartTrigger>
+{
+    public CartTrigger(CartTriggerKind kind, LineItem? item = null, string? sku = null)
+    {
+        Kind = kind;
+        Item = item;
+        Sku = sku;
+    }
+
+    public CartTriggerKind Kind { get; }
+
+    public LineItem? Item { get; }
+
+    public string? Sku { get; }
+
+    public static CartTrigger ForKind(CartTriggerKind kind) => new(kind);
+
+    public static CartTrigger AddItem(LineItem item) => new(CartTriggerKind.AddItem, item);
+
+    public static CartTrigger RemoveItem(string sku) => new(CartTriggerKind.RemoveItem, null, sku);
+
+    public static CartTrigger StartShopping() => new(CartTriggerKind.StartShopping);
+
+    public static CartTrigger GoToCheckout() => new(CartTriggerKind.GoToCheckout);
+
+    public static CartTrigger Pay() => new(CartTriggerKind.Pay);
+
+    public static CartTrigger PaymentFailed() => new(CartTriggerKind.PaymentFailed);
+
+    public static CartTrigger PaymentSucceeded() => new(CartTriggerKind.PaymentSucceeded);
+
+    public static CartTrigger Cancel() => new(CartTriggerKind.Cancel);
+
+    public bool Equals(CartTrigger? other) => other is not null && Kind == other.Kind;
+
+    public override bool Equals(object? obj) => obj is CartTrigger other && Equals(other);
+
+    public override int GetHashCode() => (int)Kind;
+}
+
+public abstract record ShopCommand;
+
+public sealed record CartUpdatedCommand(IReadOnlyList<LineItem> Items) : ShopCommand;
+
+public sealed record TotalCalculatedCommand(decimal Total) : ShopCommand;
+
+public sealed record PaymentRequestedCommand() : ShopCommand;
+
+public sealed record PaymentFailedCommand() : ShopCommand;
+
+public sealed record OwnershipGrantedCommand(IReadOnlyList<LineItem> Items) : ShopCommand;

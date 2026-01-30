@@ -16,3 +16,5 @@ Each sample builds a state machine and documents which features it demonstrates.
   - Features: WithSubStateMachine, command propagation, nested state data
 - NoDataSample
   - Features: StateMachineBuilder without extra data payload (NoData)
+- ShoppingTrolleySample
+  - Features: WithSubStateMachine, guards based on substate, data updates, cancel from parent, checkout total command
