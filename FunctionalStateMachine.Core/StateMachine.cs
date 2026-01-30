@@ -23,7 +23,7 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
         return this;
     }
 
-    public State<TState, TData> CreateState(TState state, TData data) => new(state, data);
+    public State<TState, TData> CreateState(TState state, TData data) => new(ResolveInitialLeaf(state), data);
 
     internal StateConfiguration For(TState state)
     {
@@ -58,7 +58,10 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
         return TryFireInternal(trigger, current, out newState, out commands, throwOnUnhandled: false);
     }
 
-    public TState? InitialStateOrDefault() => _hasInitialState ? _initialState : default;
+    public TState? InitialStateOrDefault()
+    {
+        return _hasInitialState ? ResolveInitialLeaf(_initialState!) : default;
+    }
 
     private bool TryFireInternal(
         TTrigger trigger,
@@ -72,17 +75,13 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
             throw new InvalidOperationException($"State '{current.Value}' is not configured.");
         }
 
-        if (definition.SubStateMachine != null)
+        if (definition.HasChildren)
         {
-            if (definition.SubStateMachine.TryFire(trigger, current.Data, out var updatedData, out var subCommands))
-            {
-                newState = new State<TState, TData>(current.Value, updatedData);
-                commands = subCommands;
-                return true;
-            }
+            throw new InvalidOperationException(
+                $"State '{current.Value}' is a parent state. Use a leaf state instead.");
         }
 
-        if (!definition.TryGetTransitions(trigger, out var transitions))
+        if (!TryGetTransitionsInHierarchy(current.Value, trigger, out var transitions))
         {
             return HandleUnhandled(trigger, current, out newState, out commands, throwOnUnhandled);
         }
@@ -102,6 +101,7 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
             }
 
             var targetState = transition.HasTargetState ? transition.TargetState! : current.Value;
+            targetState = ResolveInitialLeaf(targetState);
             var updatedData = transition.DataUpdater != null
                 ? transition.DataUpdater(current, trigger)
                 : current.Data;
@@ -113,14 +113,14 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
 
             if (isStateChange)
             {
-                AppendCommands(commandList, definition.ExitActions, current);
+                AppendExitCommands(commandList, current.Value, targetState, current.Data);
             }
 
             AppendTransitionCommands(commandList, transition.Actions, current, trigger);
 
-            if (isStateChange && _states.TryGetValue(targetState, out var nextDefinition))
+            if (isStateChange)
             {
-                AppendCommands(commandList, nextDefinition.EntryActions, nextState);
+                AppendEntryCommands(commandList, current.Value, targetState, updatedData);
             }
 
             newState = nextState;
@@ -153,6 +153,285 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
 
         newState = current;
         commands = [];
+        return false;
+    }
+
+    internal void Validate()
+    {
+        foreach (var definition in _states.Values)
+        {
+            definition.HasChildren = false;
+        }
+
+        foreach (var definition in _states.Values)
+        {
+            if (!definition.HasParentState)
+            {
+                continue;
+            }
+
+            if (!_states.TryGetValue(definition.ParentState, out var parentDefinition))
+            {
+                throw new InvalidOperationException(
+                    $"State '{definition.State}' declares parent '{definition.ParentState}', but it is not configured.");
+            }
+
+            parentDefinition.HasChildren = true;
+        }
+
+        foreach (var definition in _states.Values)
+        {
+            if (definition.HasChildren)
+            {
+                if (!definition.HasInitialSubState)
+                {
+                    throw new InvalidOperationException(
+                        $"State '{definition.State}' has child states but no initial sub-state configured. Call StartsWith.");
+                }
+
+                if (!_states.TryGetValue(definition.InitialSubState, out var initialDefinition))
+                {
+                    throw new InvalidOperationException(
+                        $"State '{definition.State}' starts with '{definition.InitialSubState}', but it is not configured.");
+                }
+
+                if (!initialDefinition.HasParentState
+                    || !EqualityComparer<TState>.Default.Equals(initialDefinition.ParentState, definition.State))
+                {
+                    throw new InvalidOperationException(
+                        $"State '{definition.State}' starts with '{definition.InitialSubState}', which is not a direct child.");
+                }
+            }
+            else if (definition.HasInitialSubState)
+            {
+                throw new InvalidOperationException(
+                    $"State '{definition.State}' declares StartsWith but has no child states.");
+            }
+
+            ValidateNoCycles(definition.State);
+        }
+
+        if (_hasInitialState)
+        {
+            ResolveInitialLeaf(_initialState!);
+        }
+    }
+
+    private void ValidateNoCycles(TState state)
+    {
+        var visited = new HashSet<TState>();
+        var current = state;
+        while (true)
+        {
+            if (!_states.TryGetValue(current, out var definition))
+            {
+                return;
+            }
+
+            if (!visited.Add(current))
+            {
+                throw new InvalidOperationException($"Cycle detected in state hierarchy at '{current}'.");
+            }
+
+            if (!definition.HasParentState)
+            {
+                return;
+            }
+
+            current = definition.ParentState;
+        }
+    }
+
+    private bool TryGetTransitionsInHierarchy(
+        TState state,
+        TTrigger trigger,
+        out List<TransitionDefinition> transitions)
+    {
+        var current = state;
+        while (true)
+        {
+            if (!_states.TryGetValue(current, out var definition))
+            {
+                transitions = [];
+                return false;
+            }
+
+            if (definition.TryGetTransitions(trigger, out transitions))
+            {
+                return true;
+            }
+
+            if (!definition.HasParentState)
+            {
+                transitions = [];
+                return false;
+            }
+
+            current = definition.ParentState;
+        }
+    }
+
+    private TState ResolveInitialLeaf(TState state)
+    {
+        var current = state;
+        var visited = new HashSet<TState>();
+        while (true)
+        {
+            if (!_states.TryGetValue(current, out var definition))
+            {
+                return current;
+            }
+
+            if (!definition.HasChildren)
+            {
+                return current;
+            }
+
+            if (!definition.HasInitialSubState)
+            {
+                throw new InvalidOperationException(
+                    $"State '{current}' has child states but no initial sub-state configured. Call StartsWith.");
+            }
+
+            if (!visited.Add(current))
+            {
+                throw new InvalidOperationException($"Cycle detected in state hierarchy at '{current}'.");
+            }
+
+            current = definition.InitialSubState;
+        }
+    }
+
+    private void AppendExitCommands(
+        List<TCommand> commands,
+        TState currentState,
+        TState targetState,
+        TData currentData)
+    {
+        if (TryFindLowestCommonAncestor(currentState, targetState, out var lca))
+        {
+            foreach (var state in GetStatesUntil(currentState, lca))
+            {
+                AppendCommands(commands, _states[state].ExitActions, new State<TState, TData>(state, currentData));
+            }
+
+            return;
+        }
+
+        foreach (var state in GetStatesToRoot(currentState))
+        {
+            AppendCommands(commands, _states[state].ExitActions, new State<TState, TData>(state, currentData));
+        }
+    }
+
+    private void AppendEntryCommands(
+        List<TCommand> commands,
+        TState currentState,
+        TState targetState,
+        TData updatedData)
+    {
+        if (!_states.ContainsKey(targetState))
+        {
+            return;
+        }
+
+        List<TState> entryStates;
+        if (TryFindLowestCommonAncestor(currentState, targetState, out var lca))
+        {
+            entryStates = GetStatesUntil(targetState, lca);
+        }
+        else
+        {
+            entryStates = GetStatesToRoot(targetState);
+        }
+
+        entryStates.Reverse();
+        foreach (var state in entryStates)
+        {
+            AppendCommands(commands, _states[state].EntryActions, new State<TState, TData>(state, updatedData));
+        }
+    }
+
+    private List<TState> GetHierarchyChain(TState state)
+    {
+        var chain = new List<TState>();
+        var current = state;
+        while (true)
+        {
+            if (!_states.TryGetValue(current, out var definition))
+            {
+                break;
+            }
+
+            chain.Add(current);
+            if (!definition.HasParentState)
+            {
+                break;
+            }
+
+            current = definition.ParentState;
+        }
+
+        return chain;
+    }
+
+    private List<TState> GetStatesUntil(TState start, TState stopExclusive)
+    {
+        var states = new List<TState>();
+        var current = start;
+        while (!EqualityComparer<TState>.Default.Equals(current, stopExclusive))
+        {
+            states.Add(current);
+            var definition = _states[current];
+            if (!definition.HasParentState)
+            {
+                throw new InvalidOperationException(
+                    $"State '{start}' is not within the hierarchy of '{stopExclusive}'.");
+            }
+
+            current = definition.ParentState;
+        }
+
+        return states;
+    }
+
+    private List<TState> GetStatesToRoot(TState start)
+    {
+        var states = new List<TState>();
+        var current = start;
+        while (true)
+        {
+            if (!_states.TryGetValue(current, out var definition))
+            {
+                break;
+            }
+
+            states.Add(current);
+            if (!definition.HasParentState)
+            {
+                break;
+            }
+
+            current = definition.ParentState;
+        }
+
+        return states;
+    }
+
+    private bool TryFindLowestCommonAncestor(TState currentState, TState targetState, out TState lca)
+    {
+        var currentChain = GetHierarchyChain(currentState);
+        var currentSet = new HashSet<TState>(currentChain);
+        foreach (var state in GetHierarchyChain(targetState))
+        {
+            if (currentSet.Contains(state))
+            {
+                lca = state;
+                return true;
+            }
+        }
+
+        lca = default!;
         return false;
     }
 
@@ -293,16 +572,17 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
             return _machine.For(state);
         }
 
-        public StateConfiguration WithSubStateMachine<TSubState, TSubData>(
-            StateMachine<TSubState, TTrigger, TSubData, TCommand> subMachine,
-            Func<TData, SubState<TSubState, TSubData>> getSubState,
-            Func<TData, SubState<TSubState, TSubData>, TData> setSubState)
-            where TSubState : notnull
+        public StateConfiguration SubStateOf(TState parentState)
         {
-            _definition.SubStateMachine = new SubStateMachineAdapter<TSubState, TSubData>(
-                subMachine,
-                getSubState,
-                setSubState);
+            _definition.ParentState = parentState;
+            _definition.HasParentState = true;
+            return this;
+        }
+
+        public StateConfiguration StartsWith(TState initialSubState)
+        {
+            _definition.InitialSubState = initialSubState;
+            _definition.HasInitialSubState = true;
             return this;
         }
     }
@@ -433,7 +713,15 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
 
         public List<Func<State<TState, TData>, IEnumerable<TCommand>>> ExitActions { get; } = [];
 
-        public ISubStateMachine? SubStateMachine { get; set; }
+        public bool HasParentState { get; set; }
+
+        public TState ParentState { get; set; } = default!;
+
+        public bool HasInitialSubState { get; set; }
+
+        public TState InitialSubState { get; set; } = default!;
+
+        public bool HasChildren { get; set; }
 
         public void AddTransition(TTrigger trigger, TransitionDefinition transition)
         {
@@ -480,48 +768,6 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
         }
     }
 
-    internal interface ISubStateMachine
-    {
-        bool TryFire(TTrigger trigger, TData parentData, out TData newParentData, out IReadOnlyList<TCommand> commands);
-    }
-
-    private sealed class SubStateMachineAdapter<TSubState, TSubData> : ISubStateMachine
-        where TSubState : notnull
-    {
-        private readonly StateMachine<TSubState, TTrigger, TSubData, TCommand> _subMachine;
-        private readonly Func<TData, SubState<TSubState, TSubData>> _getSubState;
-        private readonly Func<TData, SubState<TSubState, TSubData>, TData> _setSubState;
-
-        public SubStateMachineAdapter(
-            StateMachine<TSubState, TTrigger, TSubData, TCommand> subMachine,
-            Func<TData, SubState<TSubState, TSubData>> getSubState,
-            Func<TData, SubState<TSubState, TSubData>, TData> setSubState)
-        {
-            _subMachine = subMachine;
-            _getSubState = getSubState;
-            _setSubState = setSubState;
-        }
-
-        public bool TryFire(
-            TTrigger trigger,
-            TData parentData,
-            out TData newParentData,
-            out IReadOnlyList<TCommand> commands)
-        {
-            var sub = _getSubState(parentData);
-            var current = new State<TSubState, TSubData>(sub.Value, sub.Data);
-
-            if (!_subMachine.TryFire(trigger, current, out var next, out commands))
-            {
-                newParentData = parentData;
-                return false;
-            }
-
-            var updatedSub = new SubState<TSubState, TSubData>(next.Value, next.Data);
-            newParentData = _setSubState(parentData, updatedSub);
-            return true;
-        }
-    }
 }
 
 public sealed class StateMachine<TState, TTrigger, TCommand>
@@ -539,6 +785,11 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
     {
         _inner.StartWith(state);
         return this;
+    }
+
+    internal void Validate()
+    {
+        _inner.Validate();
     }
 
     public State<TState, NoData> CreateState(TState state) => _inner.CreateState(state, new NoData());
@@ -660,6 +911,18 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
         public StateConfiguration OnExit(Func<IEnumerable<TCommand>> action)
         {
             _inner.OnExit(action);
+            return this;
+        }
+
+        public StateConfiguration SubStateOf(TState parentState)
+        {
+            _inner.SubStateOf(parentState);
+            return this;
+        }
+
+        public StateConfiguration StartsWith(TState initialSubState)
+        {
+            _inner.StartsWith(initialSubState);
             return this;
         }
 

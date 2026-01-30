@@ -6,28 +6,23 @@ public static class SessionLoginSample
 {
     public static StateMachine<SessionState, SessionTrigger, SessionData, SessionCommand> Build()
     {
-        var authMachine = StateMachine<AuthState, SessionTrigger, AuthData, SessionCommand>.Create()
-            .StartWith(AuthState.Anonymous)
-            .For(AuthState.Anonymous)
-                .On(SessionTrigger.Login)
-                    .TransitionTo(AuthState.Authenticated)
-                    .Execute(() => new AuthCommand.PerformLogin())
-                .For(AuthState.Authenticated)
-                    .On(SessionTrigger.Logout)
-                        .TransitionTo(AuthState.Anonymous)
-                        .Execute(() => new AuthCommand.PerformLogout())
-            .Build();
-
         return StateMachine<SessionState, SessionTrigger, SessionData, SessionCommand>.Create()
             .StartWith(SessionState.Active)
             .For(SessionState.Active)
-                .WithSubStateMachine(
-                    authMachine,
-                    data => data.Auth,
-                    (data, sub) => data with { Auth = sub })
+                .StartsWith(SessionState.Anonymous)
                 .On(SessionTrigger.Timeout)
                     .TransitionTo(SessionState.Expired)
                     .Execute(() => new SessionCommand.HandleTimeout())
+                .For(SessionState.Anonymous)
+                    .SubStateOf(SessionState.Active)
+                    .On(SessionTrigger.Login)
+                        .TransitionTo(SessionState.Authenticated)
+                        .Execute(() => new AuthCommand.PerformLogin())
+                .For(SessionState.Authenticated)
+                    .SubStateOf(SessionState.Active)
+                    .On(SessionTrigger.Logout)
+                        .TransitionTo(SessionState.Anonymous)
+                        .Execute(() => new AuthCommand.PerformLogout())
                 .For(SessionState.Expired)
                     .OnEntry(() => new SessionCommand.DisplayExpiredMessage())
             .Build();
@@ -37,11 +32,7 @@ public static class SessionLoginSample
 public enum SessionState
 {
     Active,
-    Expired
-}
-
-public enum AuthState
-{
+    Expired,
     Anonymous,
     Authenticated
 }
@@ -53,9 +44,7 @@ public enum SessionTrigger
     Timeout
 }
 
-public sealed record SessionData(SubState<AuthState, AuthData> Auth);
-
-public sealed record AuthData(string UserId);
+public sealed record SessionData(string UserId);
 
 public abstract record SessionCommand
 {

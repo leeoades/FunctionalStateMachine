@@ -72,10 +72,31 @@ public class StateMachineAdditionalTests
         Assert.Equal(2, commands.Count);
     }
 
+    [Fact]
+    public void TransitionToUnconfiguredState_DoesNotRunEntryActions()
+    {
+        var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
+            .For(State.Ready)
+                .OnExit(() => new LogCommand("Exit:Ready"))
+                .On(Trigger.Start)
+                    .TransitionTo(State.Stopped)
+                    .Execute(() => new LogCommand("Transition:Ready"))
+            .Build();
+        var current = new State<State, Data>(State.Ready, new Data("x"));
+
+        var (next, commands) = machine.Fire(Trigger.Start, current);
+
+        Assert.Equal(State.Stopped, next.Value);
+        Assert.Equal(2, commands.Count);
+        Assert.Equal("Exit:Ready", ((LogCommand)commands[0]).Message);
+        Assert.Equal("Transition:Ready", ((LogCommand)commands[1]).Message);
+    }
+
     private enum State
     {
         Ready,
-        Running
+        Running,
+        Stopped
     }
 
     private enum Trigger

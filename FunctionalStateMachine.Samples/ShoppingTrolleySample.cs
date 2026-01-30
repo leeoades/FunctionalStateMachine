@@ -1,82 +1,75 @@
+using FunctionalStateMachine.Core;
+using Xunit.Abstractions;
+
 namespace FunctionalStateMachine.Samples;
 
 public static class ShoppingTrolleySample
 {
     public static Core.StateMachine<ShopState, CartTrigger, CartSession, ShopCommand> Build()
     {
-        var shopMachine = Core.StateMachine<ShopPhase, CartTrigger, ShopData, ShopCommand>.Create()
-            .StartWith(ShopPhase.Shopping)
-            .For(ShopPhase.Shopping)
-            .On(CartTrigger.ForKind(CartTriggerKind.AddItem))
-            .WithData((state, trigger) =>
-            {
-                var items = new List<LineItem>(state.Data.Items);
-                if (trigger.Item != null)
-                {
-                    items.Add(trigger.Item);
-                }
-
-                return state.Data with { Items = items };
-            })
-            .Execute(state => new ShopCommand.UpdateCartItems(state.Data.Items))
-            .On(CartTrigger.ForKind(CartTriggerKind.RemoveItem))
-            .WithData((state, trigger) =>
-            {
-                var items = new List<LineItem>(state.Data.Items);
-                if (!string.IsNullOrWhiteSpace(trigger.Sku))
-                {
-                    items.RemoveAll(item => item.Sku == trigger.Sku);
-                }
-
-                return state.Data with { Items = items };
-            })
-            .Execute(state => new ShopCommand.UpdateCartItems(state.Data.Items))
-            .On(CartTrigger.ForKind(CartTriggerKind.GoToCheckout))
-            .TransitionTo(ShopPhase.CheckingOut)
-            .Execute(state => new ShopCommand.RequestPayment(state.Data.TotalPrice()))
-            .For(ShopPhase.CheckingOut)
-            .On(CartTrigger.ForKind(CartTriggerKind.Pay))
-            .TransitionTo(ShopPhase.PaymentPending)
-            .WithData(state => state.Data with { PaymentAttempts = state.Data.PaymentAttempts + 1 })
-            .Execute(() => new ShopCommand.DisplayPaymentPendingMessage())
-            .For(ShopPhase.PaymentPending)
-            .On(CartTrigger.ForKind(CartTriggerKind.PaymentFailed))
-            .TransitionTo(ShopPhase.CheckingOut)
-            .Execute(state =>
-            [
-                new ShopCommand.DisplayPaymentFailedMessage(),
-                new ShopCommand.RequestPayment(state.Data.TotalPrice())
-            ])
-            .Build();
-
         return Core.StateMachine<ShopState, CartTrigger, CartSession, ShopCommand>.Create()
             .StartWith(ShopState.Outside)
-            .For(ShopState.Outside)
-            .On(CartTrigger.ForKind(CartTriggerKind.StartShopping))
-            .WithData(state => state.Data with
-            {
-                Shop = new Core.SubState<ShopPhase, ShopData>(
-                    ShopPhase.Shopping,
-                    new ShopData([], 0))
-            })
-            .TransitionTo(ShopState.InStore)
             .For(ShopState.InStore)
-            .WithSubStateMachine(
-                shopMachine,
-                data => data.Shop,
-                (data, sub) => data with { Shop = sub })
-            .On(CartTrigger.ForKind(CartTriggerKind.Cancel))
-            .WithData(state => state.Data with
-            {
-                Shop = new Core.SubState<ShopPhase, ShopData>(
-                    ShopPhase.Shopping,
-                    new ShopData([], 0))
-            })
-            .TransitionTo(ShopState.Outside)
-            .On(CartTrigger.ForKind(CartTriggerKind.PaymentSucceeded))
-            .Guard(state => state.Data.Shop.Value == ShopPhase.PaymentPending)
-            .TransitionTo(ShopState.Outside)
-            .Execute(state => new ShopCommand.GrantItemOwnership(state.Data.Shop.Data.Items))
+                .StartsWith(ShopState.Shopping)
+                .On(CartTrigger.ForKind(CartTriggerKind.Cancel))
+                    .WithData(state => state.Data with { Shop = new ShopData([], 0) })
+                    .TransitionTo(ShopState.Outside)
+                .On(CartTrigger.ForKind(CartTriggerKind.PaymentSucceeded))
+                    .Guard(state => state.Value == ShopState.PaymentPending)
+                    .WithData(state => state.Data with { Shop = new ShopData([], 0) })
+                    .TransitionTo(ShopState.Outside)
+                    .Execute(state => new ShopCommand.GrantItemOwnership(state.Data.Shop.Items))
+            .For(ShopState.Outside)
+                .On(CartTrigger.ForKind(CartTriggerKind.StartShopping))
+                    .WithData(state => state.Data with { Shop = new ShopData([], 0) })
+                    .TransitionTo(ShopState.Shopping)
+            .For(ShopState.Shopping)
+                .SubStateOf(ShopState.InStore)
+                .On(CartTrigger.ForKind(CartTriggerKind.AddItem))
+                    .WithData((state, trigger) =>
+                    {
+                        var items = new List<LineItem>(state.Data.Shop.Items);
+                        if (trigger.Item != null)
+                        {
+                            items.Add(trigger.Item);
+                        }
+
+                        return state.Data with { Shop = state.Data.Shop with { Items = items } };
+                    })
+                    .Execute(state => new ShopCommand.UpdateCartItems(state.Data.Shop.Items))
+                .On(CartTrigger.ForKind(CartTriggerKind.RemoveItem))
+                    .WithData((state, trigger) =>
+                    {
+                        var items = new List<LineItem>(state.Data.Shop.Items);
+                        if (!string.IsNullOrWhiteSpace(trigger.Sku))
+                        {
+                            items.RemoveAll(item => item.Sku == trigger.Sku);
+                        }
+
+                        return state.Data with { Shop = state.Data.Shop with { Items = items } };
+                    })
+                    .Execute(state => new ShopCommand.UpdateCartItems(state.Data.Shop.Items))
+                .On(CartTrigger.ForKind(CartTriggerKind.GoToCheckout))
+                    .TransitionTo(ShopState.CheckingOut)
+                    .Execute(state => new ShopCommand.RequestPayment(state.Data.Shop.TotalPrice()))
+            .For(ShopState.CheckingOut)
+                .SubStateOf(ShopState.InStore)
+                .On(CartTrigger.ForKind(CartTriggerKind.Pay))
+                    .TransitionTo(ShopState.PaymentPending)
+                    .WithData(state => state.Data with
+                    {
+                        Shop = state.Data.Shop with { PaymentAttempts = state.Data.Shop.PaymentAttempts + 1 }
+                    })
+                    .Execute(() => new ShopCommand.DisplayPaymentPendingMessage())
+            .For(ShopState.PaymentPending)
+                .SubStateOf(ShopState.InStore)
+                .On(CartTrigger.ForKind(CartTriggerKind.PaymentFailed))
+                    .TransitionTo(ShopState.CheckingOut)
+                    .Execute(state =>
+                    [
+                        new ShopCommand.DisplayPaymentFailedMessage(),
+                        new ShopCommand.RequestPayment(state.Data.Shop.TotalPrice())
+                    ])
             .Build();
     }
 }
@@ -84,17 +77,13 @@ public static class ShoppingTrolleySample
 public enum ShopState
 {
     Outside,
-    InStore
-}
-
-public enum ShopPhase
-{
+    InStore,
     Shopping,
     CheckingOut,
     PaymentPending
 }
 
-public sealed record CartSession(Core.SubState<ShopPhase, ShopData> Shop);
+public sealed record CartSession(ShopData Shop);
 
 public sealed record ShopData(List<LineItem> Items, int PaymentAttempts)
 {
@@ -166,4 +155,49 @@ public abstract record ShopCommand
     public sealed record DisplayPaymentFailedMessage : ShopCommand;
 
     public sealed record GrantItemOwnership(IReadOnlyList<LineItem> Items) : ShopCommand;
+}
+
+public class ShoppingTrolleyDemo(ITestOutputHelper output)
+{
+    [Fact]
+    public void Demo()
+    {
+        var machine = ShoppingTrolleySample.Build();
+        var state = new State<ShopState, CartSession>(machine.InitialStateOrDefault(), new CartSession(new ShopData([], 0)));
+
+        state = Fire(CartTrigger.StartShopping(), state, machine);
+        state = Fire(CartTrigger.AddItem(new LineItem("Milk", 1.30m)), state, machine);
+        state = Fire(CartTrigger.AddItem(new LineItem("Bread", 0.80m)), state, machine);
+        state = Fire(CartTrigger.GoToCheckout(), state, machine);
+        state = Fire(CartTrigger.Pay(), state, machine);
+        state = Fire(CartTrigger.PaymentSucceeded(), state, machine);
+    }
+
+    private State<ShopState, CartSession> Fire(
+        CartTrigger trigger,
+        State<ShopState, CartSession> state,
+        StateMachine<ShopState, CartTrigger, CartSession, ShopCommand> machine)
+    {
+        var (newState, commands) = machine.Fire(trigger, state);
+        Run(commands);
+        return newState;
+    }
+
+    private void Run(IReadOnlyList<ShopCommand> commands)
+    {
+        foreach (var command in commands)
+        {
+            Print(command switch        
+            {
+                ShopCommand.UpdateCartItems update => $"Updated cart items: {string.Join(", ", update.Items)}",
+                ShopCommand.RequestPayment request => $"Requesting payment for {request.Total}",
+                ShopCommand.DisplayPaymentPendingMessage => "Payment pending...",
+                ShopCommand.DisplayPaymentFailedMessage => "Payment failed...",
+                ShopCommand.GrantItemOwnership grant => $"Purchase complete of {string.Join(", ", grant.Items)}",
+                _ => throw new ArgumentOutOfRangeException()
+            });
+        }
+    }
+    
+    private void Print(string s) => output.WriteLine(s);
 }

@@ -186,19 +186,24 @@ var machine = StateMachine<State, Trigger, Data, Command>.Create()
     .Build();
 ```
 
-### 11) Sub-state machines
+### 11) Hierarchical states
 
-Compose a state machine inside another with shared triggers.
+Declare parent/child relationships; parent transitions apply regardless of the current child. Parent states must declare `StartsWith` to choose the initial child.
 
 ```csharp
-var machine = StateMachine<ParentState, Trigger, ParentData, Command>.Create()
-    .For(ParentState.Active)
-        .WithSubStateMachine(
-            childMachine,
-            data => data.Child,
-            (data, sub) => data with { Child = sub })
+var machine = StateMachine<State, Trigger, Data, Command>.Create()
+    .For(State.Active)
+        .StartsWith(State.Anonymous)
         .On(Trigger.Timeout)
-            .TransitionTo(ParentState.Expired)
+            .TransitionTo(State.Expired)
+    .For(State.Anonymous)
+        .SubStateOf(State.Active)
+        .On(Trigger.Login)
+            .TransitionTo(State.Authenticated)
+    .For(State.Authenticated)
+        .SubStateOf(State.Active)
+        .On(Trigger.Logout)
+            .TransitionTo(State.Anonymous)
     .Build();
 ```
 

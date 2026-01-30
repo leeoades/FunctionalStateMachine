@@ -24,7 +24,11 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
         return new StateConfiguration(this, _machine.For(state));
     }
 
-    public StateMachine<TState, TTrigger, TData, TCommand> Build() => _machine;
+    public StateMachine<TState, TTrigger, TData, TCommand> Build()
+    {
+        _machine.Validate();
+        return _machine;
+    }
 
     public sealed class StateConfiguration
     {
@@ -126,13 +130,15 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
             return _builder.Build();
         }
 
-        public StateConfiguration WithSubStateMachine<TSubState, TSubData>(
-            StateMachine<TSubState, TTrigger, TSubData, TCommand> subMachine,
-            Func<TData, SubState<TSubState, TSubData>> getSubState,
-            Func<TData, SubState<TSubState, TSubData>, TData> setSubState)
-            where TSubState : notnull
+        public StateConfiguration SubStateOf(TState parentState)
         {
-            _inner.WithSubStateMachine(subMachine, getSubState, setSubState);
+            _inner.SubStateOf(parentState);
+            return this;
+        }
+
+        public StateConfiguration StartsWith(TState initialSubState)
+        {
+            _inner.StartsWith(initialSubState);
             return this;
         }
     }
@@ -281,7 +287,11 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
         return new StateConfiguration(this, _machine.For(state));
     }
 
-    public StateMachine<TState, TTrigger, TCommand> Build() => _machine;
+    public StateMachine<TState, TTrigger, TCommand> Build()
+    {
+        _machine.Validate();
+        return _machine;
+    }
 
     public sealed class StateConfiguration
     {
@@ -380,6 +390,18 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
         public StateMachine<TState, TTrigger, TCommand> Build()
         {
             return _builder.Build();
+        }
+
+        public StateConfiguration SubStateOf(TState parentState)
+        {
+            _inner.SubStateOf(parentState);
+            return this;
+        }
+
+        public StateConfiguration StartsWith(TState initialSubState)
+        {
+            _inner.StartsWith(initialSubState);
+            return this;
         }
     }
 

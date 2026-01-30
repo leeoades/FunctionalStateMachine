@@ -102,38 +102,76 @@ public class StateMachineTests
     }
 
     [Fact]
-    public void Fire_DelegatesToSubStateMachine()
+    public void Fire_UsesParentTransitions()
     {
-        var workerMachine = StateMachine<WorkerState, WorkerTrigger, WorkerData, TestCommand>.Create()
-            .For(WorkerState.Idle)
-                .On(WorkerTrigger.StartWork)
-                    .TransitionTo(WorkerState.Busy)
-                    .Execute(() => new LogCommand("Start"))
-                .For(WorkerState.Busy)
-                    .On(WorkerTrigger.CompleteWork)
-                        .TransitionTo(WorkerState.Idle)
-                        .Execute(() => new LogCommand("Complete"))
+        var machine = StateMachine<WorkState, WorkerTrigger, WorkerData, TestCommand>.Create()
+            .For(WorkState.Active)
+                .StartsWith(WorkState.Idle)
+                .OnExit(state => new LogCommand($"Exit:{state.Value}"))
+                .On(WorkerTrigger.Cancel)
+                    .TransitionTo(WorkState.Closed)
+                    .Execute(state => new LogCommand($"Transition:{state.Value}"))
+                .For(WorkState.Idle)
+                    .SubStateOf(WorkState.Active)
+                    .On(WorkerTrigger.StartWork)
+                        .TransitionTo(WorkState.Busy)
+                .For(WorkState.Busy)
+                    .SubStateOf(WorkState.Active)
+                    .OnExit(state => new LogCommand($"Exit:{state.Value}"))
+                .For(WorkState.Closed)
+                    .OnEntry(state => new LogCommand($"Entry:{state.Value}"))
             .Build();
+        var current = new State<WorkState, WorkerData>(WorkState.Busy, new WorkerData(0));
 
-        var machine = StateMachine<ParentState, WorkerTrigger, ParentData, TestCommand>.Create()
-            .For(ParentState.Active)
-                .WithSubStateMachine(
-                    workerMachine,
-                    data => data.Worker,
-                    (data, sub) => data with { Worker = sub })
-                .On(WorkerTrigger.CompleteWork)
-                    .TransitionTo(ParentState.Closed)
-                .For(ParentState.Closed)
+        var (next, commands) = machine.Fire(WorkerTrigger.Cancel, current);
+
+        Assert.Equal(WorkState.Closed, next.Value);
+        Assert.Equal(4, commands.Count);
+        Assert.Equal("Exit:Busy", ((LogCommand)commands[0]).Message);
+        Assert.Equal("Exit:Active", ((LogCommand)commands[1]).Message);
+        Assert.Equal("Transition:Busy", ((LogCommand)commands[2]).Message);
+        Assert.Equal("Entry:Closed", ((LogCommand)commands[3]).Message);
+    }
+
+    [Fact]
+    public void Fire_DoesNotRunParentExitEntryBetweenChildren()
+    {
+        var machine = StateMachine<WorkState, WorkerTrigger, WorkerData, TestCommand>.Create()
+            .For(WorkState.Active)
+                .StartsWith(WorkState.Idle)
+                .OnEntry(state => new LogCommand($"Entry:{state.Value}"))
+                .OnExit(state => new LogCommand($"Exit:{state.Value}"))
+                .For(WorkState.Idle)
+                    .SubStateOf(WorkState.Active)
+                    .OnExit(state => new LogCommand($"Exit:{state.Value}"))
+                    .On(WorkerTrigger.StartWork)
+                        .TransitionTo(WorkState.Busy)
+                        .Execute(state => new LogCommand($"Transition:{state.Value}"))
+                .For(WorkState.Busy)
+                    .SubStateOf(WorkState.Active)
+                    .OnEntry(state => new LogCommand($"Entry:{state.Value}"))
             .Build();
-        var parentData = new ParentData(new SubState<WorkerState, WorkerData>(WorkerState.Idle, new WorkerData(0)));
-        var current = new State<ParentState, ParentData>(ParentState.Active, parentData);
+        var current = new State<WorkState, WorkerData>(WorkState.Idle, new WorkerData(0));
 
-        var (next, commands) = machine.Fire(WorkerTrigger.StartWork, current);
+        var (_, commands) = machine.Fire(WorkerTrigger.StartWork, current);
 
-        Assert.Equal(ParentState.Active, next.Value);
-        Assert.Equal(WorkerState.Busy, next.Data.Worker.Value);
-        Assert.Single(commands);
-        Assert.IsType<LogCommand>(commands[0]);
+        Assert.Equal(3, commands.Count);
+        Assert.Equal("Exit:Idle", ((LogCommand)commands[0]).Message);
+        Assert.Equal("Transition:Idle", ((LogCommand)commands[1]).Message);
+        Assert.Equal("Entry:Busy", ((LogCommand)commands[2]).Message);
+    }
+
+    [Fact]
+    public void Build_ThrowsWhenParentHasNoInitialSubState()
+    {
+        var builder = StateMachine<WorkState, WorkerTrigger, WorkerData, TestCommand>.Create()
+            .For(WorkState.Active)
+                .On(WorkerTrigger.Cancel)
+                    .TransitionTo(WorkState.Closed)
+                .For(WorkState.Idle)
+                    .SubStateOf(WorkState.Active);
+
+        Assert.Throws<InvalidOperationException>(() => builder.Build());
     }
 
     [Fact]
@@ -175,14 +213,10 @@ public class StateMachineTests
 
     private sealed record LogCommand(string Message) : TestCommand;
 
-    private enum ParentState
+    private enum WorkState
     {
         Active,
-        Closed
-    }
-
-    private enum WorkerState
-    {
+        Closed,
         Idle,
         Busy
     }
@@ -190,10 +224,9 @@ public class StateMachineTests
     private enum WorkerTrigger
     {
         StartWork,
-        CompleteWork
+        CompleteWork,
+        Cancel
     }
 
     private sealed record WorkerData(int Count);
-
-    private sealed record ParentData(SubState<WorkerState, WorkerData> Worker);
 }
