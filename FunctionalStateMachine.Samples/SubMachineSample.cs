@@ -13,12 +13,11 @@ public static class SubMachineSample
         authBuilder.For(AuthState.Anonymous)
             .On(SessionTrigger.Login)
                 .TransitionTo(AuthState.Authenticated)
-                .Execute(() => new AuthCommand("Login"));
-
-        authBuilder.For(AuthState.Authenticated)
-            .On(SessionTrigger.Logout)
-                .TransitionTo(AuthState.Anonymous)
-                .Execute(() => new AuthCommand("Logout"));
+                .Execute(() => new AuthCommand("Login"))
+            .For(AuthState.Authenticated)
+                .On(SessionTrigger.Logout)
+                    .TransitionTo(AuthState.Anonymous)
+                    .Execute(() => new AuthCommand("Logout"));
 
         var authMachine = authBuilder.Build();
 
@@ -32,10 +31,9 @@ public static class SubMachineSample
                 (data, sub) => data with { Auth = sub })
             .On(SessionTrigger.Timeout)
                 .TransitionTo(SessionState.Expired)
-                .Execute(() => new SessionCommandBase("Timeout"));
-
-        builder.For(SessionState.Expired)
-            .OnEntry(() => new SessionCommandBase("ExpiredEntry"));
+                .Execute(() => new SessionCommandBase("Timeout"))
+            .For(SessionState.Expired)
+                .OnEntry(() => new SessionCommandBase("ExpiredEntry"));
 
         return builder.Build();
     }

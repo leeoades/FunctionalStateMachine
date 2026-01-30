@@ -22,13 +22,12 @@ public static class FraudReviewSample
                 .Execute(() => new NotifyCommand("Auto-approved"))
                 .Execute((ReviewTrigger trigger) => new AuditReviewCommand($"Trigger:{trigger}"))
                 .Execute(state => new AuditReviewCommand($"Case:{state.Data.CaseId}"))
-                .Execute(state => new NotifyCommand($"Approved {state.Data.CaseId}"));
-
-        builder.For(ReviewState.Manual)
-            .On(ReviewTrigger.Approve)
-                .TransitionTo(ReviewState.Completed)
-                .Execute(state => new ReviewCompletedCommand(state.Data.CaseId))
-                .Execute(() => [new NotifyCommand("Manual approved"), new AuditReviewCommand("Manual path")]);
+                .Execute(state => new NotifyCommand($"Approved {state.Data.CaseId}"))
+            .For(ReviewState.Manual)
+                .On(ReviewTrigger.Approve)
+                    .TransitionTo(ReviewState.Completed)
+                    .Execute(state => new ReviewCompletedCommand(state.Data.CaseId))
+                    .Execute(() => [new NotifyCommand("Manual approved"), new AuditReviewCommand("Manual path")]);
 
         return builder.Build();
     }

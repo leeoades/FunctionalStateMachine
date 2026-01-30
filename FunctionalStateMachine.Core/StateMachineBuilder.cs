@@ -21,17 +21,21 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
 
     public StateConfiguration For(TState state)
     {
-        return new StateConfiguration(_machine.For(state));
+        return new StateConfiguration(this, _machine.For(state));
     }
 
     public StateMachine<TState, TTrigger, TData, TCommand> Build() => _machine;
 
     public sealed class StateConfiguration
     {
+        private readonly StateMachineBuilder<TState, TTrigger, TData, TCommand> _builder;
         private readonly StateMachine<TState, TTrigger, TData, TCommand>.StateConfiguration _inner;
 
-        internal StateConfiguration(StateMachine<TState, TTrigger, TData, TCommand>.StateConfiguration inner)
+        internal StateConfiguration(
+            StateMachineBuilder<TState, TTrigger, TData, TCommand> builder,
+            StateMachine<TState, TTrigger, TData, TCommand>.StateConfiguration inner)
         {
+            _builder = builder;
             _inner = inner;
         }
 
@@ -110,6 +114,11 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
         public TransitionConfiguration On(TTrigger trigger)
         {
             return new TransitionConfiguration(this, _inner.On(trigger));
+        }
+
+        public StateConfiguration For(TState state)
+        {
+            return _builder.For(state);
         }
 
         public StateConfiguration WithSubStateMachine<TSubState, TSubData>(
@@ -230,6 +239,11 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
         {
             return _parent.On(trigger);
         }
+
+        public StateConfiguration For(TState state)
+        {
+            return _parent.For(state);
+        }
     }
 }
 
@@ -254,17 +268,21 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
 
     public StateConfiguration For(TState state)
     {
-        return new StateConfiguration(_machine.For(state));
+        return new StateConfiguration(this, _machine.For(state));
     }
 
     public StateMachine<TState, TTrigger, TCommand> Build() => _machine;
 
     public sealed class StateConfiguration
     {
+        private readonly StateMachineBuilder<TState, TTrigger, TCommand> _builder;
         private readonly StateMachine<TState, TTrigger, TCommand>.StateConfiguration _inner;
 
-        internal StateConfiguration(StateMachine<TState, TTrigger, TCommand>.StateConfiguration inner)
+        internal StateConfiguration(
+            StateMachineBuilder<TState, TTrigger, TCommand> builder,
+            StateMachine<TState, TTrigger, TCommand>.StateConfiguration inner)
         {
+            _builder = builder;
             _inner = inner;
         }
 
@@ -342,6 +360,11 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
         public TransitionConfiguration On(TTrigger trigger)
         {
             return new TransitionConfiguration(this, _inner.On(trigger));
+        }
+
+        public StateConfiguration For(TState state)
+        {
+            return _builder.For(state);
         }
     }
 
@@ -445,6 +468,11 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
         public TransitionConfiguration On(TTrigger trigger)
         {
             return _parent.On(trigger);
+        }
+
+        public StateConfiguration For(TState state)
+        {
+            return _parent.For(state);
         }
     }
 }

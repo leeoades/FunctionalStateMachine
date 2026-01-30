@@ -288,6 +288,11 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
             return new TransitionConfiguration(this, transition);
         }
 
+        public StateConfiguration For(TState state)
+        {
+            return _machine.For(state);
+        }
+
         public StateConfiguration WithSubStateMachine<TSubState, TSubData>(
             StateMachine<TSubState, TTrigger, TSubData, TCommand> subMachine,
             Func<TData, SubState<TSubState, TSubData>> getSubState,
@@ -405,6 +410,11 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
         public TransitionConfiguration On(TTrigger trigger)
         {
             return _parent.On(trigger);
+        }
+
+        public StateConfiguration For(TState state)
+        {
+            return _parent.For(state);
         }
     }
 
@@ -541,7 +551,7 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
 
     internal StateConfiguration For(TState state)
     {
-        return new StateConfiguration(_inner.For(state));
+        return new StateConfiguration(this, _inner.For(state));
     }
 
     public (State<TState, NoData> NewState, IReadOnlyList<TCommand> Commands) Fire(
@@ -571,10 +581,14 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
 
     internal sealed class StateConfiguration
     {
+        private readonly StateMachine<TState, TTrigger, TCommand> _machine;
         private readonly StateMachine<TState, TTrigger, NoData, TCommand>.StateConfiguration _inner;
 
-        internal StateConfiguration(StateMachine<TState, TTrigger, NoData, TCommand>.StateConfiguration inner)
+        internal StateConfiguration(
+            StateMachine<TState, TTrigger, TCommand> machine,
+            StateMachine<TState, TTrigger, NoData, TCommand>.StateConfiguration inner)
         {
+            _machine = machine;
             _inner = inner;
         }
 
@@ -652,6 +666,11 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
         public TransitionConfiguration On(TTrigger trigger)
         {
             return new TransitionConfiguration(this, _inner.On(trigger));
+        }
+
+        public StateConfiguration For(TState state)
+        {
+            return _machine.For(state);
         }
     }
 
@@ -755,6 +774,11 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
         public TransitionConfiguration On(TTrigger trigger)
         {
             return _parent.On(trigger);
+        }
+
+        public StateConfiguration For(TState state)
+        {
+            return _parent.For(state);
         }
     }
 }

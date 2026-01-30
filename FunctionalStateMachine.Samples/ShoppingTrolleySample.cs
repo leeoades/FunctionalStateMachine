@@ -9,16 +9,16 @@ public static class ShoppingTrolleySample
 
         shopBuilder.For(ShopPhase.Shopping)
             .On(CartTrigger.ForKind(CartTriggerKind.AddItem))
-            .WithData((state, trigger) =>
-            {
-                var items = new List<LineItem>(state.Data.Items);
-                if (trigger.Item != null)
+                .WithData((state, trigger) =>
                 {
-                    items.Add(trigger.Item);
-                }
-                return state.Data with { Items = items };
-            })
-            .Execute(state => new CartUpdatedCommand(state.Data.Items))
+                    var items = new List<LineItem>(state.Data.Items);
+                    if (trigger.Item != null)
+                    {
+                        items.Add(trigger.Item);
+                    }
+                    return state.Data with { Items = items };
+                })
+                .Execute(state => new CartUpdatedCommand(state.Data.Items))
             .On(CartTrigger.ForKind(CartTriggerKind.RemoveItem))
                 .WithData((state, trigger) =>
                 {
@@ -32,18 +32,16 @@ public static class ShoppingTrolleySample
                 .Execute(state => new CartUpdatedCommand(state.Data.Items))
             .On(CartTrigger.ForKind(CartTriggerKind.GoToCheckout))
                 .TransitionTo(ShopPhase.CheckingOut)
-                .Execute(state => new TotalCalculatedCommand(state.Data.TotalPrice()));
-
-        shopBuilder.For(ShopPhase.CheckingOut)
-            .On(CartTrigger.ForKind(CartTriggerKind.Pay))
-                .TransitionTo(ShopPhase.PaymentPending)
-                .WithData(state => state.Data with { PaymentAttempts = state.Data.PaymentAttempts + 1 })
-                .Execute(() => new PaymentRequestedCommand());
-
-        shopBuilder.For(ShopPhase.PaymentPending)
-            .On(CartTrigger.ForKind(CartTriggerKind.PaymentFailed))
-                .TransitionTo(ShopPhase.CheckingOut)
-                .Execute(() => new PaymentFailedCommand());
+                .Execute(state => new TotalCalculatedCommand(state.Data.TotalPrice()))
+            .For(ShopPhase.CheckingOut)
+                .On(CartTrigger.ForKind(CartTriggerKind.Pay))
+                    .TransitionTo(ShopPhase.PaymentPending)
+                    .WithData(state => state.Data with { PaymentAttempts = state.Data.PaymentAttempts + 1 })
+                    .Execute(() => new PaymentRequestedCommand())
+                .For(ShopPhase.PaymentPending)
+                    .On(CartTrigger.ForKind(CartTriggerKind.PaymentFailed))
+                        .TransitionTo(ShopPhase.CheckingOut)
+                        .Execute(() => new PaymentFailedCommand());
 
         var shopMachine = shopBuilder.Build();
 
@@ -58,25 +56,24 @@ public static class ShoppingTrolleySample
                         ShopPhase.Shopping,
                         new ShopData([], 0))
                 })
-                .TransitionTo(ShopState.InStore);
-
-        builder.For(ShopState.InStore)
-            .WithSubStateMachine(
-                shopMachine,
-                data => data.Shop,
-                (data, sub) => data with { Shop = sub })
-            .On(CartTrigger.ForKind(CartTriggerKind.Cancel))
-                .WithData(state => state.Data with
-                {
-                    Shop = new Core.SubState<ShopPhase, ShopData>(
-                        ShopPhase.Shopping,
-                        new ShopData([], 0))
-                })
-                .TransitionTo(ShopState.Outside)
-            .On(CartTrigger.ForKind(CartTriggerKind.PaymentSucceeded))
-                .Guard(state => state.Data.Shop.Value == ShopPhase.PaymentPending)
-                .TransitionTo(ShopState.Outside)
-                .Execute(state => new OwnershipGrantedCommand(state.Data.Shop.Data.Items));
+                .TransitionTo(ShopState.InStore)
+            .For(ShopState.InStore)
+                .WithSubStateMachine(
+                    shopMachine,
+                    data => data.Shop,
+                    (data, sub) => data with { Shop = sub })
+                .On(CartTrigger.ForKind(CartTriggerKind.Cancel))
+                    .WithData(state => state.Data with
+                    {
+                        Shop = new Core.SubState<ShopPhase, ShopData>(
+                            ShopPhase.Shopping,
+                            new ShopData([], 0))
+                    })
+                    .TransitionTo(ShopState.Outside)
+                .On(CartTrigger.ForKind(CartTriggerKind.PaymentSucceeded))
+                    .Guard(state => state.Data.Shop.Value == ShopPhase.PaymentPending)
+                    .TransitionTo(ShopState.Outside)
+                    .Execute(state => new OwnershipGrantedCommand(state.Data.Shop.Data.Items));
 
         return builder.Build();
     }

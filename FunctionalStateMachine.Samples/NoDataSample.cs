@@ -13,12 +13,11 @@ public static class NoDataSample
         builder.For(LightState.Off)
             .On(LightTrigger.Toggle)
                 .TransitionTo(LightState.On)
-                .Execute(() => new LightCommandBase("On"));
-
-        builder.For(LightState.On)
-            .On(LightTrigger.Toggle)
-                .TransitionTo(LightState.Off)
-                .Execute(() => new LightCommandBase("Off"));
+                .Execute(() => new LightCommandBase("On"))
+            .For(LightState.On)
+                .On(LightTrigger.Toggle)
+                    .TransitionTo(LightState.Off)
+                    .Execute(() => new LightCommandBase("Off"));
 
         return builder.Build();
     }

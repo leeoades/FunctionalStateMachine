@@ -16,12 +16,11 @@ public static class IgnoreAndUnhandledSample
                 .TransitionTo(QueueState.HasItems)
                 .Execute(state => new EnqueueCommand(state.Data.QueueId))
             .On(QueueTrigger.Peek)
-                .Ignore();
-
-        builder.For(QueueState.HasItems)
-            .On(QueueTrigger.Dequeue)
-                .TransitionTo(QueueState.Empty)
-                .Execute(state => new DequeueCommand(state.Data.QueueId));
+                .Ignore()
+            .For(QueueState.HasItems)
+                .On(QueueTrigger.Dequeue)
+                    .TransitionTo(QueueState.Empty)
+                    .Execute(state => new DequeueCommand(state.Data.QueueId));
 
         return builder.Build();
     }

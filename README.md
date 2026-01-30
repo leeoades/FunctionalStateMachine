@@ -16,12 +16,11 @@ builder.For(OrderState.Created)
     .OnEntry(state => new AuditCommand($"Entering {state.Value}"))
     .On(OrderTrigger.Pay)
         .TransitionTo(OrderState.Paid)
-        .Execute(state => new ChargeCommand(state.Data.OrderId));
-
-builder.For(OrderState.Paid)
-    .On(OrderTrigger.Ship)
-        .TransitionTo(OrderState.Shipped)
-        .Execute(state => new ShipCommand(state.Data.OrderId));
+        .Execute(state => new ChargeCommand(state.Data.OrderId))
+    .For(OrderState.Paid)
+        .On(OrderTrigger.Ship)
+            .TransitionTo(OrderState.Shipped)
+            .Execute(state => new ShipCommand(state.Data.OrderId));
 
 var machine = builder.Build();
 

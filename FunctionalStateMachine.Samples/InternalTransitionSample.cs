@@ -15,11 +15,10 @@ public static class InternalTransitionSample
             .OnExit(() => new TimerLogCommand("Stop"))
             .On(TimerTrigger.Tick)
                 .WithData(state => state.Data with { Ticks = state.Data.Ticks + 1 })
-                .Execute(state => new TimerLogCommand($"Tick:{state.Data.Ticks + 1}"));
-
-        builder.For(TimerState.Paused)
-            .On(TimerTrigger.Resume)
-                .TransitionTo(TimerState.Running);
+                .Execute(state => new TimerLogCommand($"Tick:{state.Data.Ticks + 1}"))
+            .For(TimerState.Paused)
+                .On(TimerTrigger.Resume)
+                    .TransitionTo(TimerState.Running);
 
         return builder.Build();
     }

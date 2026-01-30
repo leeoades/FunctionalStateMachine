@@ -15,12 +15,11 @@ public static class OrderProcessingSample
             .OnExit(state => new AuditCommand($"Leaving {state.Value}"))
             .On(OrderTrigger.Pay)
                 .TransitionTo(OrderState.Paid)
-                .Execute(state => new ChargeCommand(state.Data.OrderId));
-
-        builder.For(OrderState.Paid)
-            .On(OrderTrigger.Ship)
-                .TransitionTo(OrderState.Shipped)
-                .Execute(state => new ShipCommand(state.Data.OrderId));
+                .Execute(state => new ChargeCommand(state.Data.OrderId))
+            .For(OrderState.Paid)
+                .On(OrderTrigger.Ship)
+                    .TransitionTo(OrderState.Shipped)
+                    .Execute(state => new ShipCommand(state.Data.OrderId));
 
         return builder.Build();
     }

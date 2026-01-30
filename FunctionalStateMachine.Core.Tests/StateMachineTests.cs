@@ -34,10 +34,9 @@ public class StateMachineTests
             .OnExit(state => new LogCommand($"Exit:{state.Value}"))
             .On(OrderTrigger.Pay)
                 .TransitionTo(OrderState.Paid)
-                .Execute(state => new LogCommand($"Transition:{state.Value}"));
-
-        builder.For(OrderState.Paid)
-            .OnEntry(state => new LogCommand($"Entry:{state.Value}"));
+                .Execute(state => new LogCommand($"Transition:{state.Value}"))
+            .For(OrderState.Paid)
+                .OnEntry(state => new LogCommand($"Entry:{state.Value}"));
 
         var machine = builder.Build();
         var current = new State<OrderState, OrderData>(OrderState.Created, new OrderData("A-200", "none"));
@@ -122,12 +121,11 @@ public class StateMachineTests
         workerBuilder.For(WorkerState.Idle)
             .On(WorkerTrigger.StartWork)
                 .TransitionTo(WorkerState.Busy)
-                .Execute(() => new LogCommand("Start"));
-
-        workerBuilder.For(WorkerState.Busy)
-            .On(WorkerTrigger.CompleteWork)
-                .TransitionTo(WorkerState.Idle)
-                .Execute(() => new LogCommand("Complete"));
+                .Execute(() => new LogCommand("Start"))
+            .For(WorkerState.Busy)
+                .On(WorkerTrigger.CompleteWork)
+                    .TransitionTo(WorkerState.Idle)
+                    .Execute(() => new LogCommand("Complete"));
 
         var workerMachine = workerBuilder.Build();
         var builder = StateMachine<ParentState, WorkerTrigger, ParentData, TestCommand>.Create();
@@ -138,9 +136,8 @@ public class StateMachineTests
                 data => data.Worker,
                 (data, sub) => data with { Worker = sub })
             .On(WorkerTrigger.CompleteWork)
-                .TransitionTo(ParentState.Closed);
-
-        builder.For(ParentState.Closed);
+                .TransitionTo(ParentState.Closed)
+            .For(ParentState.Closed);
 
         var machine = builder.Build();
         var parentData = new ParentData(new SubState<WorkerState, WorkerData>(WorkerState.Idle, new WorkerData(0)));
