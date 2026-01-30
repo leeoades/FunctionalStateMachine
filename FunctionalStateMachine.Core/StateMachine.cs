@@ -116,7 +116,8 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
                 AppendExitCommands(commandList, current.Value, targetState, current.Data);
             }
 
-            AppendTransitionCommands(commandList, transition.Actions, current, trigger);
+            var actionState = new State<TState, TData>(current.Value, updatedData);
+            AppendTransitionCommands(commandList, transition.Actions, actionState, trigger);
 
             if (isStateChange)
             {

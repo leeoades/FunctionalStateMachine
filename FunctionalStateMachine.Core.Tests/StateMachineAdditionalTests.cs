@@ -73,6 +73,23 @@ public class StateMachineAdditionalTests
     }
 
     [Fact]
+    public void Execute_UsesUpdatedDataFromWithData()
+    {
+        var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
+            .For(State.Ready)
+                .On(Trigger.Start)
+                    .WithData(state => state.Data with { Id = "updated" })
+                    .Execute(state => new LogCommand(state.Data.Id))
+            .Build();
+        var current = new State<State, Data>(State.Ready, new Data("original"));
+
+        var (_, commands) = machine.Fire(Trigger.Start, current);
+
+        Assert.Single(commands);
+        Assert.Equal("updated", ((LogCommand)commands[0]).Message);
+    }
+
+    [Fact]
     public void TransitionToUnconfiguredState_DoesNotRunEntryActions()
     {
         var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
