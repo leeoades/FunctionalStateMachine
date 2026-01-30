@@ -401,6 +401,11 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
         {
             return _parent;
         }
+
+        public TransitionConfiguration On(TTrigger trigger)
+        {
+            return _parent.On(trigger);
+        }
     }
 
     internal sealed class StateDefinition
@@ -745,6 +750,11 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
         {
             _inner.Done();
             return _parent;
+        }
+
+        public TransitionConfiguration On(TTrigger trigger)
+        {
+            return _parent.On(trigger);
         }
     }
 }

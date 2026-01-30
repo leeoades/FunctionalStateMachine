@@ -10,20 +10,19 @@ public static class FraudReviewSample
         var builder = StateMachine<ReviewState, ReviewTrigger, ReviewData, ReviewCommand>.Create()
             .StartWith(ReviewState.Pending);
 
-        var pending = builder.For(ReviewState.Pending);
-        pending.On(ReviewTrigger.Submit)
-            .Guard(state => state.Data.RiskScore > 70)
-            .WithData(state => state.Data with { Notes = "High risk" })
-            .TransitionTo(ReviewState.Manual)
-            .Execute(state => new AuditReviewCommand($"Escalated {state.Data.CaseId}"));
-
-        pending.On(ReviewTrigger.Submit)
-            .Guard(state => state.Data.RiskScore <= 70)
-            .TransitionTo(ReviewState.AutoApproved)
-            .Execute(() => new NotifyCommand("Auto-approved"))
-            .Execute((ReviewTrigger trigger) => new AuditReviewCommand($"Trigger:{trigger}"))
-            .Execute(state => new AuditReviewCommand($"Case:{state.Data.CaseId}"))
-            .Execute(state => new NotifyCommand($"Approved {state.Data.CaseId}"));
+        builder.For(ReviewState.Pending)
+            .On(ReviewTrigger.Submit)
+                .Guard(state => state.Data.RiskScore > 70)
+                .WithData(state => state.Data with { Notes = "High risk" })
+                .TransitionTo(ReviewState.Manual)
+                .Execute(state => new AuditReviewCommand($"Escalated {state.Data.CaseId}"))
+            .On(ReviewTrigger.Submit)
+                .Guard(state => state.Data.RiskScore <= 70)
+                .TransitionTo(ReviewState.AutoApproved)
+                .Execute(() => new NotifyCommand("Auto-approved"))
+                .Execute((ReviewTrigger trigger) => new AuditReviewCommand($"Trigger:{trigger}"))
+                .Execute(state => new AuditReviewCommand($"Case:{state.Data.CaseId}"))
+                .Execute(state => new NotifyCommand($"Approved {state.Data.CaseId}"));
 
         builder.For(ReviewState.Manual)
             .On(ReviewTrigger.Approve)

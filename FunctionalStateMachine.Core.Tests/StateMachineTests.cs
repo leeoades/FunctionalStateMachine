@@ -53,15 +53,13 @@ public class StateMachineTests
     public void Fire_UsesGuardsInOrder()
     {
         var builder = StateMachine<OrderState, OrderTrigger, OrderData, TestCommand>.Create();
-        var created = builder.For(OrderState.Created);
-
-        created.On(OrderTrigger.Pay)
-            .Guard((state, trigger) => state.Data.OrderId.StartsWith("B"))
-            .TransitionTo(OrderState.Cancelled);
-
-        created.On(OrderTrigger.Pay)
-            .Guard((state, trigger) => state.Data.OrderId.StartsWith("A"))
-            .TransitionTo(OrderState.Paid);
+        builder.For(OrderState.Created)
+            .On(OrderTrigger.Pay)
+                .Guard((state, trigger) => state.Data.OrderId.StartsWith("B"))
+                .TransitionTo(OrderState.Cancelled)
+            .On(OrderTrigger.Pay)
+                .Guard((state, trigger) => state.Data.OrderId.StartsWith("A"))
+                .TransitionTo(OrderState.Paid);
 
         var machine = builder.Build();
         var current = new State<OrderState, OrderData>(OrderState.Created, new OrderData("A-300", "none"));

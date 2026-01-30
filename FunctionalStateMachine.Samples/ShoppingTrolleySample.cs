@@ -7,8 +7,8 @@ public static class ShoppingTrolleySample
         var shopBuilder = Core.StateMachine<ShopPhase, CartTrigger, ShopData, ShopCommand>.Create()
             .StartWith(ShopPhase.Shopping);
 
-        var shopping = shopBuilder.For(ShopPhase.Shopping);
-        shopping.On(CartTrigger.ForKind(CartTriggerKind.AddItem))
+        shopBuilder.For(ShopPhase.Shopping)
+            .On(CartTrigger.ForKind(CartTriggerKind.AddItem))
             .WithData((state, trigger) =>
             {
                 var items = new List<LineItem>(state.Data.Items);
@@ -18,23 +18,21 @@ public static class ShoppingTrolleySample
                 }
                 return state.Data with { Items = items };
             })
-            .Execute(state => new CartUpdatedCommand(state.Data.Items));
-
-        shopping.On(CartTrigger.ForKind(CartTriggerKind.RemoveItem))
-            .WithData((state, trigger) =>
-            {
-                var items = new List<LineItem>(state.Data.Items);
-                if (!string.IsNullOrWhiteSpace(trigger.Sku))
+            .Execute(state => new CartUpdatedCommand(state.Data.Items))
+            .On(CartTrigger.ForKind(CartTriggerKind.RemoveItem))
+                .WithData((state, trigger) =>
                 {
-                    items.RemoveAll(item => item.Sku == trigger.Sku);
-                }
-                return state.Data with { Items = items };
-            })
-            .Execute(state => new CartUpdatedCommand(state.Data.Items));
-
-        shopping.On(CartTrigger.ForKind(CartTriggerKind.GoToCheckout))
-            .TransitionTo(ShopPhase.CheckingOut)
-            .Execute(state => new TotalCalculatedCommand(state.Data.TotalPrice()));
+                    var items = new List<LineItem>(state.Data.Items);
+                    if (!string.IsNullOrWhiteSpace(trigger.Sku))
+                    {
+                        items.RemoveAll(item => item.Sku == trigger.Sku);
+                    }
+                    return state.Data with { Items = items };
+                })
+                .Execute(state => new CartUpdatedCommand(state.Data.Items))
+            .On(CartTrigger.ForKind(CartTriggerKind.GoToCheckout))
+                .TransitionTo(ShopPhase.CheckingOut)
+                .Execute(state => new TotalCalculatedCommand(state.Data.TotalPrice()));
 
         shopBuilder.For(ShopPhase.CheckingOut)
             .On(CartTrigger.ForKind(CartTriggerKind.Pay))
@@ -62,25 +60,23 @@ public static class ShoppingTrolleySample
                 })
                 .TransitionTo(ShopState.InStore);
 
-        var inStore = builder.For(ShopState.InStore)
+        builder.For(ShopState.InStore)
             .WithSubStateMachine(
                 shopMachine,
                 data => data.Shop,
-                (data, sub) => data with { Shop = sub });
-
-        inStore.On(CartTrigger.ForKind(CartTriggerKind.Cancel))
-            .WithData(state => state.Data with
-            {
-                Shop = new Core.SubState<ShopPhase, ShopData>(
-                    ShopPhase.Shopping,
-                    new ShopData([], 0))
-            })
-            .TransitionTo(ShopState.Outside);
-
-        inStore.On(CartTrigger.ForKind(CartTriggerKind.PaymentSucceeded))
-            .Guard((state, trigger) => state.Data.Shop.Value == ShopPhase.PaymentPending)
-            .TransitionTo(ShopState.Outside)
-            .Execute(state => new OwnershipGrantedCommand(state.Data.Shop.Data.Items));
+                (data, sub) => data with { Shop = sub })
+            .On(CartTrigger.ForKind(CartTriggerKind.Cancel))
+                .WithData(state => state.Data with
+                {
+                    Shop = new Core.SubState<ShopPhase, ShopData>(
+                        ShopPhase.Shopping,
+                        new ShopData([], 0))
+                })
+                .TransitionTo(ShopState.Outside)
+            .On(CartTrigger.ForKind(CartTriggerKind.PaymentSucceeded))
+                .Guard(state => state.Data.Shop.Value == ShopPhase.PaymentPending)
+                .TransitionTo(ShopState.Outside)
+                .Execute(state => new OwnershipGrantedCommand(state.Data.Shop.Data.Items));
 
         return builder.Build();
     }

@@ -11,12 +11,12 @@ public static class IgnoreAndUnhandledSample
             .StartWith(QueueState.Empty)
             .OnUnhandled((trigger, state) => state.Data.Log.Add($"Unhandled:{trigger}"));
 
-        var empty = builder.For(QueueState.Empty);
-        empty.On(QueueTrigger.Enqueue)
-            .TransitionTo(QueueState.HasItems)
-            .Execute(state => new EnqueueCommand(state.Data.QueueId));
-        empty.On(QueueTrigger.Peek)
-            .Ignore();
+        builder.For(QueueState.Empty)
+            .On(QueueTrigger.Enqueue)
+                .TransitionTo(QueueState.HasItems)
+                .Execute(state => new EnqueueCommand(state.Data.QueueId))
+            .On(QueueTrigger.Peek)
+                .Ignore();
 
         builder.For(QueueState.HasItems)
             .On(QueueTrigger.Dequeue)

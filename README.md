@@ -80,13 +80,13 @@ builder.For(State.Ready)
 You can define multiple transitions for a trigger and gate them with guards.
 
 ```csharp
-var pending = builder.For(State.Pending);
-pending.On(Trigger.Submit)
-    .Guard((state, trigger) => state.Data.Score > 70)
-    .TransitionTo(State.Manual);
-pending.On(Trigger.Submit)
-    .Guard((state, trigger) => state.Data.Score <= 70)
-    .TransitionTo(State.Approved);
+builder.For(State.Pending)
+    .On(Trigger.Submit)
+        .Guard((state, trigger) => state.Data.Score > 70)
+        .TransitionTo(State.Manual)
+    .On(Trigger.Submit)
+        .Guard((state, trigger) => state.Data.Score <= 70)
+        .TransitionTo(State.Approved);
 ```
 
 ### 5) Update state data during transitions

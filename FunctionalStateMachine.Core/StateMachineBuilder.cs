@@ -225,6 +225,11 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
             _inner.Done();
             return _parent;
         }
+
+        public TransitionConfiguration On(TTrigger trigger)
+        {
+            return _parent.On(trigger);
+        }
     }
 }
 
@@ -435,6 +440,11 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
         {
             _inner.Done();
             return _parent;
+        }
+
+        public TransitionConfiguration On(TTrigger trigger)
+        {
+            return _parent.On(trigger);
         }
     }
 }
