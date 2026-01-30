@@ -90,6 +90,22 @@ public class StateMachineAdditionalTests
     }
 
     [Fact]
+    public void DerivedTrigger_MatchesByType()
+    {
+        var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
+            .For(State.Ready)
+                .On<Trigger.WithIdTrigger>()
+                    .Execute((state, trigger) => new LogCommand(trigger.Id))
+            .Build();
+        var current = new State<State, Data>(State.Ready, new Data("original"));
+
+        var (_, commands) = machine.Fire(Trigger.WithId("new-id"), current);
+
+        Assert.Single(commands);
+        Assert.Equal("new-id", ((LogCommand)commands[0]).Message);
+    }
+
+    [Fact]
     public void TransitionToUnconfiguredState_DoesNotRunEntryActions()
     {
         var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
@@ -116,10 +132,16 @@ public class StateMachineAdditionalTests
         Stopped
     }
 
-    private enum Trigger
+    private abstract record Trigger
     {
-        Start,
-        Tick
+        public sealed record StartTrigger : Trigger;
+        public sealed record TickTrigger : Trigger;
+        public sealed record WithIdTrigger(string Id) : Trigger;
+
+        public static readonly Trigger Start = new StartTrigger();
+        public static readonly Trigger Tick = new TickTrigger();
+
+        public static Trigger WithId(string id) => new WithIdTrigger(id);
     }
 
     private sealed record Data(string Id);

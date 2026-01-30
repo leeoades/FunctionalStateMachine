@@ -11,50 +11,44 @@ public static class ShoppingTrolleySample
             .StartWith(ShopState.Outside)
             .For(ShopState.InStore)
                 .StartsWith(ShopState.Shopping)
-                .On(CartTrigger.ForKind(CartTriggerKind.Cancel))
+                .On<CartTrigger.CancelTrigger>()
                     .WithData(state => state.Data with { Shop = new ShopData([], 0) })
                     .TransitionTo(ShopState.Outside)
-                .On(CartTrigger.ForKind(CartTriggerKind.PaymentSucceeded))
+                .On<CartTrigger.PaymentSucceededTrigger>()
                     .Guard(state => state.Value == ShopState.PaymentPending)
                     .WithData(state => state.Data with { Shop = new ShopData([], 0) })
                     .TransitionTo(ShopState.Outside)
                     .Execute(state => new ShopCommand.GrantItemOwnership(state.Data.Shop.Items))
             .For(ShopState.Outside)
-                .On(CartTrigger.ForKind(CartTriggerKind.StartShopping))
+                .On<CartTrigger.StartShoppingTrigger>()
                     .WithData(state => state.Data with { Shop = new ShopData([], 0) })
                     .TransitionTo(ShopState.Shopping)
             .For(ShopState.Shopping)
                 .SubStateOf(ShopState.InStore)
-                .On(CartTrigger.ForKind(CartTriggerKind.AddItem))
+                .On<CartTrigger.AddItemTrigger>()
                     .WithData((state, trigger) =>
                     {
                         var items = new List<LineItem>(state.Data.Shop.Items);
-                        if (trigger.Item != null)
-                        {
-                            items.Add(trigger.Item);
-                        }
+                        items.Add(trigger.Item);
 
                         return state.Data with { Shop = state.Data.Shop with { Items = items } };
                     })
                     .Execute(state => new ShopCommand.UpdateCartItems(state.Data.Shop.Items))
-                .On(CartTrigger.ForKind(CartTriggerKind.RemoveItem))
+                .On<CartTrigger.RemoveItemTrigger>()
                     .WithData((state, trigger) =>
                     {
                         var items = new List<LineItem>(state.Data.Shop.Items);
-                        if (!string.IsNullOrWhiteSpace(trigger.Sku))
-                        {
-                            items.RemoveAll(item => item.Sku == trigger.Sku);
-                        }
+                        items.RemoveAll(item => item.Sku == trigger.Sku);
 
                         return state.Data with { Shop = state.Data.Shop with { Items = items } };
                     })
                     .Execute(state => new ShopCommand.UpdateCartItems(state.Data.Shop.Items))
-                .On(CartTrigger.ForKind(CartTriggerKind.GoToCheckout))
+                .On<CartTrigger.GoToCheckoutTrigger>()
                     .TransitionTo(ShopState.CheckingOut)
                     .Execute(state => new ShopCommand.RequestPayment(state.Data.Shop.TotalPrice()))
             .For(ShopState.CheckingOut)
                 .SubStateOf(ShopState.InStore)
-                .On(CartTrigger.ForKind(CartTriggerKind.Pay))
+                .On<CartTrigger.PayTrigger>()
                     .TransitionTo(ShopState.PaymentPending)
                     .WithData(state => state.Data with
                     {
@@ -63,7 +57,7 @@ public static class ShoppingTrolleySample
                     .Execute(() => new ShopCommand.DisplayPaymentPendingMessage())
             .For(ShopState.PaymentPending)
                 .SubStateOf(ShopState.InStore)
-                .On(CartTrigger.ForKind(CartTriggerKind.PaymentFailed))
+                .On<CartTrigger.PaymentFailedTrigger>()
                     .TransitionTo(ShopState.CheckingOut)
                     .Execute(state =>
                     [
@@ -92,56 +86,39 @@ public sealed record ShopData(List<LineItem> Items, int PaymentAttempts)
 
 public sealed record LineItem(string Sku, decimal Price);
 
-public enum CartTriggerKind
+public abstract record CartTrigger
 {
-    StartShopping,
-    AddItem,
-    RemoveItem,
-    GoToCheckout,
-    Pay,
-    PaymentFailed,
-    PaymentSucceeded,
-    Cancel
-}
+    public sealed record StartShoppingTrigger : CartTrigger;
+    public sealed record AddItemTrigger(LineItem Item) : CartTrigger;
+    public sealed record RemoveItemTrigger(string Sku) : CartTrigger;
+    public sealed record GoToCheckoutTrigger : CartTrigger;
+    public sealed record PayTrigger : CartTrigger;
+    public sealed record PaymentFailedTrigger : CartTrigger;
+    public sealed record PaymentSucceededTrigger : CartTrigger;
+    public sealed record CancelTrigger : CartTrigger;
 
-public sealed class CartTrigger : IEquatable<CartTrigger>
-{
-    public CartTrigger(CartTriggerKind kind, LineItem? item = null, string? sku = null)
-    {
-        Kind = kind;
-        Item = item;
-        Sku = sku;
-    }
+    private static readonly CartTrigger StartShoppingInstance = new StartShoppingTrigger();
+    private static readonly CartTrigger GoToCheckoutInstance = new GoToCheckoutTrigger();
+    private static readonly CartTrigger PayInstance = new PayTrigger();
+    private static readonly CartTrigger PaymentFailedInstance = new PaymentFailedTrigger();
+    private static readonly CartTrigger PaymentSucceededInstance = new PaymentSucceededTrigger();
+    private static readonly CartTrigger CancelInstance = new CancelTrigger();
 
-    public CartTriggerKind Kind { get; }
+    public static CartTrigger StartShopping() => StartShoppingInstance;
 
-    public LineItem? Item { get; }
+    public static CartTrigger AddItem(LineItem item) => new AddItemTrigger(item);
 
-    public string? Sku { get; }
+    public static CartTrigger RemoveItem(string sku) => new RemoveItemTrigger(sku);
 
-    public static CartTrigger ForKind(CartTriggerKind kind) => new(kind);
+    public static CartTrigger GoToCheckout() => GoToCheckoutInstance;
 
-    public static CartTrigger AddItem(LineItem item) => new(CartTriggerKind.AddItem, item);
+    public static CartTrigger Pay() => PayInstance;
 
-    public static CartTrigger RemoveItem(string sku) => new(CartTriggerKind.RemoveItem, null, sku);
+    public static CartTrigger PaymentFailed() => PaymentFailedInstance;
 
-    public static CartTrigger StartShopping() => new(CartTriggerKind.StartShopping);
+    public static CartTrigger PaymentSucceeded() => PaymentSucceededInstance;
 
-    public static CartTrigger GoToCheckout() => new(CartTriggerKind.GoToCheckout);
-
-    public static CartTrigger Pay() => new(CartTriggerKind.Pay);
-
-    public static CartTrigger PaymentFailed() => new(CartTriggerKind.PaymentFailed);
-
-    public static CartTrigger PaymentSucceeded() => new(CartTriggerKind.PaymentSucceeded);
-
-    public static CartTrigger Cancel() => new(CartTriggerKind.Cancel);
-
-    public bool Equals(CartTrigger? other) => other is not null && Kind == other.Kind;
-
-    public override bool Equals(object? obj) => obj is CartTrigger other && Equals(other);
-
-    public override int GetHashCode() => (int)Kind;
+    public static CartTrigger Cancel() => CancelInstance;
 }
 
 public abstract record ShopCommand

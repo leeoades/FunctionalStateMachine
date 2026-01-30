@@ -26,12 +26,24 @@ Features:
 - Fluent syntax
 - No external dependencies
 - Enter and Exit actions
-- Support for sub-state machines
+- Hierarchical states
 - Fast, efficient rehydration
 
 ## Example Usage
 
 ```csharp
+public abstract record MyTrigger
+{
+    public sealed record Trigger1 : MyTrigger;
+    public sealed record Trigger2(Guid Id) : MyTrigger;
+    public sealed record Trigger3 : MyTrigger;
+
+    public static readonly MyTrigger Trigger1 = new Trigger1();
+    public static readonly MyTrigger Trigger3 = new Trigger3();
+
+    public static MyTrigger Trigger2(Guid id) => new Trigger2(id);
+}
+
 var stateMachine = StateMachine<MyState, MyTrigger, MyData, CommandBase>.Create()
     .StartWith(MyState.Initial)
     .For(MyState.Initial)
@@ -40,7 +52,7 @@ var stateMachine = StateMachine<MyState, MyTrigger, MyData, CommandBase>.Create(
         .On(MyTrigger.Trigger1)
             .TransitionTo(MyState.State1)
             .Execute(state => Command.DoSomething(state.Data.Id))
-        .On(MyTrigger.Trigger2)
+        .On<MyTrigger.Trigger2>()
             .Guard((state, trigger) => !state.Data.SeenIds.Contains(trigger.Id))
             .WithData((state, trigger) => state.Data with { SeenIds = state.Data.SeenIds.Add(trigger.Id) })
             .TransitionTo(MyState.State2)

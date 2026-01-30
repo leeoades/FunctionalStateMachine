@@ -120,6 +120,12 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
             return new TransitionConfiguration(this, _inner.On(trigger));
         }
 
+        public TransitionConfiguration<TDerivedTrigger> On<TDerivedTrigger>()
+            where TDerivedTrigger : TTrigger
+        {
+            return new TransitionConfiguration<TDerivedTrigger>(this, _inner.On<TDerivedTrigger>());
+        }
+
         public StateConfiguration For(TState state)
         {
             return _builder.For(state);
@@ -249,6 +255,144 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
         public TransitionConfiguration On(TTrigger trigger)
         {
             return _parent.On(trigger);
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> On<TDerivedTrigger>()
+            where TDerivedTrigger : TTrigger
+        {
+            return _parent.On<TDerivedTrigger>();
+        }
+
+        public StateConfiguration For(TState state)
+        {
+            return _parent.For(state);
+        }
+
+        public StateMachine<TState, TTrigger, TData, TCommand> Build()
+        {
+            return _parent.Build();
+        }
+    }
+
+    public sealed class TransitionConfiguration<TDerivedTrigger>
+        where TDerivedTrigger : TTrigger
+    {
+        private readonly StateConfiguration _parent;
+        private readonly StateMachine<TState, TTrigger, TData, TCommand>.TransitionConfiguration<TDerivedTrigger> _inner;
+
+        internal TransitionConfiguration(
+            StateConfiguration parent,
+            StateMachine<TState, TTrigger, TData, TCommand>.TransitionConfiguration<TDerivedTrigger> inner)
+        {
+            _parent = parent;
+            _inner = inner;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> TransitionTo(TState state)
+        {
+            _inner.TransitionTo(state);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Guard(
+            Func<State<TState, TData>, TDerivedTrigger, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Guard(Func<State<TState, TData>, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> WithData(
+            Func<State<TState, TData>, TDerivedTrigger, TData> updater)
+        {
+            _inner.WithData(updater);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> WithData(Func<State<TState, TData>, TData> updater)
+        {
+            _inner.WithData(updater);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Execute(
+            Func<State<TState, TData>, TDerivedTrigger, TCommand> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Execute(
+            Func<State<TState, TData>, TDerivedTrigger, IEnumerable<TCommand>> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Execute(Func<State<TState, TData>, TCommand> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Execute(
+            Func<State<TState, TData>, IEnumerable<TCommand>> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Execute(Func<TDerivedTrigger, TCommand> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Execute(
+            Func<TDerivedTrigger, IEnumerable<TCommand>> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Execute(Func<TCommand> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Execute(Func<IEnumerable<TCommand>> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public StateConfiguration Ignore()
+        {
+            _inner.Ignore();
+            return _parent;
+        }
+
+        public StateConfiguration Done()
+        {
+            _inner.Done();
+            return _parent;
+        }
+
+        public TransitionConfiguration On(TTrigger trigger)
+        {
+            return _parent.On(trigger);
+        }
+
+        public TransitionConfiguration<TNextTrigger> On<TNextTrigger>()
+            where TNextTrigger : TTrigger
+        {
+            return _parent.On<TNextTrigger>();
         }
 
         public StateConfiguration For(TState state)
@@ -382,6 +526,12 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
             return new TransitionConfiguration(this, _inner.On(trigger));
         }
 
+        public TransitionConfiguration<TDerivedTrigger> On<TDerivedTrigger>()
+            where TDerivedTrigger : TTrigger
+        {
+            return new TransitionConfiguration<TDerivedTrigger>(this, _inner.On<TDerivedTrigger>());
+        }
+
         public StateConfiguration For(TState state)
         {
             return _builder.For(state);
@@ -505,6 +655,137 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
         public TransitionConfiguration On(TTrigger trigger)
         {
             return _parent.On(trigger);
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> On<TDerivedTrigger>()
+            where TDerivedTrigger : TTrigger
+        {
+            return _parent.On<TDerivedTrigger>();
+        }
+
+        public StateConfiguration For(TState state)
+        {
+            return _parent.For(state);
+        }
+
+        public StateMachine<TState, TTrigger, TCommand> Build()
+        {
+            return _parent.Build();
+        }
+    }
+
+    public sealed class TransitionConfiguration<TDerivedTrigger>
+        where TDerivedTrigger : TTrigger
+    {
+        private readonly StateConfiguration _parent;
+        private readonly StateMachine<TState, TTrigger, TCommand>.TransitionConfiguration<TDerivedTrigger> _inner;
+
+        internal TransitionConfiguration(
+            StateConfiguration parent,
+            StateMachine<TState, TTrigger, TCommand>.TransitionConfiguration<TDerivedTrigger> inner)
+        {
+            _parent = parent;
+            _inner = inner;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> TransitionTo(TState state)
+        {
+            _inner.TransitionTo(state);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Guard(
+            Func<State<TState, NoData>, TDerivedTrigger, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Guard(Func<State<TState, NoData>, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Execute(
+            Func<State<TState, NoData>, TDerivedTrigger, TCommand> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Execute(
+            Func<State<TState, NoData>, TDerivedTrigger, IEnumerable<TCommand>> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Execute(Func<State<TState, NoData>, TCommand> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Execute(
+            Func<State<TState, NoData>, IEnumerable<TCommand>> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> WithData(Func<State<TState, NoData>, NoData> updater)
+        {
+            _inner.WithData(updater);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Execute(Func<TDerivedTrigger, TCommand> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Execute(
+            Func<TDerivedTrigger, IEnumerable<TCommand>> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Execute(Func<TCommand> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Execute(Func<IEnumerable<TCommand>> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public StateConfiguration Ignore()
+        {
+            _inner.Ignore();
+            return _parent;
+        }
+
+        public StateConfiguration Done()
+        {
+            _inner.Done();
+            return _parent;
+        }
+
+        public TransitionConfiguration On(TTrigger trigger)
+        {
+            return _parent.On(trigger);
+        }
+
+        public TransitionConfiguration<TNextTrigger> On<TNextTrigger>()
+            where TNextTrigger : TTrigger
+        {
+            return _parent.On<TNextTrigger>();
         }
 
         public StateConfiguration For(TState state)

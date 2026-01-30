@@ -11,11 +11,11 @@ public static class TimerSample
             .For(TimerState.Running)
                 .OnEntry(() => new TimerCommand.WriteLog("Start"))
                 .OnExit(() => new TimerCommand.WriteLog("Stop"))
-                .On(TimerTrigger.Tick)
+                .On<TimerTrigger.TickTrigger>()
                     .WithData(state => state.Data with { Ticks = state.Data.Ticks + 1 })
                     .Execute(state => new TimerCommand.WriteLog($"Tick:{state.Data.Ticks + 1}"))
                 .For(TimerState.Paused)
-                    .On(TimerTrigger.Resume)
+                    .On<TimerTrigger.ResumeTrigger>()
                         .TransitionTo(TimerState.Running)
             .Build();
     }
@@ -27,10 +27,13 @@ public enum TimerState
     Paused
 }
 
-public enum TimerTrigger
+public abstract record TimerTrigger
 {
-    Tick,
-    Resume
+    public sealed record TickTrigger : TimerTrigger;
+    public sealed record ResumeTrigger : TimerTrigger;
+
+    public static readonly TimerTrigger Tick = new TickTrigger();
+    public static readonly TimerTrigger Resume = new ResumeTrigger();
 }
 
 public sealed record TimerData(int Ticks);

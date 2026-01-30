@@ -15,9 +15,11 @@ public enum LightState
     On
 }
 
-public enum LightTrigger
+public abstract record LightTrigger
 {
-    Toggle
+    public sealed record ToggleTrigger : LightTrigger;
+
+    public static readonly LightTrigger Toggle = new ToggleTrigger();
 }
 
 var stateMachine = 
@@ -25,11 +27,11 @@ var stateMachine =
         .Create()
             .StartWith(LightState.Off)
             .For(LightState.Off)
-                .On(LightTrigger.Toggle)
+                .On<LightTrigger.ToggleTrigger>()
                     .TransitionTo(LightState.On)
                     .Execute(() => new LightCommand.SwitchOn())
             .For(LightState.On)
-                .On(LightTrigger.Toggle)
+                .On<LightTrigger.ToggleTrigger>()
                     .TransitionTo(LightState.Off)
                     .Execute(() => new LightCommand.SwitchOff())
             .Build();

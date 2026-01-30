@@ -10,17 +10,17 @@ public static class SessionLoginSample
             .StartWith(SessionState.Active)
             .For(SessionState.Active)
                 .StartsWith(SessionState.Anonymous)
-                .On(SessionTrigger.Timeout)
+                .On<SessionTrigger.TimeoutTrigger>()
                     .TransitionTo(SessionState.Expired)
                     .Execute(() => new SessionCommand.HandleTimeout())
                 .For(SessionState.Anonymous)
                     .SubStateOf(SessionState.Active)
-                    .On(SessionTrigger.Login)
+                    .On<SessionTrigger.LoginTrigger>()
                         .TransitionTo(SessionState.Authenticated)
                         .Execute(() => new AuthCommand.PerformLogin())
                 .For(SessionState.Authenticated)
                     .SubStateOf(SessionState.Active)
-                    .On(SessionTrigger.Logout)
+                    .On<SessionTrigger.LogoutTrigger>()
                         .TransitionTo(SessionState.Anonymous)
                         .Execute(() => new AuthCommand.PerformLogout())
                 .For(SessionState.Expired)
@@ -37,11 +37,15 @@ public enum SessionState
     Authenticated
 }
 
-public enum SessionTrigger
+public abstract record SessionTrigger
 {
-    Login,
-    Logout,
-    Timeout
+    public sealed record LoginTrigger : SessionTrigger;
+    public sealed record LogoutTrigger : SessionTrigger;
+    public sealed record TimeoutTrigger : SessionTrigger;
+
+    public static readonly SessionTrigger Login = new LoginTrigger();
+    public static readonly SessionTrigger Logout = new LogoutTrigger();
+    public static readonly SessionTrigger Timeout = new TimeoutTrigger();
 }
 
 public sealed record SessionData(string UserId);

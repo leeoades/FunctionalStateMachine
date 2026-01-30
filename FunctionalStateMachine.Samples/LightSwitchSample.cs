@@ -9,11 +9,11 @@ public static class LightSwitchSample
         StateMachine<LightState, LightTrigger, LightCommand>.Create()
             .StartWith(LightState.Off)
             .For(LightState.Off)
-                .On(LightTrigger.Toggle)
+                .On<LightTrigger.ToggleTrigger>()
                     .TransitionTo(LightState.On)
                     .Execute(() => new LightCommand.TurnOn())
             .For(LightState.On)
-                .On(LightTrigger.Toggle)
+                .On<LightTrigger.ToggleTrigger>()
                     .TransitionTo(LightState.Off)
                     .Execute(() => new LightCommand.TurnOff())
             .Build();
@@ -25,9 +25,11 @@ public enum LightState
     On
 }
 
-public enum LightTrigger
+public abstract record LightTrigger
 {
-    Toggle
+    public sealed record ToggleTrigger : LightTrigger;
+
+    public static readonly LightTrigger Toggle = new ToggleTrigger();
 }
 
 public abstract record LightCommand

@@ -199,10 +199,13 @@ public class StateMachineTests
         Cancelled
     }
 
-    private enum OrderTrigger
+    private abstract record OrderTrigger
     {
-        Pay,
-        Cancel
+        public sealed record PayTrigger : OrderTrigger;
+        public sealed record CancelTrigger : OrderTrigger;
+
+        public static readonly OrderTrigger Pay = new PayTrigger();
+        public static readonly OrderTrigger Cancel = new CancelTrigger();
     }
 
     private sealed record OrderData(string OrderId, string LastEvent);
@@ -221,11 +224,15 @@ public class StateMachineTests
         Busy
     }
 
-    private enum WorkerTrigger
+    private abstract record WorkerTrigger
     {
-        StartWork,
-        CompleteWork,
-        Cancel
+        public sealed record StartWorkTrigger : WorkerTrigger;
+        public sealed record CompleteWorkTrigger : WorkerTrigger;
+        public sealed record CancelTrigger : WorkerTrigger;
+
+        public static readonly WorkerTrigger StartWork = new StartWorkTrigger();
+        public static readonly WorkerTrigger CompleteWork = new CompleteWorkTrigger();
+        public static readonly WorkerTrigger Cancel = new CancelTrigger();
     }
 
     private sealed record WorkerData(int Count);
