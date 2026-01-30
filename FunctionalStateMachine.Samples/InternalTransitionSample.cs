@@ -7,7 +7,7 @@ public static class InternalTransitionSample
 {
     public static StateMachine<TimerState, TimerTrigger, TimerData, TimerCommand> Build()
     {
-        var builder = new StateMachineBuilder<TimerState, TimerTrigger, TimerData, TimerCommand>()
+        var builder = StateMachine<TimerState, TimerTrigger, TimerData, TimerCommand>.Create()
             .StartWith(TimerState.Running);
 
         builder.For(TimerState.Running)

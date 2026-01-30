@@ -7,7 +7,7 @@ public class StateMachineAdditionalTests
     [Fact]
     public void TryFire_ReturnsFalseWhenUnhandled()
     {
-        var builder = new StateMachineBuilder<State, Trigger, Data, CommandBase>();
+        var builder = StateMachine<State, Trigger, Data, CommandBase>.Create();
         builder.For(State.Ready);
         var machine = builder.Build();
 
@@ -23,7 +23,7 @@ public class StateMachineAdditionalTests
     public void OnUnhandled_InvokesHandler()
     {
         var log = new List<string>();
-        var builder = new StateMachineBuilder<State, Trigger, Data, CommandBase>()
+        var builder = StateMachine<State, Trigger, Data, CommandBase>.Create()
             .OnUnhandled((trigger, state) => log.Add($"{state.Value}:{trigger}"));
 
         builder.For(State.Ready);
@@ -40,7 +40,7 @@ public class StateMachineAdditionalTests
     [Fact]
     public void InternalTransition_DoesNotRunEntryExit()
     {
-        var builder = new StateMachineBuilder<State, Trigger, Data, CommandBase>();
+        var builder = StateMachine<State, Trigger, Data, CommandBase>.Create();
 
         builder.For(State.Ready)
             .OnEntry(() => new LogCommand("Entry"))
@@ -60,7 +60,7 @@ public class StateMachineAdditionalTests
     [Fact]
     public void Execute_AllowsMultipleCommands()
     {
-        var builder = new StateMachineBuilder<State, Trigger, Data, CommandBase>();
+        var builder = StateMachine<State, Trigger, Data, CommandBase>.Create();
 
         builder.For(State.Ready)
             .On(Trigger.Start)

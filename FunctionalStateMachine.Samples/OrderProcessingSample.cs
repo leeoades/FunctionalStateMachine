@@ -7,7 +7,7 @@ public static class OrderProcessingSample
 {
     public static StateMachine<OrderState, OrderTrigger, OrderData, OrderCommand> Build()
     {
-        var builder = new StateMachineBuilder<OrderState, OrderTrigger, OrderData, OrderCommand>()
+        var builder = StateMachine<OrderState, OrderTrigger, OrderData, OrderCommand>.Create()
             .StartWith(OrderState.Created);
 
         builder.For(OrderState.Created)

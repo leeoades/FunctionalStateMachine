@@ -32,7 +32,7 @@ Features:
 ## Example Usage
 
 ```csharp
-var builder = new StateMachineBuilder<MyState, MyTrigger, MyData, CommandBase>()
+var builder = StateMachine<MyState, MyTrigger, MyData, CommandBase>.Create()
     .StartWith(MyState.Initial);
 
 var initial = builder.For(MyState.Initial);

@@ -4,7 +4,7 @@ public static class ShoppingTrolleySample
 {
     public static Core.StateMachine<ShopState, CartTrigger, CartSession, ShopCommand> Build()
     {
-        var shopBuilder = new Core.StateMachineBuilder<ShopPhase, CartTrigger, ShopData, ShopCommand>()
+        var shopBuilder = Core.StateMachine<ShopPhase, CartTrigger, ShopData, ShopCommand>.Create()
             .StartWith(ShopPhase.Shopping);
 
         var shopping = shopBuilder.For(ShopPhase.Shopping);
@@ -49,7 +49,7 @@ public static class ShoppingTrolleySample
 
         var shopMachine = shopBuilder.Build();
 
-        var builder = new Core.StateMachineBuilder<ShopState, CartTrigger, CartSession, ShopCommand>()
+        var builder = Core.StateMachine<ShopState, CartTrigger, CartSession, ShopCommand>.Create()
             .StartWith(ShopState.Outside);
 
         builder.For(ShopState.Outside)

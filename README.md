@@ -9,7 +9,7 @@ That keeps the state machine pure, easy to test, and great for rehydrated or act
 Build the machine with a fluent builder, then call `Build()` to freeze the configuration.
 
 ```csharp
-var builder = new StateMachineBuilder<OrderState, OrderTrigger, OrderData, OrderCommand>()
+var builder = StateMachine<OrderState, OrderTrigger, OrderData, OrderCommand>.Create()
     .StartWith(OrderState.Created);
 
 builder.For(OrderState.Created)
@@ -58,7 +58,7 @@ The state machine returns these commands for your handler to execute.
 Configuration is done up front and `Build()` seals the machine.
 
 ```csharp
-var builder = new StateMachineBuilder<State, Trigger, Data, Command>();
+var builder = StateMachine<State, Trigger, Data, Command>.Create();
 builder.For(State.Ready).On(Trigger.Start).TransitionTo(State.Running);
 var machine = builder.Build();
 ```
@@ -140,7 +140,7 @@ builder.For(State.Ready)
 Provide a handler or let it throw.
 
 ```csharp
-var builder = new StateMachineBuilder<State, Trigger, Data, Command>()
+var builder = StateMachine<State, Trigger, Data, Command>.Create()
     .OnUnhandled((trigger, state) => state.Data.Log.Add($"Unhandled:{trigger}"));
 ```
 
@@ -173,7 +173,7 @@ builder.For(ParentState.Active)
 If you do not need extra data, use the NoData builder.
 
 ```csharp
-var builder = new StateMachineBuilder<State, Trigger, Command>()
+var builder = StateMachine<State, Trigger, Command>.Create()
     .StartWith(State.Off);
 ```
 

@@ -7,7 +7,7 @@ public static class IgnoreAndUnhandledSample
 {
     public static StateMachine<QueueState, QueueTrigger, QueueData, QueueCommand> Build()
     {
-        var builder = new StateMachineBuilder<QueueState, QueueTrigger, QueueData, QueueCommand>()
+        var builder = StateMachine<QueueState, QueueTrigger, QueueData, QueueCommand>.Create()
             .StartWith(QueueState.Empty)
             .OnUnhandled((trigger, state) => state.Data.Log.Add($"Unhandled:{trigger}"));
 

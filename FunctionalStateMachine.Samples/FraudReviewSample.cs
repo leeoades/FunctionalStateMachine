@@ -7,7 +7,7 @@ public static class FraudReviewSample
 {
     public static StateMachine<ReviewState, ReviewTrigger, ReviewData, ReviewCommand> Build()
     {
-        var builder = new StateMachineBuilder<ReviewState, ReviewTrigger, ReviewData, ReviewCommand>()
+        var builder = StateMachine<ReviewState, ReviewTrigger, ReviewData, ReviewCommand>.Create()
             .StartWith(ReviewState.Pending);
 
         var pending = builder.For(ReviewState.Pending);

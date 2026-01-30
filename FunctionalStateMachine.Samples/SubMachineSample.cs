@@ -7,7 +7,7 @@ public static class SubMachineSample
 {
     public static StateMachine<SessionState, SessionTrigger, SessionData, SessionCommand> Build()
     {
-        var authBuilder = new StateMachineBuilder<AuthState, SessionTrigger, AuthData, SessionCommand>()
+        var authBuilder = StateMachine<AuthState, SessionTrigger, AuthData, SessionCommand>.Create()
             .StartWith(AuthState.Anonymous);
 
         authBuilder.For(AuthState.Anonymous)
@@ -22,7 +22,7 @@ public static class SubMachineSample
 
         var authMachine = authBuilder.Build();
 
-        var builder = new StateMachineBuilder<SessionState, SessionTrigger, SessionData, SessionCommand>()
+        var builder = StateMachine<SessionState, SessionTrigger, SessionData, SessionCommand>.Create()
             .StartWith(SessionState.Active);
 
         builder.For(SessionState.Active)

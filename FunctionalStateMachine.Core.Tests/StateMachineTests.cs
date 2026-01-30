@@ -7,7 +7,7 @@ public class StateMachineTests
     [Fact]
     public void Fire_ReturnsNewStateAndCommands()
     {
-        var builder = new StateMachineBuilder<OrderState, OrderTrigger, OrderData, TestCommand>()
+        var builder = StateMachine<OrderState, OrderTrigger, OrderData, TestCommand>.Create()
             .StartWith(OrderState.Created);
 
         builder.For(OrderState.Created)
@@ -28,7 +28,7 @@ public class StateMachineTests
     [Fact]
     public void Fire_AppendsExitTransitionEntryCommands()
     {
-        var builder = new StateMachineBuilder<OrderState, OrderTrigger, OrderData, TestCommand>();
+        var builder = StateMachine<OrderState, OrderTrigger, OrderData, TestCommand>.Create();
 
         builder.For(OrderState.Created)
             .OnExit(state => new LogCommand($"Exit:{state.Value}"))
@@ -52,7 +52,7 @@ public class StateMachineTests
     [Fact]
     public void Fire_UsesGuardsInOrder()
     {
-        var builder = new StateMachineBuilder<OrderState, OrderTrigger, OrderData, TestCommand>();
+        var builder = StateMachine<OrderState, OrderTrigger, OrderData, TestCommand>.Create();
         var created = builder.For(OrderState.Created);
 
         created.On(OrderTrigger.Pay)
@@ -73,7 +73,7 @@ public class StateMachineTests
     [Fact]
     public void Fire_UpdatesDataWhenConfigured()
     {
-        var builder = new StateMachineBuilder<OrderState, OrderTrigger, OrderData, TestCommand>();
+        var builder = StateMachine<OrderState, OrderTrigger, OrderData, TestCommand>.Create();
 
         builder.For(OrderState.Created)
             .On(OrderTrigger.Pay)
@@ -90,7 +90,7 @@ public class StateMachineTests
     [Fact]
     public void Fire_IgnoresTriggersWhenConfigured()
     {
-        var builder = new StateMachineBuilder<OrderState, OrderTrigger, OrderData, TestCommand>();
+        var builder = StateMachine<OrderState, OrderTrigger, OrderData, TestCommand>.Create();
 
         builder.For(OrderState.Created)
             .On(OrderTrigger.Cancel)
@@ -107,7 +107,7 @@ public class StateMachineTests
     [Fact]
     public void Fire_ThrowsWhenUnhandled()
     {
-        var builder = new StateMachineBuilder<OrderState, OrderTrigger, OrderData, TestCommand>();
+        var builder = StateMachine<OrderState, OrderTrigger, OrderData, TestCommand>.Create();
         builder.For(OrderState.Created);
 
         var machine = builder.Build();
@@ -119,7 +119,7 @@ public class StateMachineTests
     [Fact]
     public void Fire_DelegatesToSubStateMachine()
     {
-        var workerBuilder = new StateMachineBuilder<WorkerState, WorkerTrigger, WorkerData, TestCommand>();
+        var workerBuilder = StateMachine<WorkerState, WorkerTrigger, WorkerData, TestCommand>.Create();
 
         workerBuilder.For(WorkerState.Idle)
             .On(WorkerTrigger.StartWork)
@@ -132,7 +132,7 @@ public class StateMachineTests
                 .Execute(() => new LogCommand("Complete"));
 
         var workerMachine = workerBuilder.Build();
-        var builder = new StateMachineBuilder<ParentState, WorkerTrigger, ParentData, TestCommand>();
+        var builder = StateMachine<ParentState, WorkerTrigger, ParentData, TestCommand>.Create();
 
         builder.For(ParentState.Active)
             .WithSubStateMachine(
@@ -159,7 +159,7 @@ public class StateMachineTests
     [Fact]
     public void Execute_OverloadsSupportMissingArguments()
     {
-        var builder = new StateMachineBuilder<OrderState, OrderTrigger, OrderData, TestCommand>();
+        var builder = StateMachine<OrderState, OrderTrigger, OrderData, TestCommand>.Create();
 
         builder.For(OrderState.Created)
             .On(OrderTrigger.Pay)

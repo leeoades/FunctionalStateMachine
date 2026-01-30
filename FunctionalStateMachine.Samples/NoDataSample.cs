@@ -7,7 +7,7 @@ public static class NoDataSample
 {
     public static StateMachine<LightState, LightTrigger, LightCommand> Build()
     {
-        var builder = new StateMachineBuilder<LightState, LightTrigger, LightCommand>()
+        var builder = StateMachine<LightState, LightTrigger, LightCommand>.Create()
             .StartWith(LightState.Off);
 
         builder.For(LightState.Off)

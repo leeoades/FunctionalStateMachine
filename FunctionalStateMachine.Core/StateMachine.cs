@@ -6,6 +6,11 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
     where TState : notnull
     where TTrigger : notnull
 {
+    public static StateMachineBuilder<TState, TTrigger, TData, TCommand> Create()
+    {
+        return new StateMachineBuilder<TState, TTrigger, TData, TCommand>();
+    }
+
     private readonly Dictionary<TState, StateDefinition> _states = new();
     private Action<TTrigger, State<TState, TData>>? _onUnhandled;
     private bool _hasInitialState;
@@ -509,6 +514,11 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
     where TTrigger : notnull
 {
     private readonly StateMachine<TState, TTrigger, NoData, TCommand> _inner = new();
+
+    public static StateMachineBuilder<TState, TTrigger, TCommand> Create()
+    {
+        return new StateMachineBuilder<TState, TTrigger, TCommand>();
+    }
 
     internal StateMachine<TState, TTrigger, TCommand> StartWith(TState state)
     {
