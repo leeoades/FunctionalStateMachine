@@ -5,9 +5,9 @@ namespace FunctionalStateMachine.Samples;
 
 public static class ShoppingTrolleySample
 {
-    public static Core.StateMachine<ShopState, CartTrigger, CartSession, ShopCommand> Build()
+    public static StateMachine<ShopState, CartTrigger, CartSession, ShopCommand> Build()
     {
-        return Core.StateMachine<ShopState, CartTrigger, CartSession, ShopCommand>.Create()
+        return StateMachine<ShopState, CartTrigger, CartSession, ShopCommand>.Create()
             .StartWith(ShopState.Outside)
             .For(ShopState.InStore)
                 .StartsWith(ShopState.Shopping)

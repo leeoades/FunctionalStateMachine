@@ -11,6 +11,7 @@ public class StateMachineTests
                 .On(OrderTrigger.Pay)
                     .TransitionTo(OrderState.Paid)
                     .Execute(state => new ChargeCommand(state.Data.OrderId))
+            .For(OrderState.Paid)
             .Build();
         var current = new State<OrderState, OrderData>(OrderState.Created, new OrderData("A-100", "none"));
         var (next, commands) = machine.Fire(OrderTrigger.Pay, current);
@@ -48,11 +49,13 @@ public class StateMachineTests
         var machine = StateMachine<OrderState, OrderTrigger, OrderData, TestCommand>.Create()
             .For(OrderState.Created)
                 .On(OrderTrigger.Pay)
-                    .Guard((state, trigger) => state.Data.OrderId.StartsWith("B"))
+                    .Guard(state => state.Data.OrderId.StartsWith("B"))
                     .TransitionTo(OrderState.Cancelled)
                 .On(OrderTrigger.Pay)
-                    .Guard((state, trigger) => state.Data.OrderId.StartsWith("A"))
+                    .Guard(state => state.Data.OrderId.StartsWith("A"))
                     .TransitionTo(OrderState.Paid)
+            .For(OrderState.Cancelled)
+            .For(OrderState.Paid)
             .Build();
         var current = new State<OrderState, OrderData>(OrderState.Created, new OrderData("A-300", "none"));
         var (next, _) = machine.Fire(OrderTrigger.Pay, current);
@@ -68,6 +71,7 @@ public class StateMachineTests
                 .On(OrderTrigger.Pay)
                     .ModifyData(state => state.Data with { LastEvent = "paid" })
                     .TransitionTo(OrderState.Paid)
+            .For(OrderState.Paid)
             .Build();
         var current = new State<OrderState, OrderData>(OrderState.Created, new OrderData("A-400", "none"));
         var (next, _) = machine.Fire(OrderTrigger.Pay, current);
@@ -127,9 +131,9 @@ public class StateMachineTests
 
         Assert.Equal(WorkState.Closed, next.Value);
         Assert.Equal(4, commands.Count);
-        Assert.Equal("Exit:Busy", ((LogCommand)commands[0]).Message);
-        Assert.Equal("Exit:Active", ((LogCommand)commands[1]).Message);
-        Assert.Equal("Transition:Busy", ((LogCommand)commands[2]).Message);
+        Assert.Equal("Transition:Busy", ((LogCommand)commands[0]).Message);
+        Assert.Equal("Exit:Busy", ((LogCommand)commands[1]).Message);
+        Assert.Equal("Exit:Active", ((LogCommand)commands[2]).Message);
         Assert.Equal("Entry:Closed", ((LogCommand)commands[3]).Message);
     }
 
@@ -156,8 +160,8 @@ public class StateMachineTests
         var (_, commands) = machine.Fire(WorkerTrigger.StartWork, current);
 
         Assert.Equal(3, commands.Count);
-        Assert.Equal("Exit:Idle", ((LogCommand)commands[0]).Message);
-        Assert.Equal("Transition:Idle", ((LogCommand)commands[1]).Message);
+        Assert.Equal("Transition:Idle", ((LogCommand)commands[0]).Message);
+        Assert.Equal("Exit:Idle", ((LogCommand)commands[1]).Message);
         Assert.Equal("Entry:Busy", ((LogCommand)commands[2]).Message);
     }
 
@@ -169,7 +173,8 @@ public class StateMachineTests
                 .On(WorkerTrigger.Cancel)
                     .TransitionTo(WorkState.Closed)
                 .For(WorkState.Idle)
-                    .SubStateOf(WorkState.Active);
+                    .SubStateOf(WorkState.Active)
+                .For(WorkState.Closed);
 
         Assert.Throws<InvalidOperationException>(() => builder.Build());
     }

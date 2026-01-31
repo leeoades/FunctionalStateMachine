@@ -64,6 +64,7 @@ public class StateMachineAdditionalTests
                         new LogCommand("One"),
                         new LogCommand("Two")
                     ])
+            .For(State.Running)
             .Build();
         var current = new State<State, Data>(State.Ready, new Data("x"));
 
@@ -124,23 +125,16 @@ public class StateMachineAdditionalTests
     }
 
     [Fact]
-    public void TransitionToUnconfiguredState_DoesNotRunEntryActions()
+    public void Build_ThrowsWhenTransitionToUnconfiguredState()
     {
-        var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
+        var builder = StateMachine<State, Trigger, Data, CommandBase>.Create()
             .For(State.Ready)
                 .OnExit(() => new LogCommand("Exit:Ready"))
                 .On(Trigger.Start)
                     .TransitionTo(State.Stopped)
-                    .Execute(() => new LogCommand("Transition:Ready"))
-            .Build();
-        var current = new State<State, Data>(State.Ready, new Data("x"));
+                    .Execute(() => new LogCommand("Transition:Ready"));
 
-        var (next, commands) = machine.Fire(Trigger.Start, current);
-
-        Assert.Equal(State.Stopped, next.Value);
-        Assert.Equal(2, commands.Count);
-        Assert.Equal("Exit:Ready", ((LogCommand)commands[0]).Message);
-        Assert.Equal("Transition:Ready", ((LogCommand)commands[1]).Message);
+        Assert.Throws<InvalidOperationException>(() => builder.Build());
     }
 
     private enum State

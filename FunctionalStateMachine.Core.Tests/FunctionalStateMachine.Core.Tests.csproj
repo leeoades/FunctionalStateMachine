@@ -20,7 +20,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\FunctionalStateMachine.Core\FunctionalStateMachine.Core.csproj"/>
-        <ProjectReference Include="..\FunctionalStateMachine.Samples\FunctionalStateMachine.Samples.csproj"/>
     </ItemGroup>
 
 </Project>

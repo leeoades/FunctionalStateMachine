@@ -107,15 +107,11 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
             var isStateChange = transition.HasTargetState
                 && !EqualityComparer<TState>.Default.Equals(current.Value, targetState);
 
-            if (isStateChange)
-            {
-                AppendExitCommands(commandList, current.Value, targetState, current.Data);
-            }
-
             var updatedData = ApplyTransitionSteps(commandList, transition, current, trigger);
 
             if (isStateChange)
             {
+                AppendExitCommands(commandList, current.Value, targetState, updatedData);
                 AppendEntryCommands(commandList, current.Value, targetState, updatedData);
             }
 
@@ -205,6 +201,23 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
             }
 
             ValidateNoCycles(definition.State);
+        }
+
+        foreach (var definition in _states.Values)
+        {
+            foreach (var transition in definition.GetTransitions())
+            {
+                if (!transition.HasTargetState)
+                {
+                    continue;
+                }
+
+                if (!_states.ContainsKey(transition.TargetState!))
+                {
+                    throw new InvalidOperationException(
+                        $"State '{definition.State}' transitions to '{transition.TargetState}', but it is not configured.");
+                }
+            }
         }
 
         if (_hasInitialState)
@@ -1122,6 +1135,17 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
         public bool TryGetTransitions(TTrigger trigger, out List<TransitionDefinition> transitions)
         {
             return _transitions.TryGetValue(GetTriggerKey(trigger), out transitions!);
+        }
+
+        public IEnumerable<TransitionDefinition> GetTransitions()
+        {
+            foreach (var transitions in _transitions.Values)
+            {
+                foreach (var transition in transitions)
+                {
+                    yield return transition;
+                }
+            }
         }
     }
 
