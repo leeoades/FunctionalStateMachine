@@ -55,6 +55,25 @@ public static class ShoppingTrolleySample
                         Shop = state.Data.Shop with { PaymentAttempts = state.Data.Shop.PaymentAttempts + 1 }
                     })
                     .Execute(() => new ShopCommand.DisplayPaymentPendingMessage())
+                .On<CartTrigger.PayByCashTrigger>()
+                    .Guard((state, trigger) => trigger.Amount < state.Data.Shop.TotalPrice())
+                    .Execute((state, trigger) =>
+                    {
+                        var remaining = state.Data.Shop.TotalPrice() - trigger.Amount;
+                        return new ShopCommand.RequestPayment(remaining);
+                    })
+                .On<CartTrigger.PayByCashTrigger>()
+                    .Guard((state, trigger) => trigger.Amount >= state.Data.Shop.TotalPrice())
+                    .Execute(state => new ShopCommand.GrantItemOwnership(state.Data.Shop.Items))
+                    .If((state, trigger) => trigger.Amount > state.Data.Shop.TotalPrice())
+                        .Execute((state, trigger) =>
+                        {
+                            var refund = trigger.Amount - state.Data.Shop.TotalPrice();
+                            return new ShopCommand.RefundCash(refund);
+                        })
+                        .Done()
+                    .ModifyData(state => state.Data with { Shop = new ShopData([], 0) })
+                    .TransitionTo(ShopState.Outside)
             .For(ShopState.PaymentPending)
                 .SubStateOf(ShopState.InStore)
                 .On<CartTrigger.PaymentFailedTrigger>()
@@ -93,6 +112,7 @@ public abstract record CartTrigger
     public sealed record RemoveItemTrigger(string Sku) : CartTrigger;
     public sealed record GoToCheckoutTrigger : CartTrigger;
     public sealed record PayTrigger : CartTrigger;
+    public sealed record PayByCashTrigger(decimal Amount) : CartTrigger;
     public sealed record PaymentFailedTrigger : CartTrigger;
     public sealed record PaymentSucceededTrigger : CartTrigger;
     public sealed record CancelTrigger : CartTrigger;
@@ -114,6 +134,8 @@ public abstract record CartTrigger
 
     public static CartTrigger Pay() => PayInstance;
 
+    public static CartTrigger PayByCash(decimal amount) => new PayByCashTrigger(amount);
+
     public static CartTrigger PaymentFailed() => PaymentFailedInstance;
 
     public static CartTrigger PaymentSucceeded() => PaymentSucceededInstance;
@@ -132,6 +154,8 @@ public abstract record ShopCommand
     public sealed record DisplayPaymentFailedMessage : ShopCommand;
 
     public sealed record GrantItemOwnership(IReadOnlyList<LineItem> Items) : ShopCommand;
+
+    public sealed record RefundCash(decimal Amount) : ShopCommand;
 }
 
 public class ShoppingTrolleyDemo(ITestOutputHelper output)
