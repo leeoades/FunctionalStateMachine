@@ -342,7 +342,7 @@ internal static class DiagramBuilder
             var parent = entry.Value;
             if (!parentToChildren.TryGetValue(parent, out var children))
             {
-                children = new List<string>();
+                children = [];
                 parentToChildren[parent] = children;
             }
 
