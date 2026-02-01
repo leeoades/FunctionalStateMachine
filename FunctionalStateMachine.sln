@@ -9,6 +9,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_", "_", "{919D74CB-8078-40B7-9A48-5F26CDDD678C}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
+		CHANGELOG.md = CHANGELOG.md
 	EndProjectSection
 EndProject
 Global

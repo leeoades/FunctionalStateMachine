@@ -1,0 +1,38 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restore
+        run: dotnet restore FunctionalStateMachine.Core/FunctionalStateMachine.Core.csproj
+
+      - name: Build
+        run: dotnet build FunctionalStateMachine.Core/FunctionalStateMachine.Core.csproj --configuration Release --no-restore
+
+      - name: Pack
+        run: dotnet pack FunctionalStateMachine.Core/FunctionalStateMachine.Core.csproj --configuration Release --no-build --output ./artifacts --include-symbols --include-source
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ./artifacts/*.nupkg
+            ./artifacts/*.snupkg
+          generate_release_notes: true
