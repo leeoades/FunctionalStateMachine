@@ -48,7 +48,10 @@ public abstract record SessionTrigger
     public static readonly SessionTrigger Timeout = new TimeoutTrigger();
 }
 
-public sealed record SessionData(string UserId);
+public sealed record SessionData(string UserId)
+{
+    public static SessionData Initial => new(string.Empty);
+}
 
 public abstract record SessionCommand
 {

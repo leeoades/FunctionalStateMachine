@@ -36,7 +36,10 @@ public abstract record TimerTrigger
     public static readonly TimerTrigger Resume = new ResumeTrigger();
 }
 
-public sealed record TimerData(int Ticks);
+public sealed record TimerData(int Ticks)
+{
+    public static TimerData Initial => new(0);
+}
 
 public abstract record TimerCommand
 {

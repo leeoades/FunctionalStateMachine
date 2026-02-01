@@ -96,11 +96,16 @@ public enum ShopState
     PaymentPending
 }
 
-public sealed record CartSession(ShopData Shop);
+public sealed record CartSession(ShopData Shop)
+{
+    public static CartSession Initial => new(ShopData.Initial);
+}
 
 public sealed record ShopData(List<LineItem> Items, int PaymentAttempts)
 {
     public decimal TotalPrice() => Items.Sum(item => item.Price);
+
+    public static ShopData Initial => new([], 0);
 }
 
 public sealed record LineItem(string Sku, decimal Price);
