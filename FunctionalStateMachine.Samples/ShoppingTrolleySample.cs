@@ -43,30 +43,27 @@ public static class ShoppingTrolleySample
                     .Execute(data => new ShopCommand.UpdateCartItems(data.Shop.Items))
                 .On<CartTrigger.GoToCheckoutTrigger>()
                     .TransitionTo(ShopState.CheckingOut)
-                    .Execute(data => new ShopCommand.RequestPayment(data.Shop.TotalPrice()))
             .For(ShopState.CheckingOut)
                 .SubStateOf(ShopState.InStore)
+                .OnEntry(data => new ShopCommand.RequestPayment(data.Shop.TotalPrice()))
                 .On<CartTrigger.PayTrigger>()
                     .TransitionTo(ShopState.PaymentPending)
-                    .ModifyData(data => data with
-                    {
-                        Shop = data.Shop with { PaymentAttempts = data.Shop.PaymentAttempts + 1 }
-                    })
                     .Execute(() => new ShopCommand.DisplayPaymentPendingMessage())
                 .On<CartTrigger.PayByCashTrigger>()
-                    .Guard((data, trigger) => trigger.Amount < data.Shop.TotalPrice())
-                    .Execute((data, trigger) =>
+                    .Guard((data, trigger) => trigger.Amount + data.Shop.AmountPaid < data.Shop.TotalPrice())
+                    .ModifyData((data, trigger) => data with { Shop = data.Shop with { AmountPaid = data.Shop.AmountPaid + trigger.Amount } })
+                    .Execute(data =>
                     {
-                        var remaining = data.Shop.TotalPrice() - trigger.Amount;
+                        var remaining = data.Shop.TotalPrice() - data.Shop.AmountPaid;
                         return new ShopCommand.RequestPayment(remaining);
                     })
                 .On<CartTrigger.PayByCashTrigger>()
-                    .Guard((data, trigger) => trigger.Amount >= data.Shop.TotalPrice())
+                    .Guard((data, trigger) => trigger.Amount + data.Shop.AmountPaid >= data.Shop.TotalPrice())
                     .Execute(data => new ShopCommand.GrantItemOwnership(data.Shop.Items))
-                    .If((data, trigger) => trigger.Amount > data.Shop.TotalPrice())
+                    .If((data, trigger) => trigger.Amount + data.Shop.AmountPaid > data.Shop.TotalPrice())
                         .Execute((data, trigger) =>
                         {
-                            var refund = trigger.Amount - data.Shop.TotalPrice();
+                            var refund = trigger.Amount + data.Shop.AmountPaid - data.Shop.TotalPrice();
                             return new ShopCommand.RefundCash(refund);
                         })
                         .Done()
@@ -103,10 +100,10 @@ public sealed record CartSession(ShopData Shop)
     public static CartSession Initial => new(ShopData.Initial);
 }
 
-public sealed record ShopData(List<LineItem> Items, int PaymentAttempts)
+public sealed record ShopData(List<LineItem> Items, decimal AmountPaid)
 {
     public decimal TotalPrice() => Items.Sum(item => item.Price);
-
+    
     public static ShopData Initial => new([], 0);
 }
 
@@ -168,7 +165,7 @@ public abstract record ShopCommand
 public class ShoppingTrolleyDemo(ITestOutputHelper output)
 {
     [Fact]
-    public void Demo()
+    public void Demo_Card_Payment()
     {
         var machine = ShoppingTrolleySample.Build();
         var currentState = machine.InitialStateOrDefault();
@@ -180,6 +177,22 @@ public class ShoppingTrolleyDemo(ITestOutputHelper output)
         (currentState, currentData) = Fire(CartTrigger.GoToCheckout(), currentState, currentData, machine);
         (currentState, currentData) = Fire(CartTrigger.Pay(), currentState, currentData, machine);
         (currentState, currentData) = Fire(CartTrigger.PaymentSucceeded(), currentState, currentData, machine);
+    }
+    
+    [Fact]
+    public void Demo_Cash_Payment()
+    {
+        var machine = ShoppingTrolleySample.Build();
+        var currentState = machine.InitialStateOrDefault();
+        var currentData = new CartSession(new ShopData([], 0));
+
+        (currentState, currentData) = Fire(CartTrigger.StartShopping(), currentState, currentData, machine);
+        (currentState, currentData) = Fire(CartTrigger.AddItem(new LineItem("Milk", 1.30m)), currentState, currentData, machine);
+        (currentState, currentData) = Fire(CartTrigger.AddItem(new LineItem("Bread", 0.80m)), currentState, currentData, machine);
+        (currentState, currentData) = Fire(CartTrigger.GoToCheckout(), currentState, currentData, machine);
+        (currentState, currentData) = Fire(CartTrigger.PayByCash(1), currentState, currentData, machine);
+        (currentState, currentData) = Fire(CartTrigger.PayByCash(1), currentState, currentData, machine);
+        (currentState, currentData) = Fire(CartTrigger.PayByCash(0.50m), currentState, currentData, machine);
     }
 
     private (ShopState State, CartSession Data) Fire(
@@ -203,6 +216,7 @@ public class ShoppingTrolleyDemo(ITestOutputHelper output)
                 ShopCommand.RequestPayment request => $"Requesting payment for {request.Total}",
                 ShopCommand.DisplayPaymentPendingMessage => "Payment pending...",
                 ShopCommand.DisplayPaymentFailedMessage => "Payment failed...",
+                ShopCommand.RefundCash refund => $"Refunding {refund.Amount}...",
                 ShopCommand.GrantItemOwnership grant => $"Purchase complete of {string.Join(", ", grant.Items)}",
                 _ => throw new ArgumentOutOfRangeException()
             });
