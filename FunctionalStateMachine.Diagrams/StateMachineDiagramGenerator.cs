@@ -1,0 +1,403 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+namespace FunctionalStateMachine.Diagrams
+{
+    [Generator]
+    public sealed class StateMachineDiagramGenerator : IIncrementalGenerator
+    {
+    private const string AttributeName = "FunctionalStateMachine.Diagrams.StateMachineDiagramAttribute";
+
+    public void Initialize(IncrementalGeneratorInitializationContext context)
+    {
+        context.RegisterPostInitializationOutput(ctx =>
+        {
+            ctx.AddSource("StateMachineDiagramAttribute.g.cs", """
+                using System;
+
+                namespace FunctionalStateMachine.Diagrams
+                {
+                    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+                    internal sealed class StateMachineDiagramAttribute : Attribute
+                    {
+                        public StateMachineDiagramAttribute(string name)
+                        {
+                            Name = name;
+                        }
+
+                        public string Name { get; }
+                    }
+                }
+                """);
+        });
+
+        var diagrams = context.SyntaxProvider.ForAttributeWithMetadataName(
+                AttributeName,
+                static (node, _) => node is MethodDeclarationSyntax,
+                static (ctx, _) => (MethodDeclarationSyntax)ctx.TargetNode)
+            .Combine(context.CompilationProvider)
+            .Combine(context.AnalyzerConfigOptionsProvider);
+
+        context.RegisterSourceOutput(diagrams, static (ctx, data) =>
+        {
+            var ((methodSyntax, compilation), options) = data;
+            if (!options.GlobalOptions.TryGetValue("build_property.ProjectDir", out var projectDir))
+            {
+                return;
+            }
+
+            var model = compilation.GetSemanticModel(methodSyntax.SyntaxTree);
+            if (model.GetDeclaredSymbol(methodSyntax, ctx.CancellationToken) is not IMethodSymbol methodSymbol)
+            {
+                return;
+            }
+
+            var attribute = methodSymbol.GetAttributes()
+                .FirstOrDefault(attr => attr.AttributeClass?.ToDisplayString() == AttributeName);
+            if (attribute is null)
+            {
+                return;
+            }
+
+            var diagramName = attribute.ConstructorArguments.Length == 1
+                ? attribute.ConstructorArguments[0].Value?.ToString()
+                : methodSymbol.Name;
+            if (string.IsNullOrWhiteSpace(diagramName))
+            {
+                diagramName = methodSymbol.Name;
+            }
+
+        var chains = DiagramBuilder.GetInvocationChains(methodSyntax);
+        var diagram = DiagramBuilder.BuildDiagram(diagramName!, chains);
+        if (diagram is null)
+        {
+            return;
+        }
+
+            var outputDir = Path.Combine(projectDir, "diagrams");
+            Directory.CreateDirectory(outputDir);
+            var outputPath = Path.Combine(outputDir, $"{diagramName}.md");
+
+            if (File.Exists(outputPath))
+            {
+                var existing = File.ReadAllText(outputPath);
+                if (string.Equals(existing, diagram, StringComparison.Ordinal))
+                {
+                    return;
+                }
+            }
+
+            File.WriteAllText(outputPath, diagram);
+        });
+    }
+
+    }
+}
+
+internal static class DiagramBuilder
+{
+    public static List<List<InvocationInfo>> GetInvocationChains(MethodDeclarationSyntax method)
+    {
+        var chains = new List<List<InvocationInfo>>();
+        var invocations = method.DescendantNodes()
+            .OfType<InvocationExpressionSyntax>()
+            .Where(inv => inv.Parent is not InvocationExpressionSyntax)
+            .ToList();
+
+        foreach (var invocation in invocations)
+        {
+            var chain = UnwindChain(invocation);
+            if (chain.Count > 0)
+            {
+                chains.Add(chain);
+            }
+        }
+
+        return chains;
+    }
+
+    public static string? BuildDiagram(string name, List<List<InvocationInfo>> chains)
+    {
+        var states = new HashSet<string>();
+        var transitions = new HashSet<Transition>();
+        var startState = (string?)null;
+        var childToParent = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        foreach (var chain in chains)
+        {
+            string? currentState = null;
+            string? currentTrigger = null;
+            bool pendingTrigger = false;
+            bool hasTransition = false;
+
+            foreach (var step in chain)
+            {
+                switch (step.Name)
+                {
+                    case "StartWith":
+                        startState = GetFirstArg(step);
+                        if (startState != null)
+                        {
+                            states.Add(startState);
+                        }
+                        break;
+                    case "For":
+                        if (pendingTrigger && !hasTransition && currentState != null && currentTrigger != null)
+                        {
+                            transitions.Add(new Transition(currentState, currentState, currentTrigger));
+                        }
+                        currentState = GetFirstArg(step);
+                        if (currentState != null)
+                        {
+                            states.Add(currentState);
+                        }
+                        currentTrigger = null;
+                        pendingTrigger = false;
+                        hasTransition = false;
+                        break;
+                    case "SubStateOf":
+                        var parent = GetFirstArg(step);
+                        if (currentState != null && parent != null)
+                        {
+                            childToParent[currentState] = parent;
+                            states.Add(parent);
+                        }
+                        break;
+                    case "On":
+                        if (pendingTrigger && !hasTransition && currentState != null && currentTrigger != null)
+                        {
+                            transitions.Add(new Transition(currentState, currentState, currentTrigger));
+                        }
+                        currentTrigger = GetTriggerLabel(step);
+                        pendingTrigger = currentTrigger != null;
+                        hasTransition = false;
+                        break;
+                    case "TransitionTo":
+                        var target = GetFirstArg(step);
+                        if (currentState != null && target != null)
+                        {
+                            var label = currentTrigger ?? "internal";
+                            transitions.Add(new Transition(currentState, target, label));
+                            states.Add(target);
+                            hasTransition = true;
+                            pendingTrigger = false;
+                        }
+                        break;
+                    case "Build":
+                        if (pendingTrigger && !hasTransition && currentState != null && currentTrigger != null)
+                        {
+                            transitions.Add(new Transition(currentState, currentState, currentTrigger));
+                            pendingTrigger = false;
+                        }
+                        break;
+                }
+            }
+        }
+
+        if (states.Count == 0 && transitions.Count == 0)
+        {
+            return null;
+        }
+
+        var parentToChildren = BuildParentMap(childToParent);
+        var ids = states.ToDictionary(
+            state => state,
+            state => $"S_{Sanitize(state)}");
+        var transitionsList = transitions
+            .OrderBy(t => t.From, StringComparer.Ordinal)
+            .ThenBy(t => t.To, StringComparer.Ordinal)
+            .ThenBy(t => t.Label, StringComparer.Ordinal)
+            .ToList();
+        var transitionStates = new HashSet<string>(
+            transitionsList.SelectMany(t => new[] { t.From, t.To }),
+            StringComparer.Ordinal);
+
+        var sb = new StringBuilder();
+        sb.AppendLine("# " + name);
+        sb.AppendLine();
+        sb.AppendLine("```mermaid");
+        sb.AppendLine("flowchart LR");
+        if (startState != null)
+        {
+            sb.AppendLine($"  START((start)) --> {ids[startState]}");
+        }
+
+        var rendered = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var root in states
+                     .Where(state => !childToParent.ContainsKey(state))
+                     .OrderBy(state => state, StringComparer.Ordinal))
+        {
+            RenderState(root, sb, ids, parentToChildren, transitionStates, startState, rendered, 1);
+        }
+
+        foreach (var state in states.OrderBy(s => s, StringComparer.Ordinal))
+        {
+            if (rendered.Add(state))
+            {
+                sb.AppendLine($"  {ids[state]}[{state}]");
+            }
+        }
+
+        foreach (var transition in transitionsList)
+        {
+            if (!ids.TryGetValue(transition.From, out var fromId)
+                || !ids.TryGetValue(transition.To, out var toId))
+            {
+                continue;
+            }
+
+            sb.AppendLine($"  {fromId} -->|{transition.Label}| {toId}");
+        }
+
+        sb.AppendLine("```");
+        return sb.ToString();
+    }
+
+    public static string? GenerateDiagram(string source, string methodName, string diagramName)
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.Latest));
+        var method = syntaxTree.GetRoot()
+            .DescendantNodes()
+            .OfType<MethodDeclarationSyntax>()
+            .FirstOrDefault(m => string.Equals(m.Identifier.ValueText, methodName, StringComparison.Ordinal));
+        if (method is null)
+        {
+            return null;
+        }
+
+        var chains = GetInvocationChains(method);
+        return BuildDiagram(diagramName, chains);
+    }
+
+    private static List<InvocationInfo> UnwindChain(InvocationExpressionSyntax invocation)
+    {
+        var chain = new List<InvocationInfo>();
+        ExpressionSyntax? current = invocation;
+        while (current is InvocationExpressionSyntax currentInvocation)
+        {
+            if (currentInvocation.Expression is MemberAccessExpressionSyntax memberAccess)
+            {
+                var name = memberAccess.Name switch
+                {
+                    GenericNameSyntax genericName => genericName.Identifier.ValueText,
+                    IdentifierNameSyntax identifierName => identifierName.Identifier.ValueText,
+                    _ => memberAccess.Name.ToString()
+                };
+
+                var typeArgs = memberAccess.Name is GenericNameSyntax generic
+                    ? generic.TypeArgumentList.Arguments.Select(arg => arg.ToString()).ToList()
+                    : [];
+
+                var args = currentInvocation.ArgumentList.Arguments.Select(arg => arg.ToString()).ToList();
+                chain.Add(new InvocationInfo(name, args, typeArgs));
+                current = memberAccess.Expression;
+                continue;
+            }
+
+            break;
+        }
+
+        chain.Reverse();
+        return chain;
+    }
+
+    private static string? GetFirstArg(InvocationInfo step)
+    {
+        return step.Arguments.Count > 0 ? step.Arguments[0] : null;
+    }
+
+    private static string? GetTriggerLabel(InvocationInfo step)
+    {
+        if (step.TypeArguments.Count > 0)
+        {
+            return step.TypeArguments[0];
+        }
+
+        return GetFirstArg(step);
+    }
+
+    private static string Sanitize(string value)
+    {
+        var builder = new StringBuilder(value.Length);
+        foreach (var ch in value)
+        {
+            builder.Append(char.IsLetterOrDigit(ch) ? ch : '_');
+        }
+
+        return builder.ToString();
+    }
+
+    private static Dictionary<string, List<string>> BuildParentMap(Dictionary<string, string> childToParent)
+    {
+        var parentToChildren = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+        foreach (var entry in childToParent)
+        {
+            var child = entry.Key;
+            var parent = entry.Value;
+            if (!parentToChildren.TryGetValue(parent, out var children))
+            {
+                children = new List<string>();
+                parentToChildren[parent] = children;
+            }
+
+            if (!children.Contains(child))
+            {
+                children.Add(child);
+            }
+        }
+
+        foreach (var entry in parentToChildren.Values)
+        {
+            entry.Sort(StringComparer.Ordinal);
+        }
+
+        return parentToChildren;
+    }
+
+    private static void RenderState(
+        string state,
+        StringBuilder sb,
+        IReadOnlyDictionary<string, string> ids,
+        IReadOnlyDictionary<string, List<string>> parentToChildren,
+        ISet<string> transitionStates,
+        string? startState,
+        ISet<string> rendered,
+        int depth)
+    {
+        if (!parentToChildren.TryGetValue(state, out var children))
+        {
+            if (rendered.Add(state))
+            {
+                sb.AppendLine($"{Indent(depth)}{ids[state]}[{state}]");
+            }
+            return;
+        }
+
+        sb.AppendLine($"{Indent(depth)}subgraph SG_{Sanitize(state)}[{state}]");
+        var shouldRenderParentNode = transitionStates.Contains(state)
+            || string.Equals(startState, state, StringComparison.Ordinal);
+        if (shouldRenderParentNode && rendered.Add(state))
+        {
+            sb.AppendLine($"{Indent(depth + 1)}{ids[state]}[{state}]");
+        }
+
+        foreach (var child in children)
+        {
+            RenderState(child, sb, ids, parentToChildren, transitionStates, startState, rendered, depth + 1);
+        }
+
+        sb.AppendLine($"{Indent(depth)}end");
+    }
+
+    private static string Indent(int depth) => new(' ', depth * 2);
+
+    internal sealed record InvocationInfo(string Name, List<string> Arguments, List<string> TypeArguments);
+
+    internal sealed record Transition(string From, string To, string Label);
+}

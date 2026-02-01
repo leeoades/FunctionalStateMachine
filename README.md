@@ -219,6 +219,25 @@ var machine = StateMachine<State, Trigger, Command>.Create()
     .Build();
 ```
 
+### 13) Mermaid diagram generation (design time)
+
+Use the diagrams source generator to write a `diagrams/<Name>.md` file with a Mermaid flowchart.
+
+```csharp
+using FunctionalStateMachine.Diagrams;
+
+[StateMachineDiagram("LightSwitch")]
+public static StateMachine<LightState, LightTrigger, LightCommand> Build()
+{
+    return StateMachine<LightState, LightTrigger, LightCommand>.Create()
+        .StartWith(LightState.Off)
+        .For(LightState.Off)
+            .On<LightTrigger.ToggleTrigger>()
+                .TransitionTo(LightState.On)
+        .Build();
+}
+```
+
 ## Where to look next
 
 - Samples: `FunctionalStateMachine.Samples/README.md`

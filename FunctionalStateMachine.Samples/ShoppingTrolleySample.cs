@@ -1,10 +1,12 @@
 using FunctionalStateMachine.Core;
+using FunctionalStateMachine.Diagrams;
 using Xunit.Abstractions;
 
 namespace FunctionalStateMachine.Samples;
 
 public static class ShoppingTrolleySample
 {
+    [StateMachineDiagram("ShoppingTrolley")]
     public static StateMachine<ShopState, CartTrigger, CartSession, ShopCommand> Build()
     {
         return StateMachine<ShopState, CartTrigger, CartSession, ShopCommand>.Create()

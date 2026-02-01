@@ -1,9 +1,11 @@
 using FunctionalStateMachine.Core;
+using FunctionalStateMachine.Diagrams;
 
 namespace FunctionalStateMachine.Samples;
 
 public static class TimerSample
 {
+    [StateMachineDiagram("Timer")]
     public static StateMachine<TimerState, TimerTrigger, TimerData, TimerCommand> Build()
     {
         return StateMachine<TimerState, TimerTrigger, TimerData, TimerCommand>.Create()

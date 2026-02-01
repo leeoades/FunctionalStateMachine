@@ -1,9 +1,11 @@
 using FunctionalStateMachine.Core;
+using FunctionalStateMachine.Diagrams;
 
 namespace FunctionalStateMachine.Samples;
 
 public static class SessionLoginSample
 {
+    [StateMachineDiagram("SessionLogin")]
     public static StateMachine<SessionState, SessionTrigger, SessionData, SessionCommand> Build()
     {
         return StateMachine<SessionState, SessionTrigger, SessionData, SessionCommand>.Create()

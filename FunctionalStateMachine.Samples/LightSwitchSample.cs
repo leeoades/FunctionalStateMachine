@@ -1,10 +1,12 @@
 using FunctionalStateMachine.Core;
+using FunctionalStateMachine.Diagrams;
 using Xunit.Abstractions;
 
 namespace FunctionalStateMachine.Samples;
 
 public static class LightSwitchSample
 {
+    [StateMachineDiagram("LightSwitch")]
     public static StateMachine<LightState, LightTrigger, LightCommand> Build() =>
         StateMachine<LightState, LightTrigger, LightCommand>.Create()
             .StartWith(LightState.Off)
