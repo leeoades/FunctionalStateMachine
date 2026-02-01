@@ -10,14 +10,15 @@ public class StateMachineFireTests
             .For(OrderState.Created)
                 .On(OrderTrigger.Pay)
                     .TransitionTo(OrderState.Paid)
-                    .Execute(state => new ChargeCommand(state.Data.OrderId))
+                    .Execute(data => new ChargeCommand(data.OrderId))
             .For(OrderState.Paid)
             .Build();
-        var current = new State<OrderState, OrderData>(OrderState.Created, new OrderData("A-100", "none"));
-        var (next, commands) = machine.Fire(OrderTrigger.Pay, current);
+        var currentState = OrderState.Created;
+        var currentData = new OrderData("A-100", "none");
+        var (nextState, nextData, commands) = machine.Fire(OrderTrigger.Pay, currentState, currentData);
 
-        Assert.Equal(OrderState.Paid, next.Value);
-        Assert.Equal("A-100", next.Data.OrderId);
+        Assert.Equal(OrderState.Paid, nextState);
+        Assert.Equal("A-100", nextData.OrderId);
         Assert.Single(commands);
         Assert.IsType<ChargeCommand>(commands[0]);
     }
@@ -28,18 +29,19 @@ public class StateMachineFireTests
         var machine = StateMachine<OrderState, OrderTrigger, OrderData, TestCommand>.Create()
             .For(OrderState.Created)
                 .On(OrderTrigger.Pay)
-                    .Guard(state => state.Data.OrderId.StartsWith("B"))
+                    .Guard(data => data.OrderId.StartsWith("B"))
                     .TransitionTo(OrderState.Cancelled)
                 .On(OrderTrigger.Pay)
-                    .Guard(state => state.Data.OrderId.StartsWith("A"))
+                    .Guard(data => data.OrderId.StartsWith("A"))
                     .TransitionTo(OrderState.Paid)
             .For(OrderState.Cancelled)
             .For(OrderState.Paid)
             .Build();
-        var current = new State<OrderState, OrderData>(OrderState.Created, new OrderData("A-300", "none"));
-        var (next, _) = machine.Fire(OrderTrigger.Pay, current);
+        var currentState = OrderState.Created;
+        var currentData = new OrderData("A-300", "none");
+        var (nextState, _, _) = machine.Fire(OrderTrigger.Pay, currentState, currentData);
 
-        Assert.Equal(OrderState.Paid, next.Value);
+        Assert.Equal(OrderState.Paid, nextState);
     }
 
     [Fact]
@@ -48,14 +50,15 @@ public class StateMachineFireTests
         var machine = StateMachine<OrderState, OrderTrigger, OrderData, TestCommand>.Create()
             .For(OrderState.Created)
                 .On(OrderTrigger.Pay)
-                    .ModifyData(state => state.Data with { LastEvent = "paid" })
+                    .ModifyData(data => data with { LastEvent = "paid" })
                     .TransitionTo(OrderState.Paid)
             .For(OrderState.Paid)
             .Build();
-        var current = new State<OrderState, OrderData>(OrderState.Created, new OrderData("A-400", "none"));
-        var (next, _) = machine.Fire(OrderTrigger.Pay, current);
+        var currentState = OrderState.Created;
+        var currentData = new OrderData("A-400", "none");
+        var (_, nextData, _) = machine.Fire(OrderTrigger.Pay, currentState, currentData);
 
-        Assert.Equal("paid", next.Data.LastEvent);
+        Assert.Equal("paid", nextData.LastEvent);
     }
 
     private enum OrderState

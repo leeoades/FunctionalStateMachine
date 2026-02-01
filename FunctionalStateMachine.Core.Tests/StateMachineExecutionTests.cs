@@ -16,9 +16,10 @@ public class StateMachineExecutionTests
                     ])
             .For(State.Running)
             .Build();
-        var current = new State<State, Data>(State.Ready, new Data("x"));
+        var currentState = State.Ready;
+        var currentData = new Data("x");
 
-        var (_, commands) = machine.Fire(Trigger.Start, current);
+        var (_, _, commands) = machine.Fire(Trigger.Start, currentState, currentData);
 
         Assert.Equal(2, commands.Count);
     }
@@ -29,12 +30,13 @@ public class StateMachineExecutionTests
         var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
             .For(State.Ready)
                 .On(Trigger.Start)
-                    .ModifyData(state => state.Data with { Id = "updated" })
-                    .Execute(state => new LogCommand(state.Data.Id))
+                    .ModifyData(data => data with { Id = "updated" })
+                    .Execute(data => new LogCommand(data.Id))
             .Build();
-        var current = new State<State, Data>(State.Ready, new Data("original"));
+        var currentState = State.Ready;
+        var currentData = new Data("original");
 
-        var (_, commands) = machine.Fire(Trigger.Start, current);
+        var (_, _, commands) = machine.Fire(Trigger.Start, currentState, currentData);
 
         Assert.Single(commands);
         Assert.Equal("updated", ((LogCommand)commands[0]).Message);
@@ -46,13 +48,14 @@ public class StateMachineExecutionTests
         var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
             .For(State.Ready)
                 .On(Trigger.Start)
-                    .Execute(state => new LogCommand($"Before:{state.Data.Id}"))
-                    .ModifyData(state => state.Data with { Id = "updated" })
-                    .Execute(state => new LogCommand($"After:{state.Data.Id}"))
+                    .Execute(data => new LogCommand($"Before:{data.Id}"))
+                    .ModifyData(data => data with { Id = "updated" })
+                    .Execute(data => new LogCommand($"After:{data.Id}"))
             .Build();
-        var current = new State<State, Data>(State.Ready, new Data("original"));
+        var currentState = State.Ready;
+        var currentData = new Data("original");
 
-        var (_, commands) = machine.Fire(Trigger.Start, current);
+        var (_, _, commands) = machine.Fire(Trigger.Start, currentState, currentData);
 
         Assert.Equal("Before:original", ((LogCommand)commands[0]).Message);
         Assert.Equal("After:updated", ((LogCommand)commands[1]).Message);
@@ -66,12 +69,13 @@ public class StateMachineExecutionTests
                 .On(Trigger.Start)
                     .Execute(() => new LogCommand("NoArgs"))
                     .Execute((Trigger trigger) => new LogCommand($"Trigger:{trigger}"))
-                    .Execute(state => new LogCommand($"State:{state.Value}"))
-                    .Execute((state, trigger) => new LogCommand($"Both:{state.Value}:{trigger}"))
+                    .Execute((State state, Data data) => new LogCommand($"State:{state}"))
+                    .Execute((state, data, trigger) => new LogCommand($"Both:{state}:{trigger}"))
             .Build();
-        var current = new State<State, Data>(State.Ready, new Data("x"));
+        var currentState = State.Ready;
+        var currentData = new Data("x");
 
-        var (_, commands) = machine.Fire(Trigger.Start, current);
+        var (_, _, commands) = machine.Fire(Trigger.Start, currentState, currentData);
 
         Assert.Equal(4, commands.Count);
     }

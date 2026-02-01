@@ -8,11 +8,12 @@ public class StateMachineTriggerTests
         var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
             .For(State.Ready)
                 .On<Trigger.WithIdTrigger>()
-                    .Execute((state, trigger) => new LogCommand(trigger.Id))
+                    .Execute((Data data, Trigger.WithIdTrigger trigger) => new LogCommand(trigger.Id))
             .Build();
-        var current = new State<State, Data>(State.Ready, new Data("original"));
+        var currentState = State.Ready;
+        var currentData = new Data("original");
 
-        var (_, commands) = machine.Fire(Trigger.WithId("new-id"), current);
+        var (_, _, commands) = machine.Fire(Trigger.WithId("new-id"), currentState, currentData);
 
         Assert.Single(commands);
         Assert.Equal("new-id", ((LogCommand)commands[0]).Message);

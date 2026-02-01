@@ -13,7 +13,7 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
     }
 
     public StateMachineBuilder<TState, TTrigger, TData, TCommand> OnUnhandled(
-        Action<TTrigger, State<TState, TData>> handler)
+        Action<TTrigger, TState, TData> handler)
     {
         _machine.OnUnhandled(handler);
         return this;
@@ -43,13 +43,13 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
             _inner = inner;
         }
 
-        public StateConfiguration OnEntry(Func<State<TState, TData>, TCommand> action)
+        public StateConfiguration OnEntry(Func<TData, TCommand> action)
         {
             _inner.OnEntry(action);
             return this;
         }
 
-        public StateConfiguration OnEntry(Func<TState, TCommand> action)
+        public StateConfiguration OnEntry(Func<TState, TData, TCommand> action)
         {
             _inner.OnEntry(action);
             return this;
@@ -61,13 +61,13 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
             return this;
         }
 
-        public StateConfiguration OnEntry(Func<State<TState, TData>, IEnumerable<TCommand>> action)
+        public StateConfiguration OnEntry(Func<TData, IEnumerable<TCommand>> action)
         {
             _inner.OnEntry(action);
             return this;
         }
 
-        public StateConfiguration OnEntry(Func<TState, IEnumerable<TCommand>> action)
+        public StateConfiguration OnEntry(Func<TState, TData, IEnumerable<TCommand>> action)
         {
             _inner.OnEntry(action);
             return this;
@@ -79,13 +79,13 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
             return this;
         }
 
-        public StateConfiguration OnExit(Func<State<TState, TData>, TCommand> action)
+        public StateConfiguration OnExit(Func<TData, TCommand> action)
         {
             _inner.OnExit(action);
             return this;
         }
 
-        public StateConfiguration OnExit(Func<TState, TCommand> action)
+        public StateConfiguration OnExit(Func<TState, TData, TCommand> action)
         {
             _inner.OnExit(action);
             return this;
@@ -97,13 +97,13 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
             return this;
         }
 
-        public StateConfiguration OnExit(Func<State<TState, TData>, IEnumerable<TCommand>> action)
+        public StateConfiguration OnExit(Func<TData, IEnumerable<TCommand>> action)
         {
             _inner.OnExit(action);
             return this;
         }
 
-        public StateConfiguration OnExit(Func<TState, IEnumerable<TCommand>> action)
+        public StateConfiguration OnExit(Func<TState, TData, IEnumerable<TCommand>> action)
         {
             _inner.OnExit(action);
             return this;
@@ -168,49 +168,97 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
             return this;
         }
 
-        public TransitionConfiguration Guard(Func<State<TState, TData>, TTrigger, bool> guard)
+        public TransitionConfiguration Guard(Func<TData, TTrigger, bool> guard)
         {
             _inner.Guard(guard);
             return this;
         }
 
-        public TransitionConfiguration Guard(Func<State<TState, TData>, bool> guard)
+        public TransitionConfiguration Guard(Func<TState, TData, TTrigger, bool> guard)
         {
             _inner.Guard(guard);
             return this;
         }
 
-        public TransitionConfiguration ModifyData(Func<State<TState, TData>, TTrigger, TData> updater)
+        public TransitionConfiguration Guard(Func<TData, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
+        public TransitionConfiguration Guard(Func<TState, TData, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
+        public TransitionConfiguration ModifyData(Func<TData, TTrigger, TData> updater)
         {
             _inner.ModifyData(updater);
             return this;
         }
 
-        public TransitionConfiguration ModifyData(Func<State<TState, TData>, TData> updater)
+        public TransitionConfiguration ModifyData(Func<TState, TData, TTrigger, TData> updater)
         {
             _inner.ModifyData(updater);
             return this;
         }
 
-        public TransitionConfiguration Execute(Func<State<TState, TData>, TTrigger, TCommand> action)
+        public TransitionConfiguration ModifyData(Func<TData, TData> updater)
+        {
+            _inner.ModifyData(updater);
+            return this;
+        }
+
+        public TransitionConfiguration ModifyData(Func<TState, TData, TData> updater)
+        {
+            _inner.ModifyData(updater);
+            return this;
+        }
+
+        public TransitionConfiguration Execute(Func<TData, TTrigger, TCommand> action)
         {
             _inner.Execute(action);
             return this;
         }
 
-        public TransitionConfiguration Execute(Func<State<TState, TData>, TTrigger, IEnumerable<TCommand>> action)
+        public TransitionConfiguration Execute(Func<TState, TData, TTrigger, TCommand> action)
         {
             _inner.Execute(action);
             return this;
         }
 
-        public TransitionConfiguration Execute(Func<State<TState, TData>, TCommand> action)
+        public TransitionConfiguration Execute(Func<TData, TTrigger, IEnumerable<TCommand>> action)
         {
             _inner.Execute(action);
             return this;
         }
 
-        public TransitionConfiguration Execute(Func<State<TState, TData>, IEnumerable<TCommand>> action)
+        public TransitionConfiguration Execute(Func<TState, TData, TTrigger, IEnumerable<TCommand>> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public TransitionConfiguration Execute(Func<TData, TCommand> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public TransitionConfiguration Execute(Func<TState, TData, TCommand> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public TransitionConfiguration Execute(Func<TData, IEnumerable<TCommand>> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public TransitionConfiguration Execute(Func<TState, TData, IEnumerable<TCommand>> action)
         {
             _inner.Execute(action);
             return this;
@@ -240,12 +288,22 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
             return this;
         }
 
-        public ConditionalTransitionConfiguration If(Func<State<TState, TData>, TTrigger, bool> predicate)
+        public ConditionalTransitionConfiguration If(Func<TData, TTrigger, bool> predicate)
         {
             return new ConditionalTransitionConfiguration(this, _inner.If(predicate));
         }
 
-        public ConditionalTransitionConfiguration If(Func<State<TState, TData>, bool> predicate)
+        public ConditionalTransitionConfiguration If(Func<TState, TData, TTrigger, bool> predicate)
+        {
+            return new ConditionalTransitionConfiguration(this, _inner.If(predicate));
+        }
+
+        public ConditionalTransitionConfiguration If(Func<TData, bool> predicate)
+        {
+            return new ConditionalTransitionConfiguration(this, _inner.If(predicate));
+        }
+
+        public ConditionalTransitionConfiguration If(Func<TState, TData, bool> predicate)
         {
             return new ConditionalTransitionConfiguration(this, _inner.If(predicate));
         }
@@ -305,53 +363,112 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
         }
 
         public TransitionConfiguration<TDerivedTrigger> Guard(
-            Func<State<TState, TData>, TDerivedTrigger, bool> guard)
+            Func<TData, TDerivedTrigger, bool> guard)
         {
             _inner.Guard(guard);
             return this;
         }
 
-        public TransitionConfiguration<TDerivedTrigger> Guard(Func<State<TState, TData>, bool> guard)
+        public TransitionConfiguration<TDerivedTrigger> Guard(
+            Func<TState, TData, TDerivedTrigger, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Guard(Func<TData, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Guard(Func<TState, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Guard(Func<TState, TData, bool> guard)
         {
             _inner.Guard(guard);
             return this;
         }
 
         public TransitionConfiguration<TDerivedTrigger> ModifyData(
-            Func<State<TState, TData>, TDerivedTrigger, TData> updater)
+            Func<TData, TDerivedTrigger, TData> updater)
         {
             _inner.ModifyData(updater);
             return this;
         }
 
-        public TransitionConfiguration<TDerivedTrigger> ModifyData(Func<State<TState, TData>, TData> updater)
+        public TransitionConfiguration<TDerivedTrigger> ModifyData(
+            Func<TState, TData, TDerivedTrigger, TData> updater)
+        {
+            _inner.ModifyData(updater);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> ModifyData(Func<TData, TData> updater)
+        {
+            _inner.ModifyData(updater);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> ModifyData(Func<TState, TData, TData> updater)
         {
             _inner.ModifyData(updater);
             return this;
         }
 
         public TransitionConfiguration<TDerivedTrigger> Execute(
-            Func<State<TState, TData>, TDerivedTrigger, TCommand> action)
+            Func<TData, TDerivedTrigger, TCommand> action)
         {
             _inner.Execute(action);
             return this;
         }
 
         public TransitionConfiguration<TDerivedTrigger> Execute(
-            Func<State<TState, TData>, TDerivedTrigger, IEnumerable<TCommand>> action)
-        {
-            _inner.Execute(action);
-            return this;
-        }
-
-        public TransitionConfiguration<TDerivedTrigger> Execute(Func<State<TState, TData>, TCommand> action)
+            Func<TState, TData, TDerivedTrigger, TCommand> action)
         {
             _inner.Execute(action);
             return this;
         }
 
         public TransitionConfiguration<TDerivedTrigger> Execute(
-            Func<State<TState, TData>, IEnumerable<TCommand>> action)
+            Func<TData, TDerivedTrigger, IEnumerable<TCommand>> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Execute(
+            Func<TState, TData, TDerivedTrigger, IEnumerable<TCommand>> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Execute(Func<TData, TCommand> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Execute(Func<TState, TData, TCommand> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Execute(
+            Func<TData, IEnumerable<TCommand>> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Execute(
+            Func<TState, TData, IEnumerable<TCommand>> action)
         {
             _inner.Execute(action);
             return this;
@@ -383,12 +500,23 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
         }
 
         public ConditionalTransitionConfiguration<TDerivedTrigger> If(
-            Func<State<TState, TData>, TDerivedTrigger, bool> predicate)
+            Func<TData, TDerivedTrigger, bool> predicate)
         {
             return new ConditionalTransitionConfiguration<TDerivedTrigger>(this, _inner.If(predicate));
         }
 
-        public ConditionalTransitionConfiguration<TDerivedTrigger> If(Func<State<TState, TData>, bool> predicate)
+        public ConditionalTransitionConfiguration<TDerivedTrigger> If(
+            Func<TState, TData, TDerivedTrigger, bool> predicate)
+        {
+            return new ConditionalTransitionConfiguration<TDerivedTrigger>(this, _inner.If(predicate));
+        }
+
+        public ConditionalTransitionConfiguration<TDerivedTrigger> If(Func<TData, bool> predicate)
+        {
+            return new ConditionalTransitionConfiguration<TDerivedTrigger>(this, _inner.If(predicate));
+        }
+
+        public ConditionalTransitionConfiguration<TDerivedTrigger> If(Func<TState, TData, bool> predicate)
         {
             return new ConditionalTransitionConfiguration<TDerivedTrigger>(this, _inner.If(predicate));
         }
@@ -440,38 +568,76 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
             _inner = inner;
         }
 
-        public ConditionalTransitionConfiguration ModifyData(Func<State<TState, TData>, TTrigger, TData> updater)
+        public ConditionalTransitionConfiguration ModifyData(Func<TData, TTrigger, TData> updater)
         {
             _inner.ModifyData(updater);
             return this;
         }
 
-        public ConditionalTransitionConfiguration ModifyData(Func<State<TState, TData>, TData> updater)
+        public ConditionalTransitionConfiguration ModifyData(Func<TState, TData, TTrigger, TData> updater)
         {
             _inner.ModifyData(updater);
             return this;
         }
 
-        public ConditionalTransitionConfiguration Execute(Func<State<TState, TData>, TTrigger, TCommand> action)
+        public ConditionalTransitionConfiguration ModifyData(Func<TData, TData> updater)
+        {
+            _inner.ModifyData(updater);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration ModifyData(Func<TState, TData, TData> updater)
+        {
+            _inner.ModifyData(updater);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration Execute(Func<TData, TTrigger, TCommand> action)
         {
             _inner.Execute(action);
             return this;
         }
 
         public ConditionalTransitionConfiguration Execute(
-            Func<State<TState, TData>, TTrigger, IEnumerable<TCommand>> action)
+            Func<TState, TData, TTrigger, TCommand> action)
         {
             _inner.Execute(action);
             return this;
         }
 
-        public ConditionalTransitionConfiguration Execute(Func<State<TState, TData>, TCommand> action)
+        public ConditionalTransitionConfiguration Execute(
+            Func<TData, TTrigger, IEnumerable<TCommand>> action)
         {
             _inner.Execute(action);
             return this;
         }
 
-        public ConditionalTransitionConfiguration Execute(Func<State<TState, TData>, IEnumerable<TCommand>> action)
+        public ConditionalTransitionConfiguration Execute(
+            Func<TState, TData, TTrigger, IEnumerable<TCommand>> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration Execute(Func<TData, TCommand> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration Execute(Func<TState, TData, TCommand> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration Execute(Func<TData, IEnumerable<TCommand>> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration Execute(Func<TState, TData, IEnumerable<TCommand>> action)
         {
             _inner.Execute(action);
             return this;
@@ -529,42 +695,84 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
         }
 
         public ConditionalTransitionConfiguration<TDerivedTrigger> ModifyData(
-            Func<State<TState, TData>, TDerivedTrigger, TData> updater)
+            Func<TData, TDerivedTrigger, TData> updater)
         {
             _inner.ModifyData(updater);
             return this;
         }
 
         public ConditionalTransitionConfiguration<TDerivedTrigger> ModifyData(
-            Func<State<TState, TData>, TData> updater)
+            Func<TState, TData, TDerivedTrigger, TData> updater)
+        {
+            _inner.ModifyData(updater);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration<TDerivedTrigger> ModifyData(
+            Func<TData, TData> updater)
+        {
+            _inner.ModifyData(updater);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration<TDerivedTrigger> ModifyData(
+            Func<TState, TData, TData> updater)
         {
             _inner.ModifyData(updater);
             return this;
         }
 
         public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(
-            Func<State<TState, TData>, TDerivedTrigger, TCommand> action)
+            Func<TData, TDerivedTrigger, TCommand> action)
         {
             _inner.Execute(action);
             return this;
         }
 
         public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(
-            Func<State<TState, TData>, TDerivedTrigger, IEnumerable<TCommand>> action)
+            Func<TState, TData, TDerivedTrigger, TCommand> action)
         {
             _inner.Execute(action);
             return this;
         }
 
         public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(
-            Func<State<TState, TData>, TCommand> action)
+            Func<TData, TDerivedTrigger, IEnumerable<TCommand>> action)
         {
             _inner.Execute(action);
             return this;
         }
 
         public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(
-            Func<State<TState, TData>, IEnumerable<TCommand>> action)
+            Func<TState, TData, TDerivedTrigger, IEnumerable<TCommand>> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(
+            Func<TData, TCommand> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(
+            Func<TState, TData, TCommand> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(
+            Func<TData, IEnumerable<TCommand>> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(
+            Func<TState, TData, IEnumerable<TCommand>> action)
         {
             _inner.Execute(action);
             return this;
@@ -623,7 +831,7 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
     }
 
     public StateMachineBuilder<TState, TTrigger, TCommand> OnUnhandled(
-        Action<TTrigger, State<TState, NoData>> handler)
+        Action<TTrigger, TState> handler)
     {
         _machine.OnUnhandled(handler);
         return this;
@@ -653,12 +861,6 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
             _inner = inner;
         }
 
-        public StateConfiguration OnEntry(Func<State<TState, NoData>, TCommand> action)
-        {
-            _inner.OnEntry(action);
-            return this;
-        }
-
         public StateConfiguration OnEntry(Func<TState, TCommand> action)
         {
             _inner.OnEntry(action);
@@ -666,12 +868,6 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
         }
 
         public StateConfiguration OnEntry(Func<TCommand> action)
-        {
-            _inner.OnEntry(action);
-            return this;
-        }
-
-        public StateConfiguration OnEntry(Func<State<TState, NoData>, IEnumerable<TCommand>> action)
         {
             _inner.OnEntry(action);
             return this;
@@ -688,12 +884,6 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
             return this;
         }
 
-        public StateConfiguration OnExit(Func<State<TState, NoData>, TCommand> action)
-        {
-            _inner.OnExit(action);
-            return this;
-        }
-
         public StateConfiguration OnExit(Func<TState, TCommand> action)
         {
             _inner.OnExit(action);
@@ -701,12 +891,6 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
         }
 
         public StateConfiguration OnExit(Func<TCommand> action)
-        {
-            _inner.OnExit(action);
-            return this;
-        }
-
-        public StateConfiguration OnExit(Func<State<TState, NoData>, IEnumerable<TCommand>> action)
         {
             _inner.OnExit(action);
             return this;
@@ -777,43 +961,49 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
             return this;
         }
 
-        public TransitionConfiguration Guard(Func<State<TState, NoData>, TTrigger, bool> guard)
+        public TransitionConfiguration Guard(Func<TState, TTrigger, bool> guard)
         {
             _inner.Guard(guard);
             return this;
         }
 
-        public TransitionConfiguration Guard(Func<State<TState, NoData>, bool> guard)
+        public TransitionConfiguration Guard(Func<TState, bool> guard)
         {
             _inner.Guard(guard);
             return this;
         }
 
-        public TransitionConfiguration Execute(Func<State<TState, NoData>, TTrigger, TCommand> action)
+        public TransitionConfiguration Execute(Func<TState, TTrigger, TCommand> action)
         {
             _inner.Execute(action);
             return this;
         }
 
-        public TransitionConfiguration Execute(Func<State<TState, NoData>, TTrigger, IEnumerable<TCommand>> action)
+        public TransitionConfiguration Execute(Func<TState, TTrigger, IEnumerable<TCommand>> action)
         {
             _inner.Execute(action);
             return this;
         }
 
-        public TransitionConfiguration Execute(Func<State<TState, NoData>, TCommand> action)
+        public TransitionConfiguration Execute(Func<TState, TCommand> action)
         {
             _inner.Execute(action);
             return this;
         }
 
-        public TransitionConfiguration Execute(Func<State<TState, NoData>, IEnumerable<TCommand>> action)
+        public TransitionConfiguration Execute(Func<TState, IEnumerable<TCommand>> action)
         {
             _inner.Execute(action);
             return this;
         }
 
-        public TransitionConfiguration ModifyData(Func<State<TState, NoData>, NoData> updater)
+        public TransitionConfiguration ModifyData(Func<NoData, NoData> updater)
+        {
+            _inner.ModifyData(updater);
+            return this;
+        }
+
+        public TransitionConfiguration ModifyData(Func<TState, NoData> updater)
         {
             _inner.ModifyData(updater);
             return this;
@@ -843,12 +1033,12 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
             return this;
         }
 
-        public ConditionalTransitionConfiguration If(Func<State<TState, NoData>, TTrigger, bool> predicate)
+        public ConditionalTransitionConfiguration If(Func<TState, TTrigger, bool> predicate)
         {
             return new ConditionalTransitionConfiguration(this, _inner.If(predicate));
         }
 
-        public ConditionalTransitionConfiguration If(Func<State<TState, NoData>, bool> predicate)
+        public ConditionalTransitionConfiguration If(Func<TState, bool> predicate)
         {
             return new ConditionalTransitionConfiguration(this, _inner.If(predicate));
         }
@@ -908,46 +1098,52 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
         }
 
         public TransitionConfiguration<TDerivedTrigger> Guard(
-            Func<State<TState, NoData>, TDerivedTrigger, bool> guard)
+            Func<TState, TDerivedTrigger, bool> guard)
         {
             _inner.Guard(guard);
             return this;
         }
 
-        public TransitionConfiguration<TDerivedTrigger> Guard(Func<State<TState, NoData>, bool> guard)
+        public TransitionConfiguration<TDerivedTrigger> Guard(Func<TState, bool> guard)
         {
             _inner.Guard(guard);
             return this;
         }
 
         public TransitionConfiguration<TDerivedTrigger> Execute(
-            Func<State<TState, NoData>, TDerivedTrigger, TCommand> action)
+            Func<TState, TDerivedTrigger, TCommand> action)
         {
             _inner.Execute(action);
             return this;
         }
 
         public TransitionConfiguration<TDerivedTrigger> Execute(
-            Func<State<TState, NoData>, TDerivedTrigger, IEnumerable<TCommand>> action)
+            Func<TState, TDerivedTrigger, IEnumerable<TCommand>> action)
         {
             _inner.Execute(action);
             return this;
         }
 
-        public TransitionConfiguration<TDerivedTrigger> Execute(Func<State<TState, NoData>, TCommand> action)
+        public TransitionConfiguration<TDerivedTrigger> Execute(Func<TState, TCommand> action)
         {
             _inner.Execute(action);
             return this;
         }
 
         public TransitionConfiguration<TDerivedTrigger> Execute(
-            Func<State<TState, NoData>, IEnumerable<TCommand>> action)
+            Func<TState, IEnumerable<TCommand>> action)
         {
             _inner.Execute(action);
             return this;
         }
 
-        public TransitionConfiguration<TDerivedTrigger> ModifyData(Func<State<TState, NoData>, NoData> updater)
+        public TransitionConfiguration<TDerivedTrigger> ModifyData(Func<NoData, NoData> updater)
+        {
+            _inner.ModifyData(updater);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> ModifyData(Func<TState, NoData> updater)
         {
             _inner.ModifyData(updater);
             return this;
@@ -979,12 +1175,12 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
         }
 
         public ConditionalTransitionConfiguration<TDerivedTrigger> If(
-            Func<State<TState, NoData>, TDerivedTrigger, bool> predicate)
+            Func<TState, TDerivedTrigger, bool> predicate)
         {
             return new ConditionalTransitionConfiguration<TDerivedTrigger>(this, _inner.If(predicate));
         }
 
-        public ConditionalTransitionConfiguration<TDerivedTrigger> If(Func<State<TState, NoData>, bool> predicate)
+        public ConditionalTransitionConfiguration<TDerivedTrigger> If(Func<TState, bool> predicate)
         {
             return new ConditionalTransitionConfiguration<TDerivedTrigger>(this, _inner.If(predicate));
         }
@@ -1036,33 +1232,39 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
             _inner = inner;
         }
 
-        public ConditionalTransitionConfiguration ModifyData(Func<State<TState, NoData>, NoData> updater)
+        public ConditionalTransitionConfiguration ModifyData(Func<NoData, NoData> updater)
         {
             _inner.ModifyData(updater);
             return this;
         }
 
-        public ConditionalTransitionConfiguration Execute(Func<State<TState, NoData>, TTrigger, TCommand> action)
+        public ConditionalTransitionConfiguration ModifyData(Func<TState, NoData> updater)
+        {
+            _inner.ModifyData(updater);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration Execute(Func<TState, TTrigger, TCommand> action)
         {
             _inner.Execute(action);
             return this;
         }
 
         public ConditionalTransitionConfiguration Execute(
-            Func<State<TState, NoData>, TTrigger, IEnumerable<TCommand>> action)
+            Func<TState, TTrigger, IEnumerable<TCommand>> action)
         {
             _inner.Execute(action);
             return this;
         }
 
-        public ConditionalTransitionConfiguration Execute(Func<State<TState, NoData>, TCommand> action)
+        public ConditionalTransitionConfiguration Execute(Func<TState, TCommand> action)
         {
             _inner.Execute(action);
             return this;
         }
 
         public ConditionalTransitionConfiguration Execute(
-            Func<State<TState, NoData>, IEnumerable<TCommand>> action)
+            Func<TState, IEnumerable<TCommand>> action)
         {
             _inner.Execute(action);
             return this;
@@ -1120,35 +1322,42 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
         }
 
         public ConditionalTransitionConfiguration<TDerivedTrigger> ModifyData(
-            Func<State<TState, NoData>, NoData> updater)
+            Func<NoData, NoData> updater)
+        {
+            _inner.ModifyData(updater);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration<TDerivedTrigger> ModifyData(
+            Func<TState, NoData> updater)
         {
             _inner.ModifyData(updater);
             return this;
         }
 
         public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(
-            Func<State<TState, NoData>, TDerivedTrigger, TCommand> action)
+            Func<TState, TDerivedTrigger, TCommand> action)
         {
             _inner.Execute(action);
             return this;
         }
 
         public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(
-            Func<State<TState, NoData>, TDerivedTrigger, IEnumerable<TCommand>> action)
+            Func<TState, TDerivedTrigger, IEnumerable<TCommand>> action)
         {
             _inner.Execute(action);
             return this;
         }
 
         public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(
-            Func<State<TState, NoData>, TCommand> action)
+            Func<TState, TCommand> action)
         {
             _inner.Execute(action);
             return this;
         }
 
         public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(
-            Func<State<TState, NoData>, IEnumerable<TCommand>> action)
+            Func<TState, IEnumerable<TCommand>> action)
         {
             _inner.Execute(action);
             return this;

@@ -9,11 +9,12 @@ public class StateMachineUnhandledTests
             .For(State.Ready)
             .Build();
 
-        var current = new State<State, Data>(State.Ready, new Data("x"));
-        var handled = machine.TryFire(Trigger.Start, current, out var next, out var commands);
+        var currentState = State.Ready;
+        var currentData = new Data("x");
+        var handled = machine.TryFire(Trigger.Start, currentState, currentData, out var nextState, out _, out var commands);
 
         Assert.False(handled);
-        Assert.Equal(State.Ready, next.Value);
+        Assert.Equal(State.Ready, nextState);
         Assert.Empty(commands);
     }
 
@@ -22,12 +23,13 @@ public class StateMachineUnhandledTests
     {
         var log = new List<string>();
         var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
-            .OnUnhandled((trigger, state) => log.Add($"{state.Value}:{trigger}"))
+            .OnUnhandled((trigger, state, data) => log.Add($"{state}:{trigger}"))
             .For(State.Ready)
             .Build();
 
-        var current = new State<State, Data>(State.Ready, new Data("x"));
-        var handled = machine.TryFire(Trigger.Start, current, out _, out var commands);
+        var currentState = State.Ready;
+        var currentData = new Data("x");
+        var handled = machine.TryFire(Trigger.Start, currentState, currentData, out _, out _, out var commands);
 
         Assert.True(handled);
         Assert.Empty(commands);
@@ -42,10 +44,11 @@ public class StateMachineUnhandledTests
                 .On(Trigger.Ping)
                     .Ignore()
             .Build();
-        var current = new State<State, Data>(State.Ready, new Data("x"));
-        var (next, commands) = machine.Fire(Trigger.Ping, current);
+        var currentState = State.Ready;
+        var currentData = new Data("x");
+        var (nextState, _, commands) = machine.Fire(Trigger.Ping, currentState, currentData);
 
-        Assert.Equal(State.Ready, next.Value);
+        Assert.Equal(State.Ready, nextState);
         Assert.Empty(commands);
     }
 
@@ -55,9 +58,10 @@ public class StateMachineUnhandledTests
         var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
             .For(State.Ready)
             .Build();
-        var current = new State<State, Data>(State.Ready, new Data("x"));
+        var currentState = State.Ready;
+        var currentData = new Data("x");
 
-        Assert.Throws<InvalidOperationException>(() => machine.Fire(Trigger.Start, current));
+        Assert.Throws<InvalidOperationException>(() => machine.Fire(Trigger.Start, currentState, currentData));
     }
 
     private enum State

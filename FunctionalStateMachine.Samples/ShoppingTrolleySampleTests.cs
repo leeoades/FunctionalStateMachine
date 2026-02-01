@@ -9,16 +9,16 @@ public class ShoppingTrolleySampleTests
     public void PayByCash_UnderpaymentRequestsRemaining()
     {
         var machine = ShoppingTrolleySample.Build();
-        var state = StartState(machine);
+        var (state, data) = StartState(machine);
 
-        state = Fire(CartTrigger.StartShopping(), state, machine);
-        state = Fire(CartTrigger.AddItem(new LineItem("Milk", 1.30m)), state, machine);
-        state = Fire(CartTrigger.AddItem(new LineItem("Bread", 0.80m)), state, machine);
-        state = Fire(CartTrigger.GoToCheckout(), state, machine);
-        var (next, commands) = FireWithCommands(CartTrigger.PayByCash(1.00m), state, machine);
+        (state, data) = Fire(CartTrigger.StartShopping(), state, data, machine);
+        (state, data) = Fire(CartTrigger.AddItem(new LineItem("Milk", 1.30m)), state, data, machine);
+        (state, data) = Fire(CartTrigger.AddItem(new LineItem("Bread", 0.80m)), state, data, machine);
+        (state, data) = Fire(CartTrigger.GoToCheckout(), state, data, machine);
+        var (nextState, nextData, commands) = FireWithCommands(CartTrigger.PayByCash(1.00m), state, data, machine);
 
-        Assert.Equal(ShopState.CheckingOut, next.Value);
-        Assert.Equal(2, next.Data.Shop.Items.Count);
+        Assert.Equal(ShopState.CheckingOut, nextState);
+        Assert.Equal(2, nextData.Shop.Items.Count);
         var request = Assert.Single(commands) as ShopCommand.RequestPayment;
         Assert.NotNull(request);
         Assert.Equal(1.10m, request.Total);
@@ -28,16 +28,36 @@ public class ShoppingTrolleySampleTests
     public void PayByCash_ExactPaymentGrantsOwnership()
     {
         var machine = ShoppingTrolleySample.Build();
-        var state = StartState(machine);
+        var (state, data) = StartState(machine);
 
-        state = Fire(CartTrigger.StartShopping(), state, machine);
-        state = Fire(CartTrigger.AddItem(new LineItem("Milk", 1.30m)), state, machine);
-        state = Fire(CartTrigger.AddItem(new LineItem("Bread", 0.80m)), state, machine);
-        state = Fire(CartTrigger.GoToCheckout(), state, machine);
-        var (next, commands) = FireWithCommands(CartTrigger.PayByCash(2.10m), state, machine);
+        (state, data) = Fire(CartTrigger.StartShopping(), state, data, machine);
+        (state, data) = Fire(CartTrigger.AddItem(new LineItem("Milk", 1.30m)), state, data, machine);
+        (state, data) = Fire(CartTrigger.AddItem(new LineItem("Bread", 0.80m)), state, data, machine);
+        (state, data) = Fire(CartTrigger.GoToCheckout(), state, data, machine);
+        var (nextState, nextData, commands) = FireWithCommands(CartTrigger.PayByCash(2.10m), state, data, machine);
 
-        Assert.Equal(ShopState.Outside, next.Value);
-        Assert.Empty(next.Data.Shop.Items);
+        Assert.Equal(ShopState.Outside, nextState);
+        Assert.Empty(nextData.Shop.Items);
+        var grant = Assert.Single(commands) as ShopCommand.GrantItemOwnership;
+        Assert.NotNull(grant);
+        Assert.Equal(2, grant.Items.Count);
+    }
+
+    [Fact]
+    public void Pay_GrantsOwnership()
+    {
+        var machine = ShoppingTrolleySample.Build();
+        var (state, data) = StartState(machine);
+
+        (state, data) = Fire(CartTrigger.StartShopping(), state, data, machine);
+        (state, data) = Fire(CartTrigger.AddItem(new LineItem("Milk", 1.30m)), state, data, machine);
+        (state, data) = Fire(CartTrigger.AddItem(new LineItem("Bread", 0.80m)), state, data, machine);
+        (state, data) = Fire(CartTrigger.GoToCheckout(), state, data, machine);
+        (state, data) = Fire(CartTrigger.Pay(), state, data, machine);
+        var (nextState, nextData, commands) = FireWithCommands(CartTrigger.PaymentSucceeded(), state, data, machine);
+
+        Assert.Equal(ShopState.Outside, nextState);
+        Assert.Empty(nextData.Shop.Items);
         var grant = Assert.Single(commands) as ShopCommand.GrantItemOwnership;
         Assert.NotNull(grant);
         Assert.Equal(2, grant.Items.Count);
@@ -47,16 +67,16 @@ public class ShoppingTrolleySampleTests
     public void PayByCash_OverpaymentIssuesRefund()
     {
         var machine = ShoppingTrolleySample.Build();
-        var state = StartState(machine);
+        var (state, data) = StartState(machine);
 
-        state = Fire(CartTrigger.StartShopping(), state, machine);
-        state = Fire(CartTrigger.AddItem(new LineItem("Milk", 1.30m)), state, machine);
-        state = Fire(CartTrigger.AddItem(new LineItem("Bread", 0.80m)), state, machine);
-        state = Fire(CartTrigger.GoToCheckout(), state, machine);
-        var (next, commands) = FireWithCommands(CartTrigger.PayByCash(3.00m), state, machine);
+        (state, data) = Fire(CartTrigger.StartShopping(), state, data, machine);
+        (state, data) = Fire(CartTrigger.AddItem(new LineItem("Milk", 1.30m)), state, data, machine);
+        (state, data) = Fire(CartTrigger.AddItem(new LineItem("Bread", 0.80m)), state, data, machine);
+        (state, data) = Fire(CartTrigger.GoToCheckout(), state, data, machine);
+        var (nextState, nextData, commands) = FireWithCommands(CartTrigger.PayByCash(3.00m), state, data, machine);
 
-        Assert.Equal(ShopState.Outside, next.Value);
-        Assert.Empty(next.Data.Shop.Items);
+        Assert.Equal(ShopState.Outside, nextState);
+        Assert.Empty(nextData.Shop.Items);
         Assert.Equal(2, commands.Count);
         var grant = commands[0] as ShopCommand.GrantItemOwnership;
         var refund = commands[1] as ShopCommand.RefundCash;
@@ -66,28 +86,28 @@ public class ShoppingTrolleySampleTests
         Assert.Equal(0.90m, refund.Amount);
     }
 
-    private static State<ShopState, CartSession> StartState(
+    private static (ShopState State, CartSession Data) StartState(
         StateMachine<ShopState, CartTrigger, CartSession, ShopCommand> machine)
     {
-        return new State<ShopState, CartSession>(
-            machine.InitialStateOrDefault(),
-            new CartSession(new ShopData([], 0)));
+        return (machine.InitialStateOrDefault(), new CartSession(new ShopData([], 0)));
     }
 
-    private static State<ShopState, CartSession> Fire(
+    private static (ShopState State, CartSession Data) Fire(
         CartTrigger trigger,
-        State<ShopState, CartSession> state,
+        ShopState state,
+        CartSession data,
         StateMachine<ShopState, CartTrigger, CartSession, ShopCommand> machine)
     {
-        var (newState, _) = machine.Fire(trigger, state);
-        return newState;
+        var (newState, newData, _) = machine.Fire(trigger, state, data);
+        return (newState, newData);
     }
 
-    private static (State<ShopState, CartSession> State, IReadOnlyList<ShopCommand> Commands) FireWithCommands(
+    private static (ShopState State, CartSession Data, IReadOnlyList<ShopCommand> Commands) FireWithCommands(
         CartTrigger trigger,
-        State<ShopState, CartSession> state,
+        ShopState state,
+        CartSession data,
         StateMachine<ShopState, CartTrigger, CartSession, ShopCommand> machine)
     {
-        return machine.Fire(trigger, state);
+        return machine.Fire(trigger, state, data);
     }
 }

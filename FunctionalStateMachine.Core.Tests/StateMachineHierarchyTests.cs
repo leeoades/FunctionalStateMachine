@@ -8,25 +8,26 @@ public class StateMachineHierarchyTests
         var machine = StateMachine<WorkState, WorkerTrigger, WorkerData, TestCommand>.Create()
             .For(WorkState.Active)
                 .StartsWith(WorkState.Idle)
-                .OnExit(state => new LogCommand($"Exit:{state.Value}"))
+                .OnExit((state, data) => new LogCommand($"Exit:{state}"))
                 .On(WorkerTrigger.Cancel)
                     .TransitionTo(WorkState.Closed)
-                    .Execute(state => new LogCommand($"Transition:{state.Value}"))
+                    .Execute((WorkState state, WorkerData data) => new LogCommand($"Transition:{state}"))
                 .For(WorkState.Idle)
                     .SubStateOf(WorkState.Active)
                     .On(WorkerTrigger.StartWork)
                         .TransitionTo(WorkState.Busy)
                 .For(WorkState.Busy)
                     .SubStateOf(WorkState.Active)
-                    .OnExit(state => new LogCommand($"Exit:{state.Value}"))
+                    .OnExit((state, data) => new LogCommand($"Exit:{state}"))
                 .For(WorkState.Closed)
-                    .OnEntry(state => new LogCommand($"Entry:{state.Value}"))
+                    .OnEntry((state, data) => new LogCommand($"Entry:{state}"))
             .Build();
-        var current = new State<WorkState, WorkerData>(WorkState.Busy, new WorkerData(0));
+        var currentState = WorkState.Busy;
+        var currentData = new WorkerData(0);
 
-        var (next, commands) = machine.Fire(WorkerTrigger.Cancel, current);
+        var (nextState, _, commands) = machine.Fire(WorkerTrigger.Cancel, currentState, currentData);
 
-        Assert.Equal(WorkState.Closed, next.Value);
+        Assert.Equal(WorkState.Closed, nextState);
         Assert.Equal(4, commands.Count);
         Assert.Equal("Transition:Busy", ((LogCommand)commands[0]).Message);
         Assert.Equal("Exit:Busy", ((LogCommand)commands[1]).Message);
@@ -40,21 +41,22 @@ public class StateMachineHierarchyTests
         var machine = StateMachine<WorkState, WorkerTrigger, WorkerData, TestCommand>.Create()
             .For(WorkState.Active)
                 .StartsWith(WorkState.Idle)
-                .OnEntry(state => new LogCommand($"Entry:{state.Value}"))
-                .OnExit(state => new LogCommand($"Exit:{state.Value}"))
+                .OnEntry((state, data) => new LogCommand($"Entry:{state}"))
+                .OnExit((state, data) => new LogCommand($"Exit:{state}"))
                 .For(WorkState.Idle)
                     .SubStateOf(WorkState.Active)
-                    .OnExit(state => new LogCommand($"Exit:{state.Value}"))
+                    .OnExit((state, data) => new LogCommand($"Exit:{state}"))
                     .On(WorkerTrigger.StartWork)
                         .TransitionTo(WorkState.Busy)
-                        .Execute(state => new LogCommand($"Transition:{state.Value}"))
+                        .Execute((WorkState state, WorkerData data) => new LogCommand($"Transition:{state}"))
                 .For(WorkState.Busy)
                     .SubStateOf(WorkState.Active)
-                    .OnEntry(state => new LogCommand($"Entry:{state.Value}"))
+                    .OnEntry((state, data) => new LogCommand($"Entry:{state}"))
             .Build();
-        var current = new State<WorkState, WorkerData>(WorkState.Idle, new WorkerData(0));
+        var currentState = WorkState.Idle;
+        var currentData = new WorkerData(0);
 
-        var (_, commands) = machine.Fire(WorkerTrigger.StartWork, current);
+        var (_, _, commands) = machine.Fire(WorkerTrigger.StartWork, currentState, currentData);
 
         Assert.Equal(3, commands.Count);
         Assert.Equal("Transition:Idle", ((LogCommand)commands[0]).Message);

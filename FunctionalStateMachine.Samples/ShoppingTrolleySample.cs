@@ -14,76 +14,76 @@ public static class ShoppingTrolleySample
             .For(ShopState.InStore)
                 .StartsWith(ShopState.Shopping)
                 .On<CartTrigger.CancelTrigger>()
-                    .ModifyData(state => state.Data with { Shop = new ShopData([], 0) })
+                    .ModifyData(data => data with { Shop = new ShopData([], 0) })
                     .TransitionTo(ShopState.Outside)
-                .On<CartTrigger.PaymentSucceededTrigger>()
-                    .Guard(state => state.Value == ShopState.PaymentPending)
-                    .Execute(state => new ShopCommand.GrantItemOwnership(state.Data.Shop.Items))
-                    .ModifyData(state => state.Data with { Shop = new ShopData([], 0) })
-                    .TransitionTo(ShopState.Outside)
+                
             .For(ShopState.Outside)
                 .On<CartTrigger.StartShoppingTrigger>()
-                    .ModifyData(state => state.Data with { Shop = new ShopData([], 0) })
+                    .ModifyData(data => data with { Shop = new ShopData([], 0) })
                     .TransitionTo(ShopState.Shopping)
             .For(ShopState.Shopping)
                 .SubStateOf(ShopState.InStore)
                 .On<CartTrigger.AddItemTrigger>()
-                    .ModifyData((state, trigger) =>
+                    .ModifyData((data, trigger) =>
                     {
-                        var items = new List<LineItem>(state.Data.Shop.Items);
+                        var items = new List<LineItem>(data.Shop.Items);
                         items.Add(trigger.Item);
 
-                        return state.Data with { Shop = state.Data.Shop with { Items = items } };
+                        return data with { Shop = data.Shop with { Items = items } };
                     })
-                    .Execute(state => new ShopCommand.UpdateCartItems(state.Data.Shop.Items))
+                    .Execute(data => new ShopCommand.UpdateCartItems(data.Shop.Items))
                 .On<CartTrigger.RemoveItemTrigger>()
-                    .ModifyData((state, trigger) =>
+                    .ModifyData((data, trigger) =>
                     {
-                        var items = new List<LineItem>(state.Data.Shop.Items);
+                        var items = new List<LineItem>(data.Shop.Items);
                         items.RemoveAll(item => item.Sku == trigger.Sku);
 
-                        return state.Data with { Shop = state.Data.Shop with { Items = items } };
+                        return data with { Shop = data.Shop with { Items = items } };
                     })
-                    .Execute(state => new ShopCommand.UpdateCartItems(state.Data.Shop.Items))
+                    .Execute(data => new ShopCommand.UpdateCartItems(data.Shop.Items))
                 .On<CartTrigger.GoToCheckoutTrigger>()
                     .TransitionTo(ShopState.CheckingOut)
-                    .Execute(state => new ShopCommand.RequestPayment(state.Data.Shop.TotalPrice()))
+                    .Execute(data => new ShopCommand.RequestPayment(data.Shop.TotalPrice()))
             .For(ShopState.CheckingOut)
                 .SubStateOf(ShopState.InStore)
                 .On<CartTrigger.PayTrigger>()
                     .TransitionTo(ShopState.PaymentPending)
-                    .ModifyData(state => state.Data with
+                    .ModifyData(data => data with
                     {
-                        Shop = state.Data.Shop with { PaymentAttempts = state.Data.Shop.PaymentAttempts + 1 }
+                        Shop = data.Shop with { PaymentAttempts = data.Shop.PaymentAttempts + 1 }
                     })
                     .Execute(() => new ShopCommand.DisplayPaymentPendingMessage())
                 .On<CartTrigger.PayByCashTrigger>()
-                    .Guard((state, trigger) => trigger.Amount < state.Data.Shop.TotalPrice())
-                    .Execute((state, trigger) =>
+                    .Guard((data, trigger) => trigger.Amount < data.Shop.TotalPrice())
+                    .Execute((data, trigger) =>
                     {
-                        var remaining = state.Data.Shop.TotalPrice() - trigger.Amount;
+                        var remaining = data.Shop.TotalPrice() - trigger.Amount;
                         return new ShopCommand.RequestPayment(remaining);
                     })
                 .On<CartTrigger.PayByCashTrigger>()
-                    .Guard((state, trigger) => trigger.Amount >= state.Data.Shop.TotalPrice())
-                    .Execute(state => new ShopCommand.GrantItemOwnership(state.Data.Shop.Items))
-                    .If((state, trigger) => trigger.Amount > state.Data.Shop.TotalPrice())
-                        .Execute((state, trigger) =>
+                    .Guard((data, trigger) => trigger.Amount >= data.Shop.TotalPrice())
+                    .Execute(data => new ShopCommand.GrantItemOwnership(data.Shop.Items))
+                    .If((data, trigger) => trigger.Amount > data.Shop.TotalPrice())
+                        .Execute((data, trigger) =>
                         {
-                            var refund = trigger.Amount - state.Data.Shop.TotalPrice();
+                            var refund = trigger.Amount - data.Shop.TotalPrice();
                             return new ShopCommand.RefundCash(refund);
                         })
                         .Done()
-                    .ModifyData(state => state.Data with { Shop = new ShopData([], 0) })
+                    .ModifyData(data => data with { Shop = new ShopData([], 0) })
                     .TransitionTo(ShopState.Outside)
             .For(ShopState.PaymentPending)
                 .SubStateOf(ShopState.InStore)
+                .On<CartTrigger.PaymentSucceededTrigger>()
+                    .Execute(data => new ShopCommand.GrantItemOwnership(data.Shop.Items))
+                    .ModifyData(data => data with { Shop = new ShopData([], 0) })
+                    .TransitionTo(ShopState.Outside)
                 .On<CartTrigger.PaymentFailedTrigger>()
                     .TransitionTo(ShopState.CheckingOut)
-                    .Execute(state =>
+                    .Execute(data =>
                     [
                         new ShopCommand.DisplayPaymentFailedMessage(),
-                        new ShopCommand.RequestPayment(state.Data.Shop.TotalPrice())
+                        new ShopCommand.RequestPayment(data.Shop.TotalPrice())
                     ])
             .Build();
     }
@@ -171,24 +171,26 @@ public class ShoppingTrolleyDemo(ITestOutputHelper output)
     public void Demo()
     {
         var machine = ShoppingTrolleySample.Build();
-        var state = new State<ShopState, CartSession>(machine.InitialStateOrDefault(), new CartSession(new ShopData([], 0)));
+        var currentState = machine.InitialStateOrDefault();
+        var currentData = new CartSession(new ShopData([], 0));
 
-        state = Fire(CartTrigger.StartShopping(), state, machine);
-        state = Fire(CartTrigger.AddItem(new LineItem("Milk", 1.30m)), state, machine);
-        state = Fire(CartTrigger.AddItem(new LineItem("Bread", 0.80m)), state, machine);
-        state = Fire(CartTrigger.GoToCheckout(), state, machine);
-        state = Fire(CartTrigger.Pay(), state, machine);
-        state = Fire(CartTrigger.PaymentSucceeded(), state, machine);
+        (currentState, currentData) = Fire(CartTrigger.StartShopping(), currentState, currentData, machine);
+        (currentState, currentData) = Fire(CartTrigger.AddItem(new LineItem("Milk", 1.30m)), currentState, currentData, machine);
+        (currentState, currentData) = Fire(CartTrigger.AddItem(new LineItem("Bread", 0.80m)), currentState, currentData, machine);
+        (currentState, currentData) = Fire(CartTrigger.GoToCheckout(), currentState, currentData, machine);
+        (currentState, currentData) = Fire(CartTrigger.Pay(), currentState, currentData, machine);
+        (currentState, currentData) = Fire(CartTrigger.PaymentSucceeded(), currentState, currentData, machine);
     }
 
-    private State<ShopState, CartSession> Fire(
+    private (ShopState State, CartSession Data) Fire(
         CartTrigger trigger,
-        State<ShopState, CartSession> state,
+        ShopState state,
+        CartSession data,
         StateMachine<ShopState, CartTrigger, CartSession, ShopCommand> machine)
     {
-        var (newState, commands) = machine.Fire(trigger, state);
+        var (newState, newData, commands) = machine.Fire(trigger, state, data);
         Run(commands);
-        return newState;
+        return (newState, newData);
     }
 
     private void Run(IReadOnlyList<ShopCommand> commands)

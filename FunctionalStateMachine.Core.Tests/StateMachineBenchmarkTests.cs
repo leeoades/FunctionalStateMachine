@@ -28,12 +28,13 @@ public class StateMachineBenchmarkTests(ITestOutputHelper output)
         }
         declarationWatch.Stop();
 
-        var fireState = new State<State, Data>(State.Ready, new Data(0));
+        var fireState = State.Ready;
+        var fireData = new Data(0);
         var fireWatch = Stopwatch.StartNew();
         for (int i = 0; i < fireIterations; i++)
         {
-            fireState = machine!.Fire(Trigger.Go, fireState).NewState;
-            fireState = machine.Fire(Trigger.Reset, fireState).NewState;
+            (fireState, fireData, _) = machine!.Fire(Trigger.Go, fireState, fireData);
+            (fireState, fireData, _) = machine.Fire(Trigger.Reset, fireState, fireData);
         }
         fireWatch.Stop();
 

@@ -101,10 +101,10 @@ You can define multiple transitions for a trigger and gate them with guards.
 var machine = StateMachine<State, Trigger, Data, Command>.Create()
     .For(State.Pending)
         .On(Trigger.Submit)
-            .Guard((state, trigger) => state.Data.Score > 70)
+            .Guard((data, trigger) => data.Score > 70)
             .TransitionTo(State.Manual)
         .On(Trigger.Submit)
-            .Guard((state, trigger) => state.Data.Score <= 70)
+            .Guard((data, trigger) => data.Score <= 70)
             .TransitionTo(State.Approved)
     .Build();
 ```
@@ -117,7 +117,7 @@ Attach data to your state and update it as transitions happen. The order of `Mod
 var machine = StateMachine<State, Trigger, Data, Command>.Create()
     .For(State.Pending)
         .On(Trigger.Submit)
-            .ModifyData(state => state.Data with { Notes = "High risk" })
+            .ModifyData(data => data with { Notes = "High risk" })
             .TransitionTo(State.Manual)
     .Build();
 ```
@@ -132,8 +132,8 @@ var machine = StateMachine<State, Trigger, Data, Command>.Create()
         .On(Trigger.Start)
             .Execute(() => new LogCommand("No args"))
             .Execute((Trigger trigger) => new LogCommand($"Trigger: {trigger}"))
-            .Execute((State<State, Data> state) => new LogCommand($"State: {state.Value}"))
-            .Execute((state, trigger) => new LogCommand("Both"))
+            .Execute((state, data) => new LogCommand($"State: {state}"))
+            .Execute((state, data, trigger) => new LogCommand("Both"))
     .Build();
 ```
 
@@ -171,7 +171,7 @@ Provide a handler or let it throw.
 
 ```csharp
 var machine = StateMachine<State, Trigger, Data, Command>.Create()
-    .OnUnhandled((trigger, state) => state.Data.Log.Add($"Unhandled:{trigger}"))
+    .OnUnhandled((trigger, state, data) => data.Log.Add($"Unhandled:{trigger}"))
     .Build();
 ```
 
@@ -183,8 +183,8 @@ If you omit `TransitionTo`, you stay in the same state (entry/exit do not run).
 var machine = StateMachine<State, Trigger, Data, Command>.Create()
     .For(State.Running)
         .On(Trigger.Tick)
-            .ModifyData(state => state.Data with { Count = state.Data.Count + 1 })
-            .Execute(state => new LogCommand($"Tick {state.Data.Count + 1}"))
+            .ModifyData(data => data with { Count = data.Count + 1 })
+            .Execute(data => new LogCommand($"Tick {data.Count + 1}"))
     .Build();
 ```
 

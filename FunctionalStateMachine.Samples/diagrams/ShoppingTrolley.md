@@ -14,9 +14,9 @@ flowchart LR
   S_ShopState_CheckingOut -->|CartTrigger.PayByCashTrigger| S_ShopState_Outside
   S_ShopState_CheckingOut -->|CartTrigger.PayTrigger| S_ShopState_PaymentPending
   S_ShopState_InStore -->|CartTrigger.CancelTrigger| S_ShopState_Outside
-  S_ShopState_InStore -->|CartTrigger.PaymentSucceededTrigger| S_ShopState_Outside
   S_ShopState_Outside -->|CartTrigger.StartShoppingTrigger| S_ShopState_Shopping
   S_ShopState_PaymentPending -->|CartTrigger.PaymentFailedTrigger| S_ShopState_CheckingOut
+  S_ShopState_PaymentPending -->|CartTrigger.PaymentSucceededTrigger| S_ShopState_Outside
   S_ShopState_Shopping -->|CartTrigger.GoToCheckoutTrigger| S_ShopState_CheckingOut
   S_ShopState_Shopping -->|CartTrigger.AddItemTrigger| S_ShopState_Shopping
   S_ShopState_Shopping -->|CartTrigger.RemoveItemTrigger| S_ShopState_Shopping

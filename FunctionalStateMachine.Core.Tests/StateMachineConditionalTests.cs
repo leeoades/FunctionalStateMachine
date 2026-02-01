@@ -8,14 +8,15 @@ public class StateMachineConditionalTests
         var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
             .For(State.Ready)
                 .On<Trigger.PayTrigger>()
-                    .If((state, trigger) => trigger.Amount >= 10m)
-                        .ModifyData((state, trigger) => state.Data with { Total = state.Data.Total + trigger.Amount })
-                        .Execute(state => new LogCommand($"Paid:{state.Data.Total}"))
+                    .If((data, trigger) => trigger.Amount >= 10m)
+                        .ModifyData((data, trigger) => data with { Total = data.Total + trigger.Amount })
+                        .Execute(data => new LogCommand($"Paid:{data.Total}"))
                         .Done()
             .Build();
-        var current = new State<State, Data>(State.Ready, new Data(0m));
+        var currentState = State.Ready;
+        var currentData = new Data(0m);
 
-        var (_, commands) = machine.Fire(new Trigger.PayTrigger(12m), current);
+        var (_, _, commands) = machine.Fire(new Trigger.PayTrigger(12m), currentState, currentData);
 
         Assert.Single(commands);
         Assert.Equal("Paid:12", ((LogCommand)commands[0]).Message);
@@ -27,15 +28,16 @@ public class StateMachineConditionalTests
         var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
             .For(State.Ready)
                 .On<Trigger.PayTrigger>()
-                    .If((state, trigger) => trigger.Amount >= 10m)
+                    .If((data, trigger) => trigger.Amount >= 10m)
                         .Execute(() => new LogCommand("Accepted"))
                         .Else()
-                        .Execute((state, trigger) => new LogCommand($"Need:{10m - trigger.Amount}"))
+                        .Execute((data, trigger) => new LogCommand($"Need:{10m - trigger.Amount}"))
                         .Done()
             .Build();
-        var current = new State<State, Data>(State.Ready, new Data(0m));
+        var currentState = State.Ready;
+        var currentData = new Data(0m);
 
-        var (_, commands) = machine.Fire(new Trigger.PayTrigger(7m), current);
+        var (_, _, commands) = machine.Fire(new Trigger.PayTrigger(7m), currentState, currentData);
 
         Assert.Single(commands);
         Assert.Equal("Need:3", ((LogCommand)commands[0]).Message);

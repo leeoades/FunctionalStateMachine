@@ -46,7 +46,7 @@ public class LightSwitchDemo(ITestOutputHelper output)
     public void Demo()
     {
         var machine = LightSwitchSample.Build();
-        var state = new State<LightState, NoData>(machine.InitialStateOrDefault(), NoData.Instance);
+        var state = machine.InitialStateOrDefault();
 
         for (int i = 0; i < 5; i++)
         {
