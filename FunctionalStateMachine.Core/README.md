@@ -26,6 +26,7 @@ Features:
 - Fluent syntax
 - No external dependencies
 - Enter and Exit actions
+- Immediate transitions
 - Hierarchical states
 - Fast, efficient rehydration
 

@@ -197,6 +197,16 @@ internal static class DiagramBuilder
                         pendingTrigger = currentTrigger != null;
                         hasTransition = false;
                         break;
+                    case "Immediately":
+                        if (pendingTrigger && !hasTransition && currentState != null && currentTrigger != null)
+                        {
+                            transitions.Add(new Transition(currentState, currentState, currentTrigger));
+                        }
+
+                        currentTrigger = "immediate";
+                        pendingTrigger = true;
+                        hasTransition = false;
+                        break;
                     case "TransitionTo":
                         var target = GetFirstArg(step);
                         if (currentState != null && target != null)

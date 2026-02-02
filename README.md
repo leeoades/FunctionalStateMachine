@@ -17,6 +17,7 @@ testable, and easy to replay.
 - Fluent configuration and validation
 - Entry/exit commands
 - Guards, conditional branches, and ignores
+- Immediate transitions
 - Data attached to state, updated in transitions
 - Hierarchical states and internal transitions
 - Mermaid diagram generator
@@ -79,6 +80,7 @@ Each feature has its own short guide with simple and more advanced examples.
 - Execute steps and multiple commands: [docs/execute-steps.md](docs/execute-steps.md)
 - Ignore and unhandled triggers: [docs/ignore-unhandled.md](docs/ignore-unhandled.md)
 - Internal transitions: [docs/internal-transitions.md](docs/internal-transitions.md)
+- Immediate transitions: [docs/immediate-transitions.md](docs/immediate-transitions.md)
 - Hierarchical states: [docs/hierarchical-states.md](docs/hierarchical-states.md)
 - No-data builder: [docs/no-data.md](docs/no-data.md)
 - Mermaid diagram generation: [docs/diagrams.md](docs/diagrams.md)

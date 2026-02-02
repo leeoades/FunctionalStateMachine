@@ -115,6 +115,11 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
             return this;
         }
 
+        public ImmediateTransitionConfiguration Immediately()
+        {
+            return new ImmediateTransitionConfiguration(this, _inner.Immediately());
+        }
+
         public TransitionConfiguration On(TTrigger trigger)
         {
             return new TransitionConfiguration(this, _inner.On(trigger));
@@ -146,6 +151,91 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
         {
             _inner.StartsWith(initialSubState);
             return this;
+        }
+    }
+
+    public sealed class ImmediateTransitionConfiguration
+    {
+        private readonly StateConfiguration _parent;
+        private readonly StateMachine<TState, TTrigger, TData, TCommand>.ImmediateTransitionConfiguration _inner;
+
+        internal ImmediateTransitionConfiguration(
+            StateConfiguration parent,
+            StateMachine<TState, TTrigger, TData, TCommand>.ImmediateTransitionConfiguration inner)
+        {
+            _parent = parent;
+            _inner = inner;
+        }
+
+        public ImmediateTransitionConfiguration TransitionTo(TState state)
+        {
+            _inner.TransitionTo(state);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Guard(Func<TData, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Guard(Func<TState, TData, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration ModifyData(Func<TData, TData> updater)
+        {
+            _inner.ModifyData(updater);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration ModifyData(Func<TState, TData, TData> updater)
+        {
+            _inner.ModifyData(updater);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Execute(Func<TData, TCommand> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Execute(Func<TState, TData, TCommand> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Execute(Func<TData, IEnumerable<TCommand>> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Execute(Func<TState, TData, IEnumerable<TCommand>> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Execute(Func<TCommand> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Execute(Func<IEnumerable<TCommand>> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public StateConfiguration Done()
+        {
+            return _parent;
         }
     }
 
@@ -908,6 +998,11 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
             return this;
         }
 
+        public ImmediateTransitionConfiguration Immediately()
+        {
+            return new ImmediateTransitionConfiguration(this, _inner.Immediately());
+        }
+
         public TransitionConfiguration On(TTrigger trigger)
         {
             return new TransitionConfiguration(this, _inner.On(trigger));
@@ -939,6 +1034,73 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
         {
             _inner.StartsWith(initialSubState);
             return this;
+        }
+    }
+
+    public sealed class ImmediateTransitionConfiguration
+    {
+        private readonly StateConfiguration _parent;
+        private readonly StateMachine<TState, TTrigger, TCommand>.ImmediateTransitionConfiguration _inner;
+
+        internal ImmediateTransitionConfiguration(
+            StateConfiguration parent,
+            StateMachine<TState, TTrigger, TCommand>.ImmediateTransitionConfiguration inner)
+        {
+            _parent = parent;
+            _inner = inner;
+        }
+
+        public ImmediateTransitionConfiguration TransitionTo(TState state)
+        {
+            _inner.TransitionTo(state);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Guard(Func<TState, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Execute(Func<TState, TCommand> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Execute(Func<TState, IEnumerable<TCommand>> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration ModifyData(Func<NoData, NoData> updater)
+        {
+            _inner.ModifyData(updater);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration ModifyData(Func<TState, NoData> updater)
+        {
+            _inner.ModifyData(updater);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Execute(Func<TCommand> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Execute(Func<IEnumerable<TCommand>> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public StateConfiguration Done()
+        {
+            return _parent;
         }
     }
 

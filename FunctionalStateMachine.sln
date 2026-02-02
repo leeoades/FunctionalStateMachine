@@ -36,6 +36,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionalStateMachine.Comm
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionalStateMachine.CommandRunner.Generator", "FunctionalStateMachine.CommandRunner.Generator\FunctionalStateMachine.CommandRunner.Generator.csproj", "{F2EB10B5-AD83-47A7-BFA3-3A552B06AC76}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FSMConsoleApp", "..\FSMConsoleApp\FSMConsoleApp\FSMConsoleApp.csproj", "{796A1358-E0EF-4E4E-AB28-379CD6A48F06}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -74,5 +76,9 @@ Global
 		{F2EB10B5-AD83-47A7-BFA3-3A552B06AC76}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2EB10B5-AD83-47A7-BFA3-3A552B06AC76}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2EB10B5-AD83-47A7-BFA3-3A552B06AC76}.Release|Any CPU.Build.0 = Release|Any CPU
+		{796A1358-E0EF-4E4E-AB28-379CD6A48F06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{796A1358-E0EF-4E4E-AB28-379CD6A48F06}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{796A1358-E0EF-4E4E-AB28-379CD6A48F06}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{796A1358-E0EF-4E4E-AB28-379CD6A48F06}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

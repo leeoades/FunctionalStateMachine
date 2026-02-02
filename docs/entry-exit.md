@@ -27,3 +27,7 @@ var machine = StateMachine<State, Trigger, Data, Command>.Create()
         .OnExit((state, data) => new Command.Audit($"Exit {state} with {data.UserId}"))
     .Build();
 ```
+
+## Notes
+
+- Entry actions run when a state is entered. For the initial state, call `Start(...)` or `Start()` to emit entry commands.

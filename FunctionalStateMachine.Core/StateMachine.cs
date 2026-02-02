@@ -82,6 +82,35 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
         return _hasInitialState ? ResolveInitialLeaf(_initialState!) : default;
     }
 
+    public (TState State, TData Data, IReadOnlyList<TCommand> Commands) Start(TData data)
+    {
+        if (!_hasInitialState)
+        {
+            throw new InvalidOperationException("No initial state has been configured.");
+        }
+
+        return Enter(_initialState!, data);
+    }
+
+    public (TState State, TData Data, IReadOnlyList<TCommand> Commands) Enter(TState state, TData data)
+    {
+        if (!_states.ContainsKey(state))
+        {
+            throw new InvalidOperationException($"State '{state}' is not configured.");
+        }
+
+        var targetState = ResolveInitialLeaf(state);
+        var commandList = new List<TCommand>();
+        AppendInitialEntryCommands(commandList, targetState, data);
+        var (finalState, finalData) = ApplyImmediateTransitions(commandList, targetState, data);
+
+        IReadOnlyList<TCommand> commands = commandList.Count == 0
+            ? Array.Empty<TCommand>()
+            : new ReadOnlyCollection<TCommand>(commandList);
+
+        return (finalState, finalData, commands);
+    }
+
     private bool TryFireInternal(
         TTrigger trigger,
         TState currentState,
@@ -136,6 +165,7 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
             {
                 AppendExitCommands(commandList, currentState, targetState, updatedData);
                 AppendEntryCommands(commandList, currentState, targetState, updatedData);
+                (targetState, updatedData) = ApplyImmediateTransitions(commandList, targetState, updatedData);
             }
 
             newState = targetState;
@@ -245,6 +275,21 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
                 {
                     throw new InvalidOperationException(
                         $"State '{definition.State}' transitions to '{transition.TargetState}', but it is not configured.");
+                }
+            }
+
+            foreach (var transition in definition.ImmediateTransitions)
+            {
+                if (!transition.HasTargetState)
+                {
+                    throw new InvalidOperationException(
+                        $"State '{definition.State}' has an immediate transition with no target state configured.");
+                }
+
+                if (!_states.ContainsKey(transition.TargetState!))
+                {
+                    throw new InvalidOperationException(
+                        $"State '{definition.State}' transitions immediately to '{transition.TargetState}', but it is not configured.");
                 }
             }
         }
@@ -390,6 +435,24 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
         }
     }
 
+    private void AppendInitialEntryCommands(
+        List<TCommand> commands,
+        TState targetState,
+        TData data)
+    {
+        if (!_states.ContainsKey(targetState))
+        {
+            return;
+        }
+
+        var entryStates = GetStatesToRoot(targetState);
+        entryStates.Reverse();
+        foreach (var state in entryStates)
+        {
+            AppendCommands(commands, _states[state].EntryActions, state, data);
+        }
+    }
+
     private List<TState> GetHierarchyChain(TState state)
     {
         var chain = new List<TState>();
@@ -503,6 +566,71 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
                 commands.Add(command);
             }
         }
+    }
+
+    private (TState State, TData Data) ApplyImmediateTransitions(
+        List<TCommand> commands,
+        TState currentState,
+        TData currentData)
+    {
+        if (!_states.TryGetValue(currentState, out var definition)
+            || definition.ImmediateTransitions.Count == 0)
+        {
+            return (currentState, currentData);
+        }
+
+        var iterationsRemaining = _states.Count + 1;
+        var state = currentState;
+        var data = currentData;
+        var trigger = default(TTrigger)!;
+
+        while (iterationsRemaining-- > 0)
+        {
+            if (!_states.TryGetValue(state, out definition)
+                || definition.ImmediateTransitions.Count == 0)
+            {
+                return (state, data);
+            }
+
+            TransitionDefinition? matched = null;
+            foreach (var transition in definition.ImmediateTransitions)
+            {
+                if (transition.Guard != null && !transition.Guard(state, data, trigger))
+                {
+                    continue;
+                }
+
+                matched = transition;
+                break;
+            }
+
+            if (matched is null)
+            {
+                return (state, data);
+            }
+
+            if (!matched.HasTargetState)
+            {
+                throw new InvalidOperationException(
+                    $"Immediate transition from '{state}' has no target state configured.");
+            }
+
+            var targetState = ResolveInitialLeaf(matched.TargetState!);
+            var updatedData = ApplyTransitionSteps(commands, matched, state, data, trigger);
+            var isStateChange = !EqualityComparer<TState>.Default.Equals(state, targetState);
+
+            if (isStateChange)
+            {
+                AppendExitCommands(commands, state, targetState, updatedData);
+                AppendEntryCommands(commands, state, targetState, updatedData);
+            }
+
+            state = targetState;
+            data = updatedData;
+        }
+
+        throw new InvalidOperationException(
+            $"Immediate transition loop detected starting at '{currentState}'.");
     }
 
     private static TData ApplyTransitionSteps(
@@ -633,6 +761,13 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
             return this;
         }
 
+        public ImmediateTransitionConfiguration Immediately()
+        {
+            var transition = new TransitionDefinition();
+            _definition.AddImmediateTransition(transition);
+            return new ImmediateTransitionConfiguration(this, transition);
+        }
+
         public TransitionConfiguration On(TTrigger trigger)
         {
             var transition = new TransitionDefinition();
@@ -665,6 +800,91 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
             _definition.InitialSubState = initialSubState;
             _definition.HasInitialSubState = true;
             return this;
+        }
+    }
+
+    internal sealed class ImmediateTransitionConfiguration
+    {
+        private readonly StateConfiguration _parent;
+        private readonly TransitionDefinition _transition;
+
+        internal ImmediateTransitionConfiguration(
+            StateConfiguration parent,
+            TransitionDefinition transition)
+        {
+            _parent = parent;
+            _transition = transition;
+        }
+
+        public ImmediateTransitionConfiguration TransitionTo(TState state)
+        {
+            _transition.SetTargetState(state);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Guard(Func<TData, bool> guard)
+        {
+            _transition.Guard = (state, data, trigger) => guard(data);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Guard(Func<TState, TData, bool> guard)
+        {
+            _transition.Guard = (state, data, trigger) => guard(state, data);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration ModifyData(Func<TData, TData> updater)
+        {
+            _transition.Steps.Add(TransitionStep.ForModifyData((state, data, trigger) => updater(data)));
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration ModifyData(Func<TState, TData, TData> updater)
+        {
+            _transition.Steps.Add(TransitionStep.ForModifyData((state, data, trigger) => updater(state, data)));
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Execute(Func<TData, TCommand> action)
+        {
+            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) => [action(data)]));
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Execute(Func<TState, TData, TCommand> action)
+        {
+            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) => [action(state, data)]));
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Execute(Func<TData, IEnumerable<TCommand>> action)
+        {
+            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) => action(data)));
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Execute(Func<TState, TData, IEnumerable<TCommand>> action)
+        {
+            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) => action(state, data)));
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Execute(Func<TCommand> action)
+        {
+            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) => [action()]));
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Execute(Func<IEnumerable<TCommand>> action)
+        {
+            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) => action()));
+            return this;
+        }
+
+        public StateConfiguration Done()
+        {
+            return _parent;
         }
     }
 
@@ -1351,6 +1571,8 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
 
         public TState State { get; } = state;
 
+        public List<TransitionDefinition> ImmediateTransitions { get; } = [];
+
         public List<Func<TState, TData, IEnumerable<TCommand>>> EntryActions { get; } = [];
 
         public List<Func<TState, TData, IEnumerable<TCommand>>> ExitActions { get; } = [];
@@ -1364,6 +1586,11 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
         public TState InitialSubState { get; set; } = default!;
 
         public bool HasChildren { get; set; }
+
+        public void AddImmediateTransition(TransitionDefinition transition)
+        {
+            ImmediateTransitions.Add(transition);
+        }
 
         public void AddTransition(object triggerKey, TransitionDefinition transition)
         {
@@ -1518,6 +1745,18 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
 
     public TState? InitialStateOrDefault() => _inner.InitialStateOrDefault();
 
+    public (TState State, IReadOnlyList<TCommand> Commands) Start()
+    {
+        var (state, _, commands) = _inner.Start(new NoData());
+        return (state, commands);
+    }
+
+    public (TState State, IReadOnlyList<TCommand> Commands) Enter(TState state)
+    {
+        var (newState, _, commands) = _inner.Enter(state, new NoData());
+        return (newState, commands);
+    }
+
     internal sealed class StateConfiguration
     {
         private readonly StateMachine<TState, TTrigger, TCommand> _machine;
@@ -1578,6 +1817,11 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
             return this;
         }
 
+        public ImmediateTransitionConfiguration Immediately()
+        {
+            return new ImmediateTransitionConfiguration(this, _inner.Immediately());
+        }
+
         public StateConfiguration SubStateOf(TState parentState)
         {
             _inner.SubStateOf(parentState);
@@ -1604,6 +1848,73 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
         public StateConfiguration For(TState state)
         {
             return _machine.For(state);
+        }
+    }
+
+    internal sealed class ImmediateTransitionConfiguration
+    {
+        private readonly StateConfiguration _parent;
+        private readonly StateMachine<TState, TTrigger, NoData, TCommand>.ImmediateTransitionConfiguration _inner;
+
+        internal ImmediateTransitionConfiguration(
+            StateConfiguration parent,
+            StateMachine<TState, TTrigger, NoData, TCommand>.ImmediateTransitionConfiguration inner)
+        {
+            _parent = parent;
+            _inner = inner;
+        }
+
+        public ImmediateTransitionConfiguration TransitionTo(TState state)
+        {
+            _inner.TransitionTo(state);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Guard(Func<TState, bool> guard)
+        {
+            _inner.Guard((state, data) => guard(state));
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Execute(Func<TState, TCommand> action)
+        {
+            _inner.Execute((state, data) => action(state));
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Execute(Func<TState, IEnumerable<TCommand>> action)
+        {
+            _inner.Execute((state, data) => action(state));
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Execute(Func<TCommand> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Execute(Func<IEnumerable<TCommand>> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration ModifyData(Func<NoData, NoData> updater)
+        {
+            _inner.ModifyData(updater);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration ModifyData(Func<TState, NoData> updater)
+        {
+            _inner.ModifyData((state, data) => updater(state));
+            return this;
+        }
+
+        public StateConfiguration Done()
+        {
+            return _parent;
         }
     }
 

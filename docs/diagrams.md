@@ -27,3 +27,7 @@ public static StateMachine<LightState, LightTrigger, LightCommand> Build()
         .Build();
 }
 ```
+
+## Notes
+
+- Immediate transitions are labeled as `immediate` in the generated flowchart.

@@ -13,6 +13,7 @@ Welcome to the Functional State Machine docs. Each guide introduces a feature, w
 - Execute steps and multiple commands: `execute-steps.md`
 - Ignore and unhandled triggers: `ignore-unhandled.md`
 - Internal transitions: `internal-transitions.md`
+- Immediate transitions: `immediate-transitions.md`
 - Hierarchical states: `hierarchical-states.md`
 - No-data builder: `no-data.md`
 
