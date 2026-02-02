@@ -2,7 +2,7 @@
 
 The state machine returns commands that describe what should happen next. Your application decides how and when to execute them.
 
-Note: Also included in this library is a Command Dispatcher. See [Command Runners](docs/command-runners.md).
+Note: Also included in this library is a Command Dispatcher. See [Command Runners](command-runners.md).
 
 ## Why it is useful
 
