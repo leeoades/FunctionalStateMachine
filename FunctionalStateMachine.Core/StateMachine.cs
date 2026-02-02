@@ -1345,16 +1345,11 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
         }
     }
 
-    internal sealed class StateDefinition
+    internal sealed class StateDefinition(TState state)
     {
         private readonly Dictionary<object, List<TransitionDefinition>> _transitions = new();
 
-        public StateDefinition(TState state)
-        {
-            State = state;
-        }
-
-        public TState State { get; }
+        public TState State { get; } = state;
 
         public List<Func<TState, TData, IEnumerable<TCommand>>> EntryActions { get; } = [];
 

@@ -11,12 +11,8 @@ public static class CommandRunnerRegistry
 
     public static void Register<TCommand>(CommandRunnerRegistration registration)
     {
-        if (registration is null)
-        {
-            throw new ArgumentNullException(nameof(registration));
-        }
-
-        Registrations[typeof(TCommand)] = registration;
+        Registrations[typeof(TCommand)] = registration 
+                                          ?? throw new ArgumentNullException(nameof(registration));
     }
 
     public static bool TryGet<TCommand>(out CommandRunnerRegistration registration)

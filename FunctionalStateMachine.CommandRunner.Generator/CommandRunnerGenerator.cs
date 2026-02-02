@@ -461,17 +461,13 @@ public sealed class CommandRunnerGenerator : IIncrementalGenerator
         return builder.ToString();
     }
 
-    private sealed class CommandInfo
+    private sealed class CommandInfo(
+        INamedTypeSymbol commandType,
+        INamedTypeSymbol? syncRunner,
+        INamedTypeSymbol? asyncRunner)
     {
-        public CommandInfo(INamedTypeSymbol commandType, INamedTypeSymbol? syncRunner, INamedTypeSymbol? asyncRunner)
-        {
-            CommandType = commandType;
-            SyncRunner = syncRunner;
-            AsyncRunner = asyncRunner;
-        }
-
-        public INamedTypeSymbol CommandType { get; }
-        public INamedTypeSymbol? SyncRunner { get; }
-        public INamedTypeSymbol? AsyncRunner { get; }
+        public INamedTypeSymbol CommandType { get; } = commandType;
+        public INamedTypeSymbol? SyncRunner { get; } = syncRunner;
+        public INamedTypeSymbol? AsyncRunner { get; } = asyncRunner;
     }
 }
