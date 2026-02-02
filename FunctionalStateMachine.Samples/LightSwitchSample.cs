@@ -6,7 +6,7 @@ namespace FunctionalStateMachine.Samples;
 
 public static class LightSwitchSample
 {
-    [StateMachineDiagram("LightSwitch")]
+[StateMachineDiagram("diagrams/LightSwitch.md")]
     public static StateMachine<LightState, LightTrigger, LightCommand> Build() =>
         StateMachine<LightState, LightTrigger, LightCommand>.Create()
             .StartWith(LightState.Off)

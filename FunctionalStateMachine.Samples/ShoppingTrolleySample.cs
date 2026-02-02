@@ -6,7 +6,7 @@ namespace FunctionalStateMachine.Samples;
 
 public static class ShoppingTrolleySample
 {
-    [StateMachineDiagram("ShoppingTrolley")]
+[StateMachineDiagram("diagrams/ShoppingTrolley.md")]
     public static StateMachine<ShopState, CartTrigger, CartSession, ShopCommand> Build()
     {
         return StateMachine<ShopState, CartTrigger, CartSession, ShopCommand>.Create()

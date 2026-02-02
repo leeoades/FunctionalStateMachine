@@ -5,7 +5,7 @@ namespace FunctionalStateMachine.Samples;
 
 public static class SessionLoginSample
 {
-    [StateMachineDiagram("SessionLogin")]
+[StateMachineDiagram("diagrams/SessionLogin.md")]
     public static StateMachine<SessionState, SessionTrigger, SessionData, SessionCommand> Build()
     {
         return StateMachine<SessionState, SessionTrigger, SessionData, SessionCommand>.Create()

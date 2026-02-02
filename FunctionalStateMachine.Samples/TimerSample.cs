@@ -5,7 +5,7 @@ namespace FunctionalStateMachine.Samples;
 
 public static class TimerSample
 {
-    [StateMachineDiagram("Timer")]
+[StateMachineDiagram("diagrams/Timer.md")]
     public static StateMachine<TimerState, TimerTrigger, TimerData, TimerCommand> Build()
     {
         return StateMachine<TimerState, TimerTrigger, TimerData, TimerCommand>.Create()

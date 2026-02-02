@@ -2,8 +2,8 @@
 
 Use the diagrams source generator to emit a Mermaid flowchart from your builder method.
 
-Simply add the `[StateMachineDiagram]` attribute to your state machine builder method.
-A markdown diagram will be emitted into the `diagrams` folder.
+Add the `[StateMachineDiagram]` attribute to your builder method and supply the output path.
+The generator writes to that location relative to the project directory and creates folders as needed.
 
 ## Why it is useful
 
@@ -16,7 +16,7 @@ A markdown diagram will be emitted into the `diagrams` folder.
 ```csharp
 using FunctionalStateMachine.Diagrams;
 
-[StateMachineDiagram("LightSwitch")]
+[StateMachineDiagram("diagrams/LightSwitch.md")]
 public static StateMachine<LightState, LightTrigger, LightCommand> Build()
 {
     return StateMachine<LightState, LightTrigger, LightCommand>.Create()

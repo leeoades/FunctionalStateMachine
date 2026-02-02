@@ -12,91 +12,105 @@ namespace FunctionalStateMachine.Diagrams
     [Generator]
     public sealed class StateMachineDiagramGenerator : IIncrementalGenerator
     {
-    private const string AttributeName = "FunctionalStateMachine.Diagrams.StateMachineDiagramAttribute";
+        private const string AttributeName = "FunctionalStateMachine.Diagrams.StateMachineDiagramAttribute";
 
-    public void Initialize(IncrementalGeneratorInitializationContext context)
-    {
-        context.RegisterPostInitializationOutput(ctx =>
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            ctx.AddSource("StateMachineDiagramAttribute.g.cs", """
-                using System;
+            context.RegisterPostInitializationOutput(ctx =>
+            {
+                ctx.AddSource(
+                    "StateMachineDiagramAttribute.g.cs",
+                    """
+                    using System;
 
-                namespace FunctionalStateMachine.Diagrams
-                {
-                    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+                    namespace FunctionalStateMachine.Diagrams
+                    {
+                        [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
                     internal sealed class StateMachineDiagramAttribute : Attribute
                     {
-                        public StateMachineDiagramAttribute(string name)
+                        public StateMachineDiagramAttribute(string outputPath)
                         {
-                            Name = name;
+                            OutputPath = outputPath;
                         }
 
-                        public string Name { get; }
+                        public string OutputPath { get; }
                     }
                 }
                 """);
         });
 
-        var diagrams = context.SyntaxProvider.ForAttributeWithMetadataName(
-                AttributeName,
-                static (node, _) => node is MethodDeclarationSyntax,
-                static (ctx, _) => (MethodDeclarationSyntax)ctx.TargetNode)
-            .Combine(context.CompilationProvider)
-            .Combine(context.AnalyzerConfigOptionsProvider);
+            var diagrams = context.SyntaxProvider.ForAttributeWithMetadataName(
+                    AttributeName,
+                    static (node, _) => node is MethodDeclarationSyntax,
+                    static (ctx, _) => (MethodDeclarationSyntax)ctx.TargetNode)
+                .Combine(context.CompilationProvider)
+                .Combine(context.AnalyzerConfigOptionsProvider);
 
-        context.RegisterSourceOutput(diagrams, static (ctx, data) =>
-        {
-            var ((methodSyntax, compilation), options) = data;
-            if (!options.GlobalOptions.TryGetValue("build_property.ProjectDir", out var projectDir))
-            {
-                return;
-            }
+            context.RegisterSourceOutput(
+                diagrams,
+                static (ctx, data) =>
+                {
+                    var ((methodSyntax, compilation), options) = data;
+                    if (!options.GlobalOptions.TryGetValue("build_property.ProjectDir", out var projectDir))
+                    {
+                        return;
+                    }
 
-            var model = compilation.GetSemanticModel(methodSyntax.SyntaxTree);
-            if (model.GetDeclaredSymbol(methodSyntax, ctx.CancellationToken) is not IMethodSymbol methodSymbol)
-            {
-                return;
-            }
+                    var model = compilation.GetSemanticModel(methodSyntax.SyntaxTree);
+                    if (model.GetDeclaredSymbol(methodSyntax, ctx.CancellationToken) is not IMethodSymbol methodSymbol)
+                    {
+                        return;
+                    }
 
-            var attribute = methodSymbol.GetAttributes()
-                .FirstOrDefault(attr => attr.AttributeClass?.ToDisplayString() == AttributeName);
-            if (attribute is null)
-            {
-                return;
-            }
+                    var attribute = methodSymbol.GetAttributes()
+                        .FirstOrDefault(attr => attr.AttributeClass?.ToDisplayString() == AttributeName);
+                    if (attribute is null)
+                    {
+                        return;
+                    }
 
-            var diagramName = attribute.ConstructorArguments.Length == 1
+            var outputPathValue = attribute.ConstructorArguments.Length == 1
                 ? attribute.ConstructorArguments[0].Value?.ToString()
-                : methodSymbol.Name;
+                : null;
+            if (string.IsNullOrWhiteSpace(outputPathValue))
+            {
+                outputPathValue = $"{methodSymbol.Name}.md";
+            }
+
+            var diagramName = Path.GetFileNameWithoutExtension(outputPathValue);
             if (string.IsNullOrWhiteSpace(diagramName))
             {
                 diagramName = methodSymbol.Name;
             }
 
-        var chains = DiagramBuilder.GetInvocationChains(methodSyntax);
-        var diagram = DiagramBuilder.BuildDiagram(diagramName!, chains);
-        if (diagram is null)
-        {
-            return;
-        }
+                    var chains = DiagramBuilder.GetInvocationChains(methodSyntax);
+                    var diagram = DiagramBuilder.BuildDiagram(diagramName!, chains);
+                    if (diagram is null)
+                    {
+                        return;
+                    }
 
-            var outputDir = Path.Combine(projectDir, "diagrams");
-            Directory.CreateDirectory(outputDir);
-            var outputPath = Path.Combine(outputDir, $"{diagramName}.md");
-
-            if (File.Exists(outputPath))
+            var outputPath = Path.IsPathRooted(outputPathValue)
+                ? outputPathValue
+                : Path.Combine(projectDir, outputPathValue);
+            var outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrWhiteSpace(outputDir))
             {
-                var existing = File.ReadAllText(outputPath);
-                if (string.Equals(existing, diagram, StringComparison.Ordinal))
-                {
-                    return;
-                }
+                Directory.CreateDirectory(outputDir);
             }
 
-            File.WriteAllText(outputPath, diagram);
-        });
-    }
+                    if (File.Exists(outputPath))
+                    {
+                        var existing = File.ReadAllText(outputPath);
+                        if (string.Equals(existing, diagram, StringComparison.Ordinal))
+                        {
+                            return;
+                        }
+                    }
 
+                    File.WriteAllText(outputPath, diagram);
+                });
+        }
     }
 }
 
@@ -146,17 +160,20 @@ internal static class DiagramBuilder
                         {
                             states.Add(startState);
                         }
+
                         break;
                     case "For":
                         if (pendingTrigger && !hasTransition && currentState != null && currentTrigger != null)
                         {
                             transitions.Add(new Transition(currentState, currentState, currentTrigger));
                         }
+
                         currentState = GetFirstArg(step);
                         if (currentState != null)
                         {
                             states.Add(currentState);
                         }
+
                         currentTrigger = null;
                         pendingTrigger = false;
                         hasTransition = false;
@@ -168,12 +185,14 @@ internal static class DiagramBuilder
                             childToParent[currentState] = parent;
                             states.Add(parent);
                         }
+
                         break;
                     case "On":
                         if (pendingTrigger && !hasTransition && currentState != null && currentTrigger != null)
                         {
                             transitions.Add(new Transition(currentState, currentState, currentTrigger));
                         }
+
                         currentTrigger = GetTriggerLabel(step);
                         pendingTrigger = currentTrigger != null;
                         hasTransition = false;
@@ -188,6 +207,7 @@ internal static class DiagramBuilder
                             hasTransition = true;
                             pendingTrigger = false;
                         }
+
                         break;
                     case "Build":
                         if (pendingTrigger && !hasTransition && currentState != null && currentTrigger != null)
@@ -195,6 +215,7 @@ internal static class DiagramBuilder
                             transitions.Add(new Transition(currentState, currentState, currentTrigger));
                             pendingTrigger = false;
                         }
+
                         break;
                 }
             }
@@ -376,12 +397,13 @@ internal static class DiagramBuilder
             {
                 sb.AppendLine($"{Indent(depth)}{ids[state]}[{state}]");
             }
+
             return;
         }
 
         sb.AppendLine($"{Indent(depth)}subgraph SG_{Sanitize(state)}[{state}]");
         var shouldRenderParentNode = transitionStates.Contains(state)
-            || string.Equals(startState, state, StringComparison.Ordinal);
+                                     || string.Equals(startState, state, StringComparison.Ordinal);
         if (shouldRenderParentNode && rendered.Add(state))
         {
             sb.AppendLine($"{Indent(depth + 1)}{ids[state]}[{state}]");
