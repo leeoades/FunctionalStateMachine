@@ -13,7 +13,7 @@ public class SyncAndAsyncCommandRunnerTests
             .AddSingleton<CallTracker>()
             .BuildServiceProvider();
 
-        var asyncCommandRunner = serviceProvider.GetRequiredService<IAsyncCommandRunnerProvider<TestCommand>>();
+        var asyncCommandRunner = serviceProvider.GetRequiredService<IAsyncCommandDispatcher<TestCommand>>();
         await asyncCommandRunner.RunAsync(new TestCommand.Foo());
         await asyncCommandRunner.RunAsync([new TestCommand.Bar()]);
 
@@ -35,7 +35,7 @@ public class SyncAndAsyncCommandRunnerTests
             .AddTransient<AsyncBarRunner>()
             .BuildServiceProvider();
 
-        var asyncCommandRunner = serviceProvider.GetRequiredService<IAsyncCommandRunnerProvider<TestCommand>>();
+        var asyncCommandRunner = serviceProvider.GetRequiredService<IAsyncCommandDispatcher<TestCommand>>();
         await asyncCommandRunner.RunAsync(new TestCommand.Foo());
         await asyncCommandRunner.RunAsync(new TestCommand.Bar());
 

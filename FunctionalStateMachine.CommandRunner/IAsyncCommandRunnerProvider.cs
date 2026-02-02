@@ -1,6 +1,6 @@
 ﻿namespace FunctionalStateMachine.CommandRunner;
 
-public interface IAsyncCommandRunnerProvider<TCommand>
+public interface IAsyncCommandDispatcher<TCommand>
 {
     Task RunAsync(TCommand command);
     Task RunAsync(IEnumerable<TCommand> commands);

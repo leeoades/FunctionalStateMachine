@@ -13,11 +13,11 @@ public class AllSyncCommandRunnerTests
             .AddSingleton<SyncCallTracker>()
             .BuildServiceProvider();
 
-        var syncCommandRunner = serviceProvider.GetRequiredService<ICommandRunnerProvider<SyncCommand>>();
+        var syncCommandRunner = serviceProvider.GetRequiredService<ICommandDispatcher<SyncCommand>>();
         syncCommandRunner.Run(new SyncCommand.Alpha());
         syncCommandRunner.Run([new SyncCommand.Beta()]);
 
-        Assert.Null(serviceProvider.GetService<IAsyncCommandRunnerProvider<SyncCommand>>());
+        Assert.Null(serviceProvider.GetService<IAsyncCommandDispatcher<SyncCommand>>());
 
         var callTracker = serviceProvider.GetRequiredService<SyncCallTracker>();
         Assert.Equal(1, callTracker.AlphaRunnerInvocations);

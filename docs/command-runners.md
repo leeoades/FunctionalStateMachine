@@ -4,7 +4,7 @@ Command runners are an optional layer that dispatches commands using DI. They ar
 
 1. Declare either `ICommandRunner<TCommand>` or `IAsyncCommandRunner<TCommand>` for each command type.
 2. Call `serviceCollection.AddCommandRunners<TCommand>()` to automatically discover and register them.
-3. Resolve `ICommandRunnerProvider<TCommand>` or `IAsyncCommandRunnerProvider<TCommand>` to dispatch commands.
+3. Resolve `ICommandDispatcher<TCommand>` or `IAsyncCommandDispatcher<TCommand>` to dispatch commands.
 
 ## Why it is useful
 
@@ -31,14 +31,14 @@ public sealed class SendWelcomeEmailRunner : ICommandRunner<UserCommand.SendWelc
 services.AddCommandRunners<UserCommand>();
 
 var provider = services.BuildServiceProvider()
-    .GetRequiredService<ICommandRunnerProvider<UserCommand>>();
+    .GetRequiredService<ICommandDispatcher<UserCommand>>();
 
 provider.Run(new UserCommand.SendWelcomeEmail(Guid.NewGuid()));
 ```
 
 ## Async-capable example
 
-If any runner implements `IAsyncCommandRunner<TCommand>`, resolve `IAsyncCommandRunnerProvider<TCommand>` instead.
+If any runner implements `IAsyncCommandRunner<TCommand>`, resolve `IAsyncCommandDispatcher<TCommand>` instead.
 
 ```csharp
 public abstract record BillingCommand
@@ -57,7 +57,7 @@ public sealed class ChargeCardRunner : IAsyncCommandRunner<BillingCommand.Charge
 services.AddCommandRunners<BillingCommand>();
 
 var provider = services.BuildServiceProvider()
-    .GetRequiredService<IAsyncCommandRunnerProvider<BillingCommand>>();
+    .GetRequiredService<IAsyncCommandDispatcher<BillingCommand>>();
 
 await provider.RunAsync(new BillingCommand.ChargeCard(42m));
 ```
@@ -133,7 +133,7 @@ var services = new ServiceCollection()
     .AddTransient<SendReceiptRunner>();
 
 var provider = services.BuildServiceProvider()
-    .GetRequiredService<IAsyncCommandRunnerProvider<OrderCommand>>();
+    .GetRequiredService<IAsyncCommandDispatcher<OrderCommand>>();
 
 var (nextState, nextData, commands) = machine.Fire(
     new OrderTrigger.Submit(),

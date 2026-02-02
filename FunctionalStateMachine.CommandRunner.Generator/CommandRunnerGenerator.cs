@@ -199,11 +199,11 @@ public sealed class CommandRunnerGenerator : IIncrementalGenerator
             source.AppendLine("                }");
 
             var providerInterface = hasAsync
-                ? $"IAsyncCommandRunnerProvider<{baseTypeName}>"
-                : $"ICommandRunnerProvider<{baseTypeName}>";
+                ? $"IAsyncCommandDispatcher<{baseTypeName}>"
+                : $"ICommandDispatcher<{baseTypeName}>";
             var providerType = hasAsync
-                ? $"AsyncCommandRunnerProvider_{providerId}"
-                : $"CommandRunnerProvider_{providerId}";
+                ? $"AsyncCommandDispatcher_{providerId}"
+                : $"CommandDispatcher_{providerId}";
 
             source.AppendLine();
             source.AppendLine($"                services.Add(new ServiceDescriptor(typeof({providerInterface}), sp => new {providerType}(sp, options.MissingBehavior), options.Lifetime));");
@@ -223,12 +223,12 @@ public sealed class CommandRunnerGenerator : IIncrementalGenerator
             if (hasAsync)
             {
                 source.AppendLine();
-                source.AppendLine($"    internal sealed class AsyncCommandRunnerProvider_{providerId} : IAsyncCommandRunnerProvider<{baseTypeName}>");
+                source.AppendLine($"    internal sealed class AsyncCommandDispatcher_{providerId} : IAsyncCommandDispatcher<{baseTypeName}>");
                 source.AppendLine("    {");
                 source.AppendLine("        private readonly IServiceProvider _serviceProvider;");
                 source.AppendLine("        private readonly CommandRunnerMissingBehavior _missingBehavior;");
                 source.AppendLine();
-                source.AppendLine($"        public AsyncCommandRunnerProvider_{providerId}(IServiceProvider serviceProvider, CommandRunnerMissingBehavior missingBehavior)");
+                source.AppendLine($"        public AsyncCommandDispatcher_{providerId}(IServiceProvider serviceProvider, CommandRunnerMissingBehavior missingBehavior)");
                 source.AppendLine("        {");
                 source.AppendLine("            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));");
                 source.AppendLine("            _missingBehavior = missingBehavior;");
@@ -294,12 +294,12 @@ public sealed class CommandRunnerGenerator : IIncrementalGenerator
             else
             {
                 source.AppendLine();
-                source.AppendLine($"    internal sealed class CommandRunnerProvider_{providerId} : ICommandRunnerProvider<{baseTypeName}>");
+                source.AppendLine($"    internal sealed class CommandDispatcher_{providerId} : ICommandDispatcher<{baseTypeName}>");
                 source.AppendLine("    {");
                 source.AppendLine("        private readonly IServiceProvider _serviceProvider;");
                 source.AppendLine("        private readonly CommandRunnerMissingBehavior _missingBehavior;");
                 source.AppendLine();
-                source.AppendLine($"        public CommandRunnerProvider_{providerId}(IServiceProvider serviceProvider, CommandRunnerMissingBehavior missingBehavior)");
+                source.AppendLine($"        public CommandDispatcher_{providerId}(IServiceProvider serviceProvider, CommandRunnerMissingBehavior missingBehavior)");
                 source.AppendLine("        {");
                 source.AppendLine("            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));");
                 source.AppendLine("            _missingBehavior = missingBehavior;");

@@ -24,7 +24,7 @@ public class MissingCommandRunnerTests
             .AddSingleton<MissingCallTracker>()
             .BuildServiceProvider();
 
-        var syncCommandRunner = serviceProvider.GetRequiredService<ICommandRunnerProvider<MissingCommand>>();
+        var syncCommandRunner = serviceProvider.GetRequiredService<ICommandDispatcher<MissingCommand>>();
         syncCommandRunner.Run(new MissingCommand.HasRunner());
         syncCommandRunner.Run(new MissingCommand.MissingRunner());
 

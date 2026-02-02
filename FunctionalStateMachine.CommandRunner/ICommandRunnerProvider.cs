@@ -1,6 +1,6 @@
 ﻿namespace FunctionalStateMachine.CommandRunner;
 
-public interface ICommandRunnerProvider<TCommand>
+public interface ICommandDispatcher<TCommand>
 {
     void Run(TCommand command);
     void Run(IEnumerable<TCommand> commands);
