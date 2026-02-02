@@ -1,12 +1,30 @@
 # Functional State Machine
 
-Welcome! This library provides a functional, persistence-friendly state machine for .NET.
-Instead of executing side effects directly, transitions return commands that your app can handle separately.
-That keeps the state machine pure, easy to test, and great for actor-style systems.
+A functional-style, persistence-friendly state machine for .NET. 
+Transitions produce logical commands instead of performing side effects, keeping your workflow deterministic, 
+testable, and easy to replay.
 
-## Quick Start
+## Why use this library?
 
-Build the machine with a fluent builder.
+- Pure transitions: return commands instead of doing work.
+- Simple persistence: The state is not locked inside the machine.
+- Testable by design: no mocked dependencies needed to validate behaviour.
+- Hierarchical states: model parent/child flows supported.
+- Optional design-time tooling: generate Mermaid diagrams from your builder code.
+
+## Features at a glance
+
+- Fluent configuration and validation
+- Entry/exit commands
+- Guards, conditional branches, and ignores
+- Data attached to state, updated in transitions
+- Hierarchical states and internal transitions
+- Mermaid diagram generator
+- Command runners for dispatching commands via DI
+
+## Getting started
+
+Reference the core package and build a machine:
 
 ```csharp
 public enum LightState
@@ -17,235 +35,55 @@ public enum LightState
 
 public abstract record LightTrigger
 {
-    public sealed record ToggleTrigger : LightTrigger;
-
-    public static readonly LightTrigger Toggle = new ToggleTrigger();
+    public sealed record Toggle : LightTrigger;
 }
 
-var stateMachine = 
-    StateMachine<LightState, LightTrigger, LightCommand>
-        .Create()
-            .StartWith(LightState.Off)
-            .For(LightState.Off)
-                .On<LightTrigger.ToggleTrigger>()
-                    .TransitionTo(LightState.On)
-                    .Execute(() => new LightCommand.SwitchOn())
-            .For(LightState.On)
-                .On<LightTrigger.ToggleTrigger>()
-                    .TransitionTo(LightState.Off)
-                    .Execute(() => new LightCommand.SwitchOff())
-            .Build();
+public sealed record LightData(int NumberOfUsages);
 
-```
-
-## Why this State Machine?
-
-Compared to traditional state machines (including popular libraries like Stateless), this library:
-
-- Returns logical commands instead of performing side effects.
-- Keeps transitions pure and deterministic.
-- Makes unit testing straightforward (no mocked services).
-- No "Rehydration" - current state is passed in, not locked in.  
-- Allows extra data to travel with the state.
-
-## Features and Examples
-
-### 1) Pure commands instead of side effects
-
-Commands are logical descriptions of work to do, not the work itself.
-
-```csharp
-public abstract record ShopCommand
+public abstract record LightCommand
 {
-    public sealed record CartUpdated(IReadOnlyList<LineItem> Items) : ShopCommand;
-    public sealed record TotalCalculated(decimal Total) : ShopCommand;
-    public sealed record PaymentRequested : ShopCommand;
-    public sealed record PaymentFailed : ShopCommand;
-    public sealed record OwnershipGranted(IReadOnlyList<LineItem> Items) : ShopCommand;
+    public sealed record SwitchOn : LightCommand;
+    public sealed record SwitchOff : LightCommand;
 }
-```
 
-The state machine returns these commands for your handler to execute.
-
-### 2) Fluent configuration
-
-Configuration is done up front and `Build()` seals the machine.
-
-```csharp
-var machine = StateMachine<State, Trigger, Data, Command>.Create()
-    .For(State.Ready)
-        .On(Trigger.Start)
-            .TransitionTo(State.Running)
-    .Build();
-```
-
-After `Build()`, no more configuration is possible.
-
-### 3) Entry and exit commands
-
-Entry and exit actions yield commands when state changes.
-
-```csharp
-var machine = StateMachine<State, Trigger, Data, Command>.Create()
-    .For(State.Ready)
-        .OnEntry(() => new LogCommand("Enter Ready"))
-        .OnExit(() => new LogCommand("Exit Ready"))
-    .Build();
-```
-
-### 4) Guards and multiple transitions
-
-You can define multiple transitions for a trigger and gate them with guards.
-
-```csharp
-var machine = StateMachine<State, Trigger, Data, Command>.Create()
-    .For(State.Pending)
-        .On(Trigger.Submit)
-            .Guard((data, trigger) => data.Score > 70)
-            .TransitionTo(State.Manual)
-        .On(Trigger.Submit)
-            .Guard((data, trigger) => data.Score <= 70)
-            .TransitionTo(State.Approved)
-    .Build();
-```
-
-### 5) Update state data during transitions
-
-Attach data to your state and update it as transitions happen. The order of `ModifyData` and `Execute` calls is preserved.
-
-```csharp
-var machine = StateMachine<State, Trigger, Data, Command>.Create()
-    .For(State.Pending)
-        .On(Trigger.Submit)
-            .ModifyData(data => data with { Notes = "High risk" })
-            .TransitionTo(State.Manual)
-    .Build();
-```
-
-### 6) Multiple Execute overloads
-
-Choose the most convenient `Execute` shape for each case.
-
-```csharp
-var machine = StateMachine<State, Trigger, Data, Command>.Create()
-    .For(State.Ready)
-        .On(Trigger.Start)
-            .Execute(() => new LogCommand("No args"))
-            .Execute((Trigger trigger) => new LogCommand($"Trigger: {trigger}"))
-            .Execute((state, data) => new LogCommand($"State: {state}"))
-            .Execute((state, data, trigger) => new LogCommand("Both"))
-    .Build();
-```
-
-### 7) Multiple commands from a single action
-
-Return one or many commands from a transition.
-
-```csharp
-var machine = StateMachine<State, Trigger, Data, Command>.Create()
-    .For(State.Ready)
-        .On(Trigger.Start)
-            .Execute(() => new Command[]
-            {
-                new LogCommand("One"),
-                new LogCommand("Two")
-            })
-    .Build();
-```
-
-### 8) Ignore triggers
-
-Ignore a trigger cleanly without a state change.
-
-```csharp
-var machine = StateMachine<State, Trigger, Data, Command>.Create()
-    .For(State.Ready)
-        .On(Trigger.Ping)
-            .Ignore()
-    .Build();
-```
-
-### 9) Unhandled trigger policy
-
-Provide a handler or let it throw.
-
-```csharp
-var machine = StateMachine<State, Trigger, Data, Command>.Create()
-    .OnUnhandled((trigger, state, data) => data.Log.Add($"Unhandled:{trigger}"))
-    .Build();
-```
-
-### 10) Internal transitions
-
-If you omit `TransitionTo`, you stay in the same state (entry/exit do not run).
-
-```csharp
-var machine = StateMachine<State, Trigger, Data, Command>.Create()
-    .For(State.Running)
-        .On(Trigger.Tick)
-            .ModifyData(data => data with { Count = data.Count + 1 })
-            .Execute(data => new LogCommand($"Tick {data.Count + 1}"))
-    .Build();
-```
-
-### 11) Hierarchical states
-
-Declare parent/child relationships; parent transitions apply regardless of the current child. Parent states must declare `StartsWith` to choose the initial child.
-
-```csharp
-var machine = StateMachine<State, Trigger, Data, Command>.Create()
-    .For(State.Active)
-        .StartsWith(State.Anonymous)
-        .On(Trigger.Timeout)
-            .TransitionTo(State.Expired)
-    .For(State.Anonymous)
-        .SubStateOf(State.Active)
-        .On(Trigger.Login)
-            .TransitionTo(State.Authenticated)
-    .For(State.Authenticated)
-        .SubStateOf(State.Active)
-        .On(Trigger.Logout)
-            .TransitionTo(State.Anonymous)
-    .Build();
-```
-
-### 12) No extra data case
-
-If you do not need extra data, use the NoData builder.
-
-```csharp
-var machine = StateMachine<State, Trigger, Command>.Create()
-    .StartWith(State.Off)
-    .Build();
-```
-
-### 13) Mermaid diagram generation (design time)
-
-Use the diagrams source generator to write a `diagrams/<Name>.md` file with a Mermaid flowchart.
-
-```csharp
-using FunctionalStateMachine.Diagrams;
-
-[StateMachineDiagram("LightSwitch")]
-public static StateMachine<LightState, LightTrigger, LightCommand> Build()
-{
-    return StateMachine<LightState, LightTrigger, LightCommand>.Create()
+var machine = StateMachine<LightState, LightTrigger, LightData, LightCommand>
+    .Create()
         .StartWith(LightState.Off)
         .For(LightState.Off)
-            .On<LightTrigger.ToggleTrigger>()
+            .On<LightTrigger.Toggle>()
                 .TransitionTo(LightState.On)
+                .ModifyData(data => data with { NumberOfUsages = data.NumberOfUsages + 1 })
+                .Execute(() => new LightCommand.SwitchOn())
+        .For(LightState.On)
+            .On<LightTrigger.Toggle>()
+                .TransitionTo(LightState.Off)
+                .Execute(() => new LightCommand.SwitchOff())
         .Build();
-}
+
+var currentState = LightState.Off;
+var currentData = new LightData(NumberOfUsages: 0);
+
+var (nextState, nextData, commands) = machine.Fire(new LightTrigger.Toggle(), currentState, currentData);
 ```
 
-## Where to look next
+## Documentation
 
-- Samples: `FunctionalStateMachine.Samples/README.md`
-- Core API: `FunctionalStateMachine.Core/StateMachineBuilder.cs`
+Each feature has its own short guide with simple and more advanced examples.
 
-## How this differs from Stateless (at a glance)
+- Commands instead of side effects: [docs/commands-vs-effects.md](docs/commands-vs-effects.md)
+- Fluent configuration: [docs/fluent-configuration.md](docs/fluent-configuration.md)
+- Entry and exit commands: [docs/entry-exit.md](docs/entry-exit.md)
+- Guards and conditional flows: [docs/guards.md](docs/guards.md)
+- State data and ModifyData: [docs/state-data.md](docs/state-data.md)
+- Execute steps and multiple commands: [docs/execute-steps.md](docs/execute-steps.md)
+- Ignore and unhandled triggers: [docs/ignore-unhandled.md](docs/ignore-unhandled.md)
+- Internal transitions: [docs/internal-transitions.md](docs/internal-transitions.md)
+- Hierarchical states: [docs/hierarchical-states.md](docs/hierarchical-states.md)
+- No-data builder: [docs/no-data.md](docs/no-data.md)
+- Mermaid diagram generation: [docs/diagrams.md](docs/diagrams.md)
+- Command runners: [docs/command-runners.md](docs/command-runners.md)
 
-- Functional result: returns commands instead of executing side effects.
-- Data-carrying states: keep extra context alongside state.
-- Built for rehydration: configuration is static, state is portable.
-- Testable by design: pure transitions, no mocks needed for side effects.
+## Additional
+
+- See Samples in `FunctionalStateMachine.Samples` project.
+
