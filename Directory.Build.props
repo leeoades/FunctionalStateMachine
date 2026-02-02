@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <PackageVersion Condition="'$(PackageVersion)' == ''">0.0.0-dev</PackageVersion>
+  </PropertyGroup>
+</Project>

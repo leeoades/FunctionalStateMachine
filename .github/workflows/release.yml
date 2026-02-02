@@ -21,13 +21,19 @@ jobs:
           dotnet-version: "9.0.x"
 
       - name: Restore
-        run: dotnet restore FunctionalStateMachine.Core/FunctionalStateMachine.Core.csproj
+        run: dotnet restore FunctionalStateMachine.sln
 
       - name: Build
-        run: dotnet build FunctionalStateMachine.Core/FunctionalStateMachine.Core.csproj --configuration Release --no-restore
+        run: dotnet build FunctionalStateMachine.sln --configuration Release --no-restore
+
+      - name: Set Version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
 
       - name: Pack
-        run: dotnet pack FunctionalStateMachine.Core/FunctionalStateMachine.Core.csproj --configuration Release --no-build --output ./artifacts --include-symbols --include-source
+        run: |
+          dotnet pack FunctionalStateMachine.Core/FunctionalStateMachine.Core.csproj --configuration Release --no-build --output ./artifacts --include-symbols --include-source /p:PackageVersion=${VERSION}
+          dotnet pack FunctionalStateMachine.CommandRunner/FunctionalStateMachine.CommandRunner.csproj --configuration Release --no-build --output ./artifacts --include-symbols --include-source /p:PackageVersion=${VERSION}
+          dotnet pack FunctionalStateMachine.Diagrams/FunctionalStateMachine.Diagrams.csproj --configuration Release --no-build --output ./artifacts --include-symbols --include-source /p:PackageVersion=${VERSION}
 
       - name: Release
         uses: softprops/action-gh-release@v2

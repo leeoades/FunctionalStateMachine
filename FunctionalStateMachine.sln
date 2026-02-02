@@ -27,6 +27,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_", "_", "{919D74CB-8078-40
 		docs\internal-transitions.md = docs\internal-transitions.md
 		docs\no-data.md = docs\no-data.md
 		docs\state-data.md = docs\state-data.md
+		docs\packages.md = docs\packages.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionalStateMachine.CommandRunner", "FunctionalStateMachine.CommandRunner\FunctionalStateMachine.CommandRunner.csproj", "{A0A6A44F-CD8C-49F6-B659-5BA7B77A2BB4}"

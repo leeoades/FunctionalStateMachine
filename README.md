@@ -70,6 +70,7 @@ var (nextState, nextData, commands) = machine.Fire(new LightTrigger.Toggle(), cu
 
 Each feature has its own short guide with simple and more advanced examples.
 
+- Packages and when to reference them: [docs/packages.md](docs/packages.md)
 - Commands instead of side effects: [docs/commands-vs-effects.md](docs/commands-vs-effects.md)
 - Fluent configuration: [docs/fluent-configuration.md](docs/fluent-configuration.md)
 - Entry and exit commands: [docs/entry-exit.md](docs/entry-exit.md)
@@ -86,4 +87,3 @@ Each feature has its own short guide with simple and more advanced examples.
 ## Additional
 
 - See Samples in `FunctionalStateMachine.Samples` project.
-

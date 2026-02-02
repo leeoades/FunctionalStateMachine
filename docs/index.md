@@ -4,6 +4,7 @@ Welcome to the Functional State Machine docs. Each guide introduces a feature, w
 
 ## Core features
 
+- Packages and when to reference them: `packages.md`
 - Commands instead of side effects: `commands-vs-effects.md`
 - Fluent configuration: `fluent-configuration.md`
 - Entry and exit commands: `entry-exit.md`
