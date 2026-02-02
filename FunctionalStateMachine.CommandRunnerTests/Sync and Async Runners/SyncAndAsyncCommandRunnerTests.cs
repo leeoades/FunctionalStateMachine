@@ -21,4 +21,26 @@ public class SyncAndAsyncCommandRunnerTests
         Assert.Equal(1, callTracker.FooRunnerInvocations);
         Assert.Equal(1, callTracker.BarRunnerInvocations);
     }
+
+    [Fact]
+    public async Task GivenAutoRegistrationDisabled_WhenRunnersRegisteredManually_ThenProviderResolves()
+    {
+        var serviceProvider = new ServiceCollection()
+            .AddCommandRunners<TestCommand>(new CommandRunnerOptions
+            {
+                AutoRegisterRunners = false
+            })
+            .AddSingleton<CallTracker>()
+            .AddTransient<FooRunner>()
+            .AddTransient<AsyncBarRunner>()
+            .BuildServiceProvider();
+
+        var asyncCommandRunner = serviceProvider.GetRequiredService<IAsyncCommandRunnerProvider<TestCommand>>();
+        await asyncCommandRunner.RunAsync(new TestCommand.Foo());
+        await asyncCommandRunner.RunAsync(new TestCommand.Bar());
+
+        var callTracker = serviceProvider.GetRequiredService<CallTracker>();
+        Assert.Equal(1, callTracker.FooRunnerInvocations);
+        Assert.Equal(1, callTracker.BarRunnerInvocations);
+    }
 }

@@ -189,11 +189,14 @@ public sealed class CommandRunnerGenerator : IIncrementalGenerator
                 }
             }
 
+            source.AppendLine("                if (options.AutoRegisterRunners)");
+            source.AppendLine("                {");
             foreach (var runnerType in runnerTypes)
             {
                 var runnerTypeName = runnerType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-                source.AppendLine($"                services.Add(new ServiceDescriptor(typeof({runnerTypeName}), typeof({runnerTypeName}), options.Lifetime));");
+                source.AppendLine($"                    services.Add(new ServiceDescriptor(typeof({runnerTypeName}), typeof({runnerTypeName}), options.Lifetime));");
             }
+            source.AppendLine("                }");
 
             var providerInterface = hasAsync
                 ? $"IAsyncCommandRunnerProvider<{baseTypeName}>"
