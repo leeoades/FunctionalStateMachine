@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace FunctionalStateMachine.Diagrams.Tests;
 
 public sealed class DiagramBuilderTests

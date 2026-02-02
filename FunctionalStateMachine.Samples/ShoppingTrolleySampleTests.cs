@@ -1,4 +1,3 @@
-using FunctionalStateMachine.Core;
 using FunctionalStateMachine.Samples;
 
 namespace FunctionalStateMachine.Core.Tests;
