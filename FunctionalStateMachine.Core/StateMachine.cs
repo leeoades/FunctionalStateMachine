@@ -77,29 +77,22 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
             throwOnUnhandled: false);
     }
 
-    public TState? InitialStateOrDefault()
+    public TState InitialState
     {
-        return _hasInitialState ? ResolveInitialLeaf(_initialState!) : default;
+        get
+        {
+            if (!_hasInitialState)
+            {
+                throw new InvalidOperationException("No initial state has been configured.");
+            }
+
+            return ResolveInitialLeaf(_initialState!);
+        }
     }
 
     public (TState State, TData Data, IReadOnlyList<TCommand> Commands) Start(TData data)
     {
-        if (!_hasInitialState)
-        {
-            throw new InvalidOperationException("No initial state has been configured.");
-        }
-
-        return Enter(_initialState!, data);
-    }
-
-    public (TState State, TData Data, IReadOnlyList<TCommand> Commands) Enter(TState state, TData data)
-    {
-        if (!_states.ContainsKey(state))
-        {
-            throw new InvalidOperationException($"State '{state}' is not configured.");
-        }
-
-        var targetState = ResolveInitialLeaf(state);
+        var targetState = InitialState;
         var commandList = new List<TCommand>();
         AppendInitialEntryCommands(commandList, targetState, data);
         var (finalState, finalData) = ApplyImmediateTransitions(commandList, targetState, data);
@@ -110,6 +103,7 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
 
         return (finalState, finalData, commands);
     }
+
 
     private bool TryFireInternal(
         TTrigger trigger,
@@ -452,6 +446,7 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
             AppendCommands(commands, _states[state].EntryActions, state, data);
         }
     }
+
 
     private List<TState> GetHierarchyChain(TState state)
     {
@@ -1743,7 +1738,7 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
         return _inner.TryFire(trigger, currentState, new NoData(), out newState, out _, out commands);
     }
 
-    public TState? InitialStateOrDefault() => _inner.InitialStateOrDefault();
+    public TState InitialState => _inner.InitialState;
 
     public (TState State, IReadOnlyList<TCommand> Commands) Start()
     {
@@ -1751,11 +1746,6 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
         return (state, commands);
     }
 
-    public (TState State, IReadOnlyList<TCommand> Commands) Enter(TState state)
-    {
-        var (newState, _, commands) = _inner.Enter(state, new NoData());
-        return (newState, commands);
-    }
 
     internal sealed class StateConfiguration
     {

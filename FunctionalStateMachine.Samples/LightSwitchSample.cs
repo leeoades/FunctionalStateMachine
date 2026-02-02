@@ -46,12 +46,12 @@ public class LightSwitchDemo(ITestOutputHelper output)
     public void Demo()
     {
         var machine = LightSwitchSample.Build();
-        var state = machine.InitialStateOrDefault();
+        var state = machine.InitialState;
 
         for (int i = 0; i < 5; i++)
         {
-            (state, var commands) = machine.Fire(LightTrigger.Toggle, state);
-            Run(commands);
+            (state, var toggleCommands) = machine.Fire(LightTrigger.Toggle, state);
+            Run(toggleCommands);
         }
         
     }

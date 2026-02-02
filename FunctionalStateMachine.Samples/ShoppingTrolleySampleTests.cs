@@ -88,7 +88,7 @@ public class ShoppingTrolleySampleTests
     private static (ShopState State, CartSession Data) StartState(
         StateMachine<ShopState, CartTrigger, CartSession, ShopCommand> machine)
     {
-        return (machine.InitialStateOrDefault(), new CartSession(new ShopData([], 0)));
+        return (machine.InitialState, new CartSession(new ShopData([], 0)));
     }
 
     private static (ShopState State, CartSession Data) Fire(

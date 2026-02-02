@@ -30,4 +30,4 @@ var machine = StateMachine<State, Trigger, Data, Command>.Create()
 
 ## Notes
 
-- Entry actions run when a state is entered. For the initial state, call `Start(...)` or `Start()` to emit entry commands.
+- Entry actions run when a state is entered. The initial state does not trigger `OnEntry` until the machine transitions into it, unless you call `Start(...)`.

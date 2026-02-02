@@ -61,6 +61,7 @@ public class StateMachineImmediateTransitionTests
                     .TransitionTo(State.Waiting)
                     .Done()
             .For(State.Waiting)
+            .For(State.Ready)
             .Build();
 
         var (state, _, commands) = machine.Start(new Data("stop"));

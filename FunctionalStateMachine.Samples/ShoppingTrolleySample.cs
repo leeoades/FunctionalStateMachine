@@ -168,7 +168,7 @@ public class ShoppingTrolleyDemo(ITestOutputHelper output)
     public void Demo_Card_Payment()
     {
         var machine = ShoppingTrolleySample.Build();
-        var currentState = machine.InitialStateOrDefault();
+        var currentState = machine.InitialState;
         var currentData = new CartSession(new ShopData([], 0));
 
         (currentState, currentData) = Fire(CartTrigger.StartShopping(), currentState, currentData, machine);
@@ -183,7 +183,7 @@ public class ShoppingTrolleyDemo(ITestOutputHelper output)
     public void Demo_Cash_Payment()
     {
         var machine = ShoppingTrolleySample.Build();
-        var currentState = machine.InitialStateOrDefault();
+        var currentState = machine.InitialState;
         var currentData = new CartSession(new ShopData([], 0));
 
         (currentState, currentData) = Fire(CartTrigger.StartShopping(), currentState, currentData, machine);

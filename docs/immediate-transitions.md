@@ -38,5 +38,5 @@ var (state, data, commands) = machine.Start(Data.Initial);
 ## Notes
 
 - Immediate transitions run only when a state is entered.
-- Use `Start(...)` (or `Start()` for no-data machines) to run entry actions and immediate transitions from the initial state.
+- Use `Start(data)` to run `OnEntry` and immediate transitions from the initial state.
 - If no immediate transition guard matches, the machine stays in the current state.
