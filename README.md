@@ -23,8 +23,8 @@ may be reused, this is not guaranteed, hence why state machines that expect to s
 resident are suboptimal.
 
 The advantage of using this state machine to model the behaviour is that it provides a clear
-and consistent mechanism between components, and can take advantage of analysis tools such 
-as detecting issues with the flow logic and the ability to generate flow diagrams.
+and consistent approach between components, and can take advantage of analysis tools such 
+as detecting issues with the flow logic and the ability to generate flow diagrams at compile time. 
 
 ## Features at a glance
 
