@@ -12,6 +12,20 @@ testable, and easy to replay.
 - Hierarchical states: model parent/child flows supported.
 - Optional design-time tooling: generate Mermaid diagrams from your builder code.
 
+## Main Use Case
+
+The driving scenario for this library was for a way to declare and design behaviour
+for components that operate within an actor model. 
+
+Actor instances are brought into existence, rehydrated from persisted state, triggered
+by messages, perform actions, and then persist their state again. Whilst the actor instance
+may be reused, this is not guaranteed, hence why state machines that expect to stay memory
+resident are suboptimal.
+
+The advantage of using this state machine to model the behaviour is that it provides a clear
+and consistent mechanism between components, and can take advantage of analysis tools such 
+as detecting issues with the flow logic and the ability to generate flow diagrams.
+
 ## Features at a glance
 
 - Fluent configuration and validation
