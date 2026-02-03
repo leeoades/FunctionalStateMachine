@@ -142,6 +142,7 @@ internal static class DiagramBuilder
         var transitions = new HashSet<Transition>();
         var startState = (string?)null;
         var childToParent = new Dictionary<string, string>(StringComparer.Ordinal);
+        var initialSubStates = new Dictionary<string, string>(StringComparer.Ordinal);
 
         foreach (var chain in chains)
         {
@@ -149,6 +150,7 @@ internal static class DiagramBuilder
             string? currentTrigger = null;
             bool pendingTrigger = false;
             bool hasTransition = false;
+            var guardLabels = new List<string>();
 
             foreach (var step in chain)
             {
@@ -165,7 +167,8 @@ internal static class DiagramBuilder
                     case "For":
                         if (pendingTrigger && !hasTransition && currentState != null && currentTrigger != null)
                         {
-                            transitions.Add(new Transition(currentState, currentState, currentTrigger));
+                            transitions.Add(new Transition(currentState, currentState,
+                                ApplyGuardLabel(currentTrigger, guardLabels)));
                         }
 
                         currentState = GetFirstArg(step);
@@ -177,6 +180,7 @@ internal static class DiagramBuilder
                         currentTrigger = null;
                         pendingTrigger = false;
                         hasTransition = false;
+                        guardLabels.Clear();
                         break;
                     case "SubStateOf":
                         var parent = GetFirstArg(step);
@@ -187,48 +191,76 @@ internal static class DiagramBuilder
                         }
 
                         break;
+                    case "StartsWith":
+                        var initialSubState = GetFirstArg(step);
+                        if (currentState != null && initialSubState != null)
+                        {
+                            initialSubStates[currentState] = initialSubState;
+                            states.Add(initialSubState);
+                        }
+
+                        break;
                     case "On":
                         if (pendingTrigger && !hasTransition && currentState != null && currentTrigger != null)
                         {
-                            transitions.Add(new Transition(currentState, currentState, currentTrigger));
+                            transitions.Add(new Transition(currentState, currentState,
+                                ApplyGuardLabel(currentTrigger, guardLabels)));
                         }
 
                         currentTrigger = GetTriggerLabel(step);
                         pendingTrigger = currentTrigger != null;
                         hasTransition = false;
+                        guardLabels.Clear();
+                        break;
+                    case "Guard":
+                        if (TryGetGuardLabel(step, out var guardLabel))
+                        {
+                            guardLabels.Add(guardLabel);
+                        }
+
                         break;
                     case "Immediately":
                         if (pendingTrigger && !hasTransition && currentState != null && currentTrigger != null)
                         {
-                            transitions.Add(new Transition(currentState, currentState, currentTrigger));
+                            transitions.Add(new Transition(currentState, currentState,
+                                ApplyGuardLabel(currentTrigger, guardLabels)));
                         }
 
                         currentTrigger = "immediate";
                         pendingTrigger = true;
                         hasTransition = false;
+                        guardLabels.Clear();
                         break;
                     case "TransitionTo":
                         var target = GetFirstArg(step);
                         if (currentState != null && target != null)
                         {
-                            var label = currentTrigger ?? "internal";
+                            var label = ApplyGuardLabel(currentTrigger ?? "internal", guardLabels);
                             transitions.Add(new Transition(currentState, target, label));
                             states.Add(target);
                             hasTransition = true;
                             pendingTrigger = false;
+                            guardLabels.Clear();
                         }
 
                         break;
                     case "Build":
                         if (pendingTrigger && !hasTransition && currentState != null && currentTrigger != null)
                         {
-                            transitions.Add(new Transition(currentState, currentState, currentTrigger));
+                            transitions.Add(new Transition(currentState, currentState,
+                                ApplyGuardLabel(currentTrigger, guardLabels)));
                             pendingTrigger = false;
+                            guardLabels.Clear();
                         }
 
                         break;
                 }
             }
+        }
+
+        if (startState != null)
+        {
+            startState = ResolveInitialSubState(startState, initialSubStates);
         }
 
         if (states.Count == 0 && transitions.Count == 0)
@@ -240,7 +272,9 @@ internal static class DiagramBuilder
         var ids = states.ToDictionary(
             state => state,
             state => $"S_{Sanitize(state)}");
+        var superStates = new HashSet<string>(parentToChildren.Keys, StringComparer.Ordinal);
         var transitionsList = transitions
+            .Select(transition => transition with { To = ResolveInitialSubState(transition.To, initialSubStates) })
             .OrderBy(t => t.From, StringComparer.Ordinal)
             .ThenBy(t => t.To, StringComparer.Ordinal)
             .ThenBy(t => t.Label, StringComparer.Ordinal)
@@ -248,6 +282,15 @@ internal static class DiagramBuilder
         var transitionStates = new HashSet<string>(
             transitionsList.SelectMany(t => new[] { t.From, t.To }),
             StringComparer.Ordinal);
+        var portStates = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var state in superStates)
+        {
+            if (transitionStates.Contains(state)
+                || string.Equals(startState, state, StringComparison.Ordinal))
+            {
+                portStates.Add(state);
+            }
+        }
 
         var sb = new StringBuilder();
         sb.AppendLine("# " + name);
@@ -256,15 +299,29 @@ internal static class DiagramBuilder
         sb.AppendLine("flowchart LR");
         if (startState != null)
         {
-            sb.AppendLine($"  START((start)) --> {ids[startState]}");
+            var startId = portStates.Contains(startState)
+                ? $"P_{Sanitize(startState)}"
+                : ids[startState];
+            sb.AppendLine($"  START((start)) --> {startId}");
         }
 
         var rendered = new HashSet<string>(StringComparer.Ordinal);
+        var renderedPorts = new HashSet<string>(StringComparer.Ordinal);
         foreach (var root in states
                      .Where(state => !childToParent.ContainsKey(state))
                      .OrderBy(state => state, StringComparer.Ordinal))
         {
-            RenderState(root, sb, ids, parentToChildren, transitionStates, startState, rendered, 1);
+            RenderState(
+                root,
+                sb,
+                ids,
+                parentToChildren,
+                transitionStates,
+                startState,
+                portStates,
+                rendered,
+                renderedPorts,
+                1);
         }
 
         foreach (var state in states.OrderBy(s => s, StringComparer.Ordinal))
@@ -275,12 +332,31 @@ internal static class DiagramBuilder
             }
         }
 
+        if (renderedPorts.Count > 0)
+        {
+            sb.AppendLine("  classDef superstatePort fill:transparent,stroke:transparent;");
+            foreach (var port in renderedPorts.OrderBy(value => value, StringComparer.Ordinal))
+            {
+                sb.AppendLine($"  class P_{Sanitize(port)} superstatePort;");
+            }
+        }
+
         foreach (var transition in transitionsList)
         {
             if (!ids.TryGetValue(transition.From, out var fromId)
                 || !ids.TryGetValue(transition.To, out var toId))
             {
                 continue;
+            }
+
+            if (portStates.Contains(transition.From))
+            {
+                fromId = $"P_{Sanitize(transition.From)}";
+            }
+
+            if (portStates.Contains(transition.To))
+            {
+                toId = $"P_{Sanitize(transition.To)}";
             }
 
             sb.AppendLine($"  {fromId} -->|{transition.Label}| {toId}");
@@ -353,6 +429,61 @@ internal static class DiagramBuilder
         return GetFirstArg(step);
     }
 
+    private static string ResolveInitialSubState(
+        string state,
+        IReadOnlyDictionary<string, string> initialSubStates)
+    {
+        var current = state;
+        var visited = new HashSet<string>(StringComparer.Ordinal);
+        while (initialSubStates.TryGetValue(current, out var next))
+        {
+            if (!visited.Add(current))
+            {
+                return current;
+            }
+
+            current = next;
+        }
+
+        return current;
+    }
+
+    private static string ApplyGuardLabel(string label, List<string> guardLabels)
+    {
+        if (guardLabels.Count == 0)
+        {
+            return label;
+        }
+
+        var guardText = string.Join(" && ", guardLabels);
+        return $"{label} [{guardText}]";
+    }
+
+    private static bool TryGetGuardLabel(InvocationInfo step, out string label)
+    {
+        label = string.Empty;
+        if (step.Arguments.Count < 2)
+        {
+            return false;
+        }
+
+        label = UnwrapStringLiteral(step.Arguments[0]);
+        return !string.IsNullOrWhiteSpace(label);
+    }
+
+    private static string UnwrapStringLiteral(string value)
+    {
+        var trimmed = value?.Trim() ?? string.Empty;
+        if (trimmed.Length >= 2
+            && trimmed.StartsWith("\"", StringComparison.Ordinal)
+            && trimmed.EndsWith("\"", StringComparison.Ordinal))
+        {
+            trimmed = trimmed.Substring(1, trimmed.Length - 2);
+        }
+
+        return trimmed;
+    }
+
     private static string Sanitize(string value)
     {
         var builder = new StringBuilder(value.Length);
@@ -398,7 +529,9 @@ internal static class DiagramBuilder
         IReadOnlyDictionary<string, List<string>> parentToChildren,
         ISet<string> transitionStates,
         string? startState,
+        ISet<string> portStates,
         ISet<string> rendered,
+        ISet<string> renderedPorts,
         int depth)
     {
         if (!parentToChildren.TryGetValue(state, out var children))
@@ -412,16 +545,24 @@ internal static class DiagramBuilder
         }
 
         sb.AppendLine($"{Indent(depth)}subgraph SG_{Sanitize(state)}[{state}]");
-        var shouldRenderParentNode = transitionStates.Contains(state)
-                                     || string.Equals(startState, state, StringComparison.Ordinal);
-        if (shouldRenderParentNode && rendered.Add(state))
+        if (portStates.Contains(state) && renderedPorts.Add(state))
         {
-            sb.AppendLine($"{Indent(depth + 1)}{ids[state]}[{state}]");
+            sb.AppendLine($"{Indent(depth + 1)}P_{Sanitize(state)}(( ))");
         }
 
         foreach (var child in children)
         {
-            RenderState(child, sb, ids, parentToChildren, transitionStates, startState, rendered, depth + 1);
+            RenderState(
+                child,
+                sb,
+                ids,
+                parentToChildren,
+                transitionStates,
+                startState,
+                portStates,
+                rendered,
+                renderedPorts,
+                depth + 1);
         }
 
         sb.AppendLine($"{Indent(depth)}end");

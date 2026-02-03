@@ -51,6 +51,47 @@ public sealed class DiagramBuilderTests
     }
 
     [Fact]
+    public void Renders_guard_labels_when_provided()
+    {
+        var source = """
+            using FunctionalStateMachine.Core;
+
+            public static class Sample
+            {
+                public static object Build() =>
+                    StateMachine<State, Trigger, Data, Command>.Create()
+                        .StartWith(State.Idle)
+                        .For(State.Idle)
+                            .On<Trigger.Go>()
+                                .Guard("has access", data => data.Allowed)
+                                .TransitionTo(State.Running)
+                        .For(State.Running)
+                        .Build();
+            }
+
+            public enum State
+            {
+                Idle,
+                Running
+            }
+
+            public abstract record Trigger
+            {
+                public sealed record Go : Trigger;
+            }
+
+            public sealed record Data(bool Allowed);
+
+            public abstract record Command;
+            """;
+
+        var diagram = DiagramBuilder.GenerateDiagram(source, "Build", "Guarded");
+
+        Assert.NotNull(diagram);
+        Assert.Contains("Trigger.Go [has access]", diagram);
+    }
+
+    [Fact]
     public void Builds_internal_transition_when_no_transition_to_is_declared()
     {
         var source = """
@@ -187,6 +228,90 @@ public sealed class DiagramBuilderTests
         Assert.Contains("subgraph SG_State_InStore[State.InStore]", diagram);
         Assert.Contains("S_State_Shopping[State.Shopping]", diagram);
         Assert.Contains("S_State_CheckingOut[State.CheckingOut]", diagram);
+    }
+
+    [Fact]
+    public void Renders_superstate_transitions_from_container_port()
+    {
+        var source = """
+            using FunctionalStateMachine.Core;
+
+            public static class Sample
+            {
+                public static object Build() =>
+                    StateMachine<State, Trigger, Command>.Create()
+                        .StartWith(State.InStore)
+                        .For(State.InStore)
+                            .StartsWith(State.Shopping)
+                            .On<Trigger.Cancel>()
+                                .TransitionTo(State.Outside)
+                        .For(State.Shopping)
+                            .SubStateOf(State.InStore)
+                        .For(State.Outside)
+                        .Build();
+            }
+
+            public enum State
+            {
+                Outside,
+                InStore,
+                Shopping
+            }
+
+            public abstract record Trigger
+            {
+                public sealed record Cancel : Trigger;
+            }
+
+            public abstract record Command;
+            """;
+
+        var diagram = DiagramBuilder.GenerateDiagram(source, "Build", "Port");
+
+        Assert.NotNull(diagram);
+        Assert.Contains("P_State_InStore", diagram);
+    }
+
+    [Fact]
+    public void Transitions_to_superstate_target_initial_substate()
+    {
+        var source = """
+            using FunctionalStateMachine.Core;
+
+            public static class Sample
+            {
+                public static object Build() =>
+                    StateMachine<State, Trigger, Command>.Create()
+                        .StartWith(State.Outside)
+                        .For(State.InStore)
+                            .StartsWith(State.Shopping)
+                        .For(State.Outside)
+                            .On<Trigger.EnterStore>()
+                                .TransitionTo(State.InStore)
+                        .For(State.Shopping)
+                            .SubStateOf(State.InStore)
+                        .Build();
+            }
+
+            public enum State
+            {
+                Outside,
+                InStore,
+                Shopping
+            }
+
+            public abstract record Trigger
+            {
+                public sealed record EnterStore : Trigger;
+            }
+
+            public abstract record Command;
+            """;
+
+        var diagram = DiagramBuilder.GenerateDiagram(source, "Build", "EntryToSuper");
+
+        Assert.NotNull(diagram);
+        Assert.Contains("S_State_Outside -->|Trigger.EnterStore| S_State_Shopping", diagram);
     }
 
     private static string Normalize(string? value)

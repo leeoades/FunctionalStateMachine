@@ -264,7 +264,19 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
             return this;
         }
 
+        public TransitionConfiguration Guard(string label, Func<TData, TTrigger, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
         public TransitionConfiguration Guard(Func<TState, TData, TTrigger, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
+        public TransitionConfiguration Guard(string label, Func<TState, TData, TTrigger, bool> guard)
         {
             _inner.Guard(guard);
             return this;
@@ -276,7 +288,19 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
             return this;
         }
 
+        public TransitionConfiguration Guard(string label, Func<TData, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
         public TransitionConfiguration Guard(Func<TState, TData, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
+        public TransitionConfiguration Guard(string label, Func<TState, TData, bool> guard)
         {
             _inner.Guard(guard);
             return this;
@@ -460,6 +484,22 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
         }
 
         public TransitionConfiguration<TDerivedTrigger> Guard(
+            string label,
+            Func<TData, TDerivedTrigger, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Guard(
+            Func<TState, TData, TDerivedTrigger, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Guard(
+            string label,
             Func<TState, TData, TDerivedTrigger, bool> guard)
         {
             _inner.Guard(guard);
@@ -472,13 +512,31 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
             return this;
         }
 
+        public TransitionConfiguration<TDerivedTrigger> Guard(string label, Func<TData, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
         public TransitionConfiguration<TDerivedTrigger> Guard(Func<TState, bool> guard)
         {
             _inner.Guard(guard);
             return this;
         }
 
+        public TransitionConfiguration<TDerivedTrigger> Guard(string label, Func<TState, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
         public TransitionConfiguration<TDerivedTrigger> Guard(Func<TState, TData, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Guard(string label, Func<TState, TData, bool> guard)
         {
             _inner.Guard(guard);
             return this;
@@ -1129,12 +1187,23 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
             return this;
         }
 
+        public TransitionConfiguration Guard(string label, Func<TState, TTrigger, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
         public TransitionConfiguration Guard(Func<TState, bool> guard)
         {
             _inner.Guard(guard);
             return this;
         }
 
+        public TransitionConfiguration Guard(string label, Func<TState, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
         public TransitionConfiguration Execute(Func<TState, TTrigger, TCommand> action)
         {
             _inner.Execute(action);
@@ -1266,7 +1335,21 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
             return this;
         }
 
+        public TransitionConfiguration<TDerivedTrigger> Guard(
+            string label,
+            Func<TState, TDerivedTrigger, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
         public TransitionConfiguration<TDerivedTrigger> Guard(Func<TState, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
+        public TransitionConfiguration<TDerivedTrigger> Guard(string label, Func<TState, bool> guard)
         {
             _inner.Guard(guard);
             return this;

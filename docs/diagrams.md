@@ -31,3 +31,9 @@ public static StateMachine<LightState, LightTrigger, LightCommand> Build()
 ## Notes
 
 - Immediate transitions are labeled as `immediate` in the generated flowchart.
+- Guard labels are included when you call `Guard("label", ...)`.
+- Transitions to a superstate are drawn to its initial substate.
+
+## Tips for better diagrams
+
+- Keep guard labels short and descriptive, for example `Guard("is admin", ...)`.
