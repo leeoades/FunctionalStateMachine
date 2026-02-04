@@ -324,7 +324,8 @@ internal static class DiagramBuilder
                 1);
         }
 
-        foreach (var state in states.OrderBy(s => s, StringComparer.Ordinal))
+        foreach (var state in states.Where(s => !superStates.Contains(s))
+                                    .OrderBy(s => s, StringComparer.Ordinal))
         {
             if (rendered.Add(state))
             {

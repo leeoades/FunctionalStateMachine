@@ -10,7 +10,6 @@ flowchart LR
     S_ShopState_Shopping[ShopState.Shopping]
   end
   S_ShopState_Outside[ShopState.Outside]
-  S_ShopState_InStore[ShopState.InStore]
   classDef superstatePort fill:transparent,stroke:transparent;
   class P_ShopState_InStore superstatePort;
   S_ShopState_CheckingOut -->|CartTrigger.PayByCashTrigger| S_ShopState_CheckingOut

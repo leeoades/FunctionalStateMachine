@@ -9,7 +9,6 @@ flowchart LR
     S_SessionState_Authenticated[SessionState.Authenticated]
   end
   S_SessionState_Expired[SessionState.Expired]
-  S_SessionState_Active[SessionState.Active]
   classDef superstatePort fill:transparent,stroke:transparent;
   class P_SessionState_Active superstatePort;
   P_SessionState_Active -->|SessionTrigger.TimeoutTrigger| S_SessionState_Expired
