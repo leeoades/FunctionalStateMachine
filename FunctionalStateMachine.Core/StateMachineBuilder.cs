@@ -5,6 +5,7 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
     where TTrigger : notnull
 {
     private readonly StateMachine<TState, TTrigger, TData, TCommand> _machine = new();
+    private bool _skipAnalysis = false;
 
     public StateMachineBuilder<TState, TTrigger, TData, TCommand> StartWith(TState state)
     {
@@ -24,9 +25,18 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
         return new StateConfiguration(this, _machine.For(state));
     }
 
+    /// <summary>
+    /// Skip static analysis when building. Use with caution - analysis catches real configuration errors.
+    /// </summary>
+    public StateMachineBuilder<TState, TTrigger, TData, TCommand> SkipAnalysis()
+    {
+        _skipAnalysis = true;
+        return this;
+    }
+
     public StateMachine<TState, TTrigger, TData, TCommand> Build()
     {
-        _machine.Validate();
+        _machine.Validate(skipAnalysis: _skipAnalysis);
         return _machine;
     }
 

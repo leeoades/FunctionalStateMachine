@@ -18,6 +18,10 @@ Welcome to the Functional State Machine docs. Each guide introduces a feature, w
 - Hierarchical states: `hierarchical-states.md`
 - No-data builder: `no-data.md`
 
+## Validation and analysis
+
+- Static analysis and configuration validation: `static-analysis.md`
+
 ## Tooling and integrations
 
 - Mermaid diagram generation: `diagrams.md`

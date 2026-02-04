@@ -231,6 +231,25 @@ public class StateMachineAnalysisTests
         Assert.NotNull(machine);
     }
 
+    [Fact]
+    public void Validate_WarnsOnUnusedTriggers()
+    {
+        // State machine that doesn't use all defined trigger types
+        var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
+            .StartWith(State.A)
+            .For(State.A)
+                .On<Trigger.T1>()  // T1 is used
+                    .TransitionTo(State.B)
+            .For(State.B)
+                .On<Trigger.T1>()
+                    .TransitionTo(State.A)
+            // T2 and T3 are never used
+            .Build();
+
+        // Should not throw, but warnings should be logged
+        Assert.NotNull(machine);
+    }
+
     private enum State
     {
         A,
@@ -242,6 +261,8 @@ public class StateMachineAnalysisTests
     private abstract record Trigger
     {
         public sealed record T1 : Trigger;
+        public sealed record T2 : Trigger;  // Unused trigger
+        public sealed record T3 : Trigger;  // Unused trigger
     }
 
     private sealed record Data(int Value);

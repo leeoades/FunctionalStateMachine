@@ -201,7 +201,7 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
         return false;
     }
 
-    internal void Validate()
+    internal void Validate(bool skipAnalysis = false)
     {
         foreach (var definition in _states.Values)
         {
@@ -293,24 +293,27 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
             ResolveInitialLeaf(_initialState!);
         }
 
-        // Run static analysis
-        var analysis = StateMachineAnalyzer<TState, TTrigger, TData, TCommand>.Analyze(_states, _initialState!);
-        
-        // Errors are treated as validation failures
-        if (!analysis.IsValid)
+        // Run static analysis (unless skipped)
+        if (!skipAnalysis)
         {
-            throw new InvalidOperationException(
-                "State machine validation detected errors:\n" + 
-                string.Join("\n", analysis.Errors.Select(e => $"  - {e}")));
-        }
-
-        // Warnings are logged/reported (we could use ILogger here if needed)
-        if (analysis.Warnings.Count > 0)
-        {
-            System.Diagnostics.Debug.WriteLine("State machine analysis detected warnings:");
-            foreach (var warning in analysis.Warnings)
+            var analysis = StateMachineAnalyzer<TState, TTrigger, TData, TCommand>.Analyze(_states, _initialState!);
+            
+            // Errors are treated as validation failures
+            if (!analysis.IsValid)
             {
-                System.Diagnostics.Debug.WriteLine($"  - {warning}");
+                throw new InvalidOperationException(
+                    "State machine validation detected errors:\n" + 
+                    string.Join("\n", analysis.Errors.Select(e => $"  - {e}")));
+            }
+
+            // Warnings are logged/reported (we could use ILogger here if needed)
+            if (analysis.Warnings.Count > 0)
+            {
+                System.Diagnostics.Debug.WriteLine("State machine analysis detected warnings:");
+                foreach (var warning in analysis.Warnings)
+                {
+                    System.Diagnostics.Debug.WriteLine($"  - {warning}");
+                }
             }
         }
     }

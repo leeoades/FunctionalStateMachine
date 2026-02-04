@@ -47,6 +47,9 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
         // Analyze dead-end states
         AnalyzeDeadEndStates(states, initialState, result);
 
+        // Analyze unused triggers
+        AnalyzeUnusedTriggers(states, result);
+
         return result;
     }
 
@@ -275,6 +278,89 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
                     "but verify it's not an oversight.");
             }
         }
+    }
+
+    /// <summary>
+    /// Detect trigger types that are defined but never used in any transition.
+    /// </summary>
+    private static void AnalyzeUnusedTriggers(
+        IReadOnlyDictionary<TState, StateMachine<TState, TTrigger, TData, TCommand>.StateDefinition> states,
+        AnalysisResult result)
+    {
+        // Collect all used trigger types
+        var usedTriggers = new HashSet<object>();
+        
+        foreach (var definition in states.Values)
+        {
+            foreach (var triggerKey in definition.Transitions.Keys)
+            {
+                usedTriggers.Add(triggerKey);
+            }
+        }
+
+        // Get all possible trigger types from the TTrigger type
+        var triggerType = typeof(TTrigger);
+        
+        // If TTrigger is a sealed record hierarchy, find all derived types
+        var allTriggerTypes = GetAllTriggerTypes(triggerType);
+        
+        // Find unused trigger types
+        foreach (var possibleTrigger in allTriggerTypes)
+        {
+            // Check if this trigger type is used
+            bool isUsed = usedTriggers.Any(t => 
+            {
+                // Handle both type-based and value-based triggers
+                if (t is Type)
+                    return (Type)t == possibleTrigger;
+                return t.GetType() == possibleTrigger;
+            });
+
+            if (!isUsed)
+            {
+                result.AddWarning(
+                    $"Trigger type '{possibleTrigger.Name}' is defined but never used in any transition. " +
+                    "Consider removing it or adding transitions that use it.");
+            }
+        }
+    }
+
+    private static HashSet<Type> GetAllTriggerTypes(Type triggerType)
+    {
+        var types = new HashSet<Type>();
+        
+        // Add the base trigger type if it's abstract/record
+        if (triggerType.IsAbstract || IsRecordType(triggerType))
+        {
+            // Find all derived types in the same assembly
+            var assembly = triggerType.Assembly;
+            foreach (var type in assembly.GetTypes())
+            {
+                // Check if it's a record/sealed record deriving from the trigger type
+                if (type != triggerType && 
+                    triggerType.IsAssignableFrom(type) && 
+                    !type.IsAbstract &&
+                    IsRecordType(type))
+                {
+                    types.Add(type);
+                }
+            }
+        }
+        
+        // Always add the trigger type itself as a fallback
+        if (types.Count == 0)
+        {
+            types.Add(triggerType);
+        }
+
+        return types;
+    }
+
+    private static bool IsRecordType(Type type)
+    {
+        // Records are detected by checking for the generated 'EqualityContract' property
+        return type.GetProperty("EqualityContract", 
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance) != null;
     }
 
     private static string GetTriggerTypeName(object triggerKey)
