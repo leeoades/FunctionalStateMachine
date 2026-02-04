@@ -61,7 +61,6 @@ public class StateMachineImmediateTransitionTests
                     .TransitionTo(State.Waiting)
                     .Done()
             .For(State.Waiting)
-            .For(State.Ready)
             .Build();
 
         var (state, _, commands) = machine.Start(new Data("stop"));
@@ -73,21 +72,23 @@ public class StateMachineImmediateTransitionTests
     [Fact]
     public void ImmediateTransitionLoop_Throws()
     {
-        var machine = StateMachine<State, Trigger, Data, Command>.Create()
-            .StartWith(State.Starting)
-            .For(State.Starting)
-                .Immediately()
-                    .TransitionTo(State.Waiting)
-                    .Done()
-            .For(State.Waiting)
-                .Immediately()
-                    .TransitionTo(State.Starting)
-                    .Done()
-            .Build();
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+        {
+            var machine = StateMachine<State, Trigger, Data, Command>.Create()
+                .StartWith(State.Starting)
+                .For(State.Starting)
+                    .Immediately()
+                        .TransitionTo(State.Waiting)
+                        .Done()
+                .For(State.Waiting)
+                    .Immediately()
+                        .TransitionTo(State.Starting)
+                        .Done()
+                .For(State.Ready)
+                .Build();
+        });
 
-        var exception = Assert.Throws<InvalidOperationException>(() => machine.Start(Data.Initial));
-
-        Assert.Contains("Immediate transition loop", exception.Message);
+        Assert.Contains("infinite loop", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     private enum State

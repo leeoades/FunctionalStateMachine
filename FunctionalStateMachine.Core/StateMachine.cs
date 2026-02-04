@@ -292,6 +292,27 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
         {
             ResolveInitialLeaf(_initialState!);
         }
+
+        // Run static analysis
+        var analysis = StateMachineAnalyzer<TState, TTrigger, TData, TCommand>.Analyze(_states, _initialState!);
+        
+        // Errors are treated as validation failures
+        if (!analysis.IsValid)
+        {
+            throw new InvalidOperationException(
+                "State machine validation detected errors:\n" + 
+                string.Join("\n", analysis.Errors.Select(e => $"  - {e}")));
+        }
+
+        // Warnings are logged/reported (we could use ILogger here if needed)
+        if (analysis.Warnings.Count > 0)
+        {
+            System.Diagnostics.Debug.WriteLine("State machine analysis detected warnings:");
+            foreach (var warning in analysis.Warnings)
+            {
+                System.Diagnostics.Debug.WriteLine($"  - {warning}");
+            }
+        }
     }
 
     private void ValidateNoCycles(TState state)
@@ -1653,6 +1674,8 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
         public TState InitialSubState { get; set; } = default!;
 
         public bool HasChildren { get; set; }
+
+        internal IReadOnlyDictionary<object, List<TransitionDefinition>> Transitions => _transitions;
 
         public void AddImmediateTransition(TransitionDefinition transition)
         {
