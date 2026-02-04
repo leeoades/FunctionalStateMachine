@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.7.0] - 2026-02-04
+
+### Fixed
+- **Duplicate superstate labels in diagrams** - Superstates no longer render redundant labels alongside their subgraph containers
+  - Improved visual clarity of hierarchical state diagrams
+  - Cleaner Mermaid diagram output for complex state machines
+
+### Added (Documentation)
+- **Complete changelog** - Documented all versions 0.1.0 through 0.6.0 with human-readable release notes
+  - Comprehensive feature descriptions for each release
+  - Clear tracking of project evolution and capabilities
+
 ## [0.6.0] - 2026-02-04
 
 ### Added
