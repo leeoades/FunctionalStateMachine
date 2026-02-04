@@ -821,6 +821,42 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
             return this;
         }
 
+        public ConditionalTransitionConfiguration ElseIf(Func<TData, TTrigger, bool> predicate)
+        {
+            _inner.ElseIf(predicate);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration ElseIf(Func<TState, TData, TTrigger, bool> predicate)
+        {
+            _inner.ElseIf(predicate);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration ElseIf(Func<TData, bool> predicate)
+        {
+            _inner.ElseIf(predicate);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration ElseIf(Func<TState, TData, bool> predicate)
+        {
+            _inner.ElseIf(predicate);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration ElseIf(Func<TState, TTrigger, bool> predicate)
+        {
+            _inner.ElseIf(predicate);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration ElseIf(Func<TTrigger, bool> predicate)
+        {
+            _inner.ElseIf(predicate);
+            return this;
+        }
+
         public TransitionConfiguration Done()
         {
             _inner.Done();
@@ -949,6 +985,32 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
         public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(Func<IEnumerable<TCommand>> action)
         {
             _inner.Execute(action);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration<TDerivedTrigger> ElseIf(
+            Func<TData, TDerivedTrigger, bool> predicate)
+        {
+            _inner.ElseIf(predicate);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration<TDerivedTrigger> ElseIf(
+            Func<TState, TData, TDerivedTrigger, bool> predicate)
+        {
+            _inner.ElseIf(predicate);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration<TDerivedTrigger> ElseIf(Func<TData, bool> predicate)
+        {
+            _inner.ElseIf(predicate);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration<TDerivedTrigger> ElseIf(Func<TState, TData, bool> predicate)
+        {
+            _inner.ElseIf(predicate);
             return this;
         }
 

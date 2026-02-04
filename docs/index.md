@@ -9,6 +9,7 @@ Welcome to the Functional State Machine docs. Each guide introduces a feature, w
 - Fluent configuration: `fluent-configuration.md`
 - Entry and exit commands: `entry-exit.md`
 - Guards and conditional flows: `guards.md`
+- Conditional steps (If/ElseIf/Else): `conditional-steps.md`
 - State data and ModifyData: `state-data.md`
 - Execute steps and multiple commands: `execute-steps.md`
 - Ignore and unhandled triggers: `ignore-unhandled.md`
