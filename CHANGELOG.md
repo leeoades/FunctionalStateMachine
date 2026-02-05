@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.8.0] - 2026-02-05
+
+### Added
+- **Conditional TransitionTo support** - Transition steps now work inside `If`/`ElseIf`/`Else`/`Done` blocks with ambiguity detection for multiple transitions in a single execution path
+- **Additional conditional transition coverage** - Expanded tests and documentation for conditional transitions and ambiguity scenarios
+- **Vending machine sample app** - New interactive sample with command runners, diagrams, README, and xUnit tests
+
 ## [0.7.0] - 2026-02-04
 
 ### Fixed
