@@ -258,6 +258,64 @@ public class StateMachineAnalysisTests
     }
 
     [Fact]
+    public void Validate_DetectsTransitionToAfterConditionalChain()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+        {
+            var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
+                .StartWith(State.A)
+                .For(State.A)
+                    .On<Trigger.T1>()
+                        .If(data => data.Value > 5)
+                            .TransitionTo(State.B)
+                            .Else()
+                            .Execute(() => new Command.Noop())
+                            .Done()
+                        .TransitionTo(State.C)
+                .For(State.B)
+                    .On<Trigger.T1>()
+                        .TransitionTo(State.A)
+                .For(State.C)
+                    .On<Trigger.T1>()
+                        .TransitionTo(State.A)
+                .Build();
+        });
+
+        Assert.Contains("TransitionTo", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Validate_DetectsTransitionToInTwoConditionalChains()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+        {
+            var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
+                .StartWith(State.A)
+                .For(State.A)
+                    .On<Trigger.T1>()
+                        .If(data => data.Value > 5)
+                            .TransitionTo(State.B)
+                            .Else()
+                            .Execute(() => new Command.Noop())
+                            .Done()
+                        .If(data => data.Value > 1)
+                            .TransitionTo(State.C)
+                            .Else()
+                            .Execute(() => new Command.Noop())
+                            .Done()
+                .For(State.B)
+                    .On<Trigger.T1>()
+                        .TransitionTo(State.A)
+                .For(State.C)
+                    .On<Trigger.T1>()
+                        .TransitionTo(State.A)
+                .Build();
+        });
+
+        Assert.Contains("TransitionTo", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void Validate_AllowsComplexReachableStateMachine()
     {
         // A valid, more complex state machine

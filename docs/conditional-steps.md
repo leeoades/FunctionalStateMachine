@@ -78,6 +78,28 @@ var machine = StateMachine<State, Trigger, Data, Command>.Create()
 
 With multiple ElseIf conditions, only the first matching branch executes. If no condition matches and there's no Else, nothing happens.
 
+## Multiple conditional chains with TransitionTo
+
+If you use multiple conditional chains within the same transition, only one chain may contain a TransitionTo.
+
+```csharp
+var machine = StateMachine<State, Trigger, Data, Command>.Create()
+    .StartWith(State.Pending)
+    .For(State.Pending)
+        .On<Trigger.Submit>()
+            .If(data => data.IsValid)
+                .TransitionTo(State.Approved)
+                .Else()
+                .Execute(() => new Command.LogRejected())
+                .Done()
+            .If(data => data.IsHighPriority)
+                .TransitionTo(State.Escalated) // ❌ second TransitionTo in same transition
+                .Else()
+                .Execute(() => new Command.LogPriority())
+                .Done()
+    .Build();
+```
+
 ## Using with ModifyData
 
 Conditional data modifications work seamlessly:
