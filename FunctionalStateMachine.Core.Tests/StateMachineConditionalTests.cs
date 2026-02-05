@@ -224,9 +224,54 @@ public class StateMachineConditionalTests
         Assert.DoesNotContain("ElseIf2", executionLog);
     }
 
+    [Fact]
+    public void If_ConditionalTransitionToRequiresSingleTarget()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+        {
+            var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
+                .StartWith(State.Ready)
+                .For(State.Ready)
+                    .On<Trigger.PayTrigger>()
+                        .If((data, trigger) => trigger.Amount >= 10m)
+                            .TransitionTo(State.Approved)
+                            .TransitionTo(State.Ready)
+                            .Done()
+                .For(State.Approved)
+                    .On<Trigger.PayTrigger>()
+                        .Ignore()
+                .Build();
+        });
+
+        Assert.Contains("TransitionTo", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void If_AllowsSingleConditionalTransitionTo()
+    {
+        var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
+            .StartWith(State.Ready)
+            .For(State.Ready)
+                .On<Trigger.PayTrigger>()
+                    .If((data, trigger) => trigger.Amount >= 10m)
+                        .TransitionTo(State.Approved)
+                        .Else()
+                        .Execute(() => new LogCommand("Declined"))
+                        .Done()
+            .For(State.Approved)
+                .On<Trigger.PayTrigger>()
+                    .Ignore()
+            .Build();
+
+        var (newState, _, _) = machine.Fire(new Trigger.PayTrigger(4m), State.Ready, new Data(0m));
+
+        Assert.Equal(State.Ready, newState);
+    }
+
     private enum State
     {
-        Ready
+        Ready,
+        Approved
     }
 
     private abstract record Trigger

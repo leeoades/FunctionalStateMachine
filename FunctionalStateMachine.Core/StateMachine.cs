@@ -146,14 +146,22 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
                 return true;
             }
 
-            var targetState = transition.HasTargetState ? transition.TargetState! : currentState;
-            targetState = ResolveInitialLeaf(targetState);
-
             var commandList = new List<TCommand>();
-            var isStateChange = transition.HasTargetState
+            var updatedData = ApplyTransitionSteps(
+                commandList,
+                transition.Steps,
+                currentState,
+                currentData,
+                trigger,
+                out var conditionalHasTargetState,
+                out var conditionalTargetState);
+            var hasTargetState = transition.HasTargetState || conditionalHasTargetState;
+            var targetState = transition.HasTargetState
+                ? transition.TargetState!
+                : conditionalHasTargetState ? conditionalTargetState : currentState;
+            targetState = ResolveInitialLeaf(targetState);
+            var isStateChange = hasTargetState
                 && !EqualityComparer<TState>.Default.Equals(currentState, targetState);
-
-            var updatedData = ApplyTransitionSteps(commandList, transition, currentState, currentData, trigger);
 
             if (isStateChange)
             {
@@ -260,12 +268,21 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
         {
             foreach (var transition in definition.GetTransitions())
             {
-                if (!transition.HasTargetState)
+                if (!transition.HasTargetState && !HasTransitionTargetSteps(transition.Steps))
                 {
                     continue;
                 }
 
-                if (!_states.ContainsKey(transition.TargetState!))
+                foreach (var targetState in GetTransitionTargetStates(transition.Steps))
+                {
+                    if (!_states.ContainsKey(targetState))
+                    {
+                        throw new InvalidOperationException(
+                            $"State '{definition.State}' transitions to '{targetState}', but it is not configured.");
+                    }
+                }
+
+                if (transition.HasTargetState && !_states.ContainsKey(transition.TargetState!))
                 {
                     throw new InvalidOperationException(
                         $"State '{definition.State}' transitions to '{transition.TargetState}', but it is not configured.");
@@ -538,6 +555,41 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
         return states;
     }
 
+    private static bool HasTransitionTargetSteps(List<TransitionStep> steps)
+    {
+        return GetTransitionTargetStates(steps).Count > 0;
+    }
+
+    private static HashSet<TState> GetTransitionTargetStates(List<TransitionStep> steps)
+    {
+        var targets = new HashSet<TState>();
+        CollectTransitionTargetStates(steps, targets);
+        return targets;
+    }
+
+    private static void CollectTransitionTargetStates(List<TransitionStep> steps, HashSet<TState> targets)
+    {
+        foreach (var step in steps)
+        {
+            switch (step.Kind)
+            {
+                case TransitionStepKind.Transition:
+                    targets.Add(step.TargetState!);
+                    break;
+                case TransitionStepKind.Conditional:
+                    CollectTransitionTargetStates(step.ConditionalTrueSteps!, targets);
+                    CollectTransitionTargetStates(step.ConditionalFalseSteps!, targets);
+                    break;
+                case TransitionStepKind.ConditionalChain:
+                    foreach (var branch in step.ConditionalBranches!)
+                    {
+                        CollectTransitionTargetStates(branch.Steps, targets);
+                    }
+                    break;
+            }
+        }
+    }
+
     private bool TryFindLowestCommonAncestor(TState currentState, TState targetState, out TState lca)
     {
         var currentChain = GetHierarchyChain(currentState);
@@ -635,7 +687,7 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
             }
 
             var targetState = ResolveInitialLeaf(matched.TargetState!);
-            var updatedData = ApplyTransitionSteps(commands, matched, state, data, trigger);
+            var updatedData = ApplyTransitionSteps(commands, matched.Steps, state, data, trigger, out _, out _);
             var isStateChange = !EqualityComparer<TState>.Default.Equals(state, targetState);
 
             if (isStateChange)
@@ -654,21 +706,15 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
 
     private static TData ApplyTransitionSteps(
         List<TCommand> commands,
-        TransitionDefinition transition,
-        TState currentState,
-        TData currentData,
-        TTrigger trigger)
-    {
-        return ApplyTransitionSteps(commands, transition.Steps, currentState, currentData, trigger);
-    }
-
-    private static TData ApplyTransitionSteps(
-        List<TCommand> commands,
         List<TransitionStep> steps,
         TState currentState,
         TData currentData,
-        TTrigger trigger)
+        TTrigger trigger,
+        out bool hasTargetState,
+        out TState targetState)
     {
+        hasTargetState = false;
+        targetState = default!;
         var updatedData = currentData;
         foreach (var step in steps)
         {
@@ -683,18 +729,46 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
                         commands.Add(command);
                     }
                     break;
+                case TransitionStepKind.Transition:
+                    hasTargetState = true;
+                    targetState = step.TargetState!;
+                    break;
                 case TransitionStepKind.Conditional:
                     var branch = step.Predicate!(currentState, updatedData, trigger)
                         ? step.ConditionalTrueSteps!
                         : step.ConditionalFalseSteps!;
-                    updatedData = ApplyTransitionSteps(commands, branch, currentState, updatedData, trigger);
+                    updatedData = ApplyTransitionSteps(
+                        commands,
+                        branch,
+                        currentState,
+                        updatedData,
+                        trigger,
+                        out var conditionalHasTargetState,
+                        out var conditionalTargetState);
+                    if (conditionalHasTargetState && !hasTargetState)
+                    {
+                        hasTargetState = true;
+                        targetState = conditionalTargetState;
+                    }
                     break;
                 case TransitionStepKind.ConditionalChain:
                     var matchedBranch = step.ConditionalBranches!.FirstOrDefault(b => 
                         b.Predicate(currentState, updatedData, trigger));
                     if (matchedBranch.Steps != null)
                     {
-                        updatedData = ApplyTransitionSteps(commands, matchedBranch.Steps, currentState, updatedData, trigger);
+                        updatedData = ApplyTransitionSteps(
+                            commands,
+                            matchedBranch.Steps,
+                            currentState,
+                            updatedData,
+                            trigger,
+                            out var chainHasTargetState,
+                            out var chainTargetState);
+                        if (chainHasTargetState && !hasTargetState)
+                        {
+                            hasTargetState = true;
+                            targetState = chainTargetState;
+                        }
                     }
                     break;
             }
@@ -1439,6 +1513,12 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
             return Execute((state, data, trigger) => action());
         }
 
+        public ConditionalTransitionConfiguration TransitionTo(TState state)
+        {
+            _currentBranchSteps!.Add(TransitionStep.ForTransition(state));
+            return this;
+        }
+
         public ConditionalTransitionConfiguration ElseIf(Func<TData, TTrigger, bool> predicate)
         {
             _branches.Add(((state, data, trigger) => predicate(data, trigger), []));
@@ -1604,6 +1684,12 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
             return Execute((state, data, trigger) => action());
         }
 
+        public ConditionalTransitionConfiguration<TDerivedTrigger> TransitionTo(TState state)
+        {
+            _currentBranchSteps!.Add(TransitionStep.ForTransition(state));
+            return this;
+        }
+
         public ConditionalTransitionConfiguration<TDerivedTrigger> ElseIf(
             Func<TData, TDerivedTrigger, bool> predicate)
         {
@@ -1736,6 +1822,7 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
     {
         ModifyData,
         Execute,
+        Transition,
         Conditional,
         ConditionalChain
     }
@@ -1755,6 +1842,8 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
 
         public Func<TState, TData, TTrigger, bool>? Predicate { get; private init; }
 
+        public TState? TargetState { get; private init; }
+
         public List<TransitionStep>? ConditionalTrueSteps { get; private init; }
 
         public List<TransitionStep>? ConditionalFalseSteps { get; private init; }
@@ -1769,6 +1858,11 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
         public static TransitionStep ForExecute(Func<TState, TData, TTrigger, IEnumerable<TCommand>> action)
         {
             return new TransitionStep(TransitionStepKind.Execute) { Executor = action };
+        }
+
+        public static TransitionStep ForTransition(TState targetState)
+        {
+            return new TransitionStep(TransitionStepKind.Transition) { TargetState = targetState };
         }
 
         public static TransitionStep ForConditional(
@@ -2362,6 +2456,12 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
             return this;
         }
 
+        public ConditionalTransitionConfiguration TransitionTo(TState state)
+        {
+            _inner.TransitionTo(state);
+            return this;
+        }
+
         public ConditionalTransitionConfiguration Else()
         {
             _inner.Else();
@@ -2452,6 +2552,12 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
         public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(Func<IEnumerable<TCommand>> action)
         {
             _inner.Execute(action);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration<TDerivedTrigger> TransitionTo(TState state)
+        {
+            _inner.TransitionTo(state);
             return this;
         }
 

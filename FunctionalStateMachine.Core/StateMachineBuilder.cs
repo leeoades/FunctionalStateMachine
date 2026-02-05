@@ -825,6 +825,12 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
             return this;
         }
 
+        public ConditionalTransitionConfiguration TransitionTo(TState state)
+        {
+            _inner.TransitionTo(state);
+            return this;
+        }
+
         public ConditionalTransitionConfiguration Else()
         {
             _inner.Else();
@@ -995,6 +1001,12 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
         public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(Func<IEnumerable<TCommand>> action)
         {
             _inner.Execute(action);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration<TDerivedTrigger> TransitionTo(TState state)
+        {
+            _inner.TransitionTo(state);
             return this;
         }
 

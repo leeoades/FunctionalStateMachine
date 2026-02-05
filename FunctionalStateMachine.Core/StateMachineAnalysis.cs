@@ -44,6 +44,9 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
         // Analyze ambiguous transitions
         AnalyzeAmbiguousTransitions(states, result);
 
+        // Analyze conditional transition target ambiguity
+        AnalyzeConditionalTransitionTargets(states, result);
+
         // Analyze dead-end states
         AnalyzeDeadEndStates(states, initialState, result);
 
@@ -85,6 +88,31 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
             {
                 foreach (var transition in transitions)
                 {
+                    foreach (var target in GetTransitionTargetStates(transition.Steps))
+                    {
+                        if (!reachable.Contains(target))
+                        {
+                            reachable.Add(target);
+                            toVisit.Enqueue(target);
+
+                            // Mark parent states as reachable too
+                            if (states.TryGetValue(target, out var targetDef) && 
+                                targetDef.HasParentState)
+                            {
+                                MarkParentStatesReachable(targetDef.ParentState, states, reachable, toVisit);
+                            }
+
+                            // Add initial sub-states of target
+                            if (states.TryGetValue(target, out targetDef) && 
+                                targetDef.HasInitialSubState && 
+                                !reachable.Contains(targetDef.InitialSubState))
+                            {
+                                reachable.Add(targetDef.InitialSubState);
+                                toVisit.Enqueue(targetDef.InitialSubState);
+                            }
+                        }
+                    }
+
                     if (transition.HasTargetState && !reachable.Contains(transition.TargetState!))
                     {
                         reachable.Add(transition.TargetState!);
@@ -249,6 +277,100 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
                             ". Add guards or consolidate transitions to resolve the ambiguity.");
                     }
                 }
+            }
+        }
+    }
+
+    private static void AnalyzeConditionalTransitionTargets(
+        IReadOnlyDictionary<TState, StateMachine<TState, TTrigger, TData, TCommand>.StateDefinition> states,
+        AnalysisResult result)
+    {
+        foreach (var (state, definition) in states)
+        {
+            foreach (var (triggerKey, transitions) in definition.Transitions)
+            {
+                foreach (var transition in transitions)
+                {
+                    var maxTransitionCount = GetMaxTransitionCountPerPath(transition.Steps);
+                    if (transition.HasTargetState && maxTransitionCount > 0)
+                    {
+                        maxTransitionCount++;
+                    }
+
+                    if (maxTransitionCount > 1)
+                    {
+                        var triggerType = GetTriggerTypeName(triggerKey);
+                        result.AddError(
+                            $"State '{state}' has multiple TransitionTo steps for trigger '{triggerType}'. " +
+                            "A single transition may only resolve to one target state.");
+                    }
+                }
+            }
+        }
+    }
+
+    private static int GetMaxTransitionCountPerPath(
+        List<StateMachine<TState, TTrigger, TData, TCommand>.TransitionStep> steps)
+    {
+        var count = 0;
+        foreach (var step in steps)
+        {
+            switch (step.Kind)
+            {
+                case StateMachine<TState, TTrigger, TData, TCommand>.TransitionStepKind.Transition:
+                    count++;
+                    break;
+                case StateMachine<TState, TTrigger, TData, TCommand>.TransitionStepKind.ModifyData:
+                case StateMachine<TState, TTrigger, TData, TCommand>.TransitionStepKind.Execute:
+                    break;
+                case StateMachine<TState, TTrigger, TData, TCommand>.TransitionStepKind.Conditional:
+                    count += Math.Max(
+                        GetMaxTransitionCountPerPath(step.ConditionalTrueSteps!),
+                        GetMaxTransitionCountPerPath(step.ConditionalFalseSteps!));
+                    break;
+                case StateMachine<TState, TTrigger, TData, TCommand>.TransitionStepKind.ConditionalChain:
+                    var maxBranch = 0;
+                    foreach (var branch in step.ConditionalBranches!)
+                    {
+                        maxBranch = Math.Max(maxBranch, GetMaxTransitionCountPerPath(branch.Steps));
+                    }
+                    count += maxBranch;
+                    break;
+            }
+        }
+
+        return count;
+    }
+
+    private static HashSet<TState> GetTransitionTargetStates(
+        List<StateMachine<TState, TTrigger, TData, TCommand>.TransitionStep> steps)
+    {
+        var targets = new HashSet<TState>();
+        CollectTransitionTargetStates(steps, targets);
+        return targets;
+    }
+
+    private static void CollectTransitionTargetStates(
+        List<StateMachine<TState, TTrigger, TData, TCommand>.TransitionStep> steps,
+        HashSet<TState> targets)
+    {
+        foreach (var step in steps)
+        {
+            switch (step.Kind)
+            {
+                case StateMachine<TState, TTrigger, TData, TCommand>.TransitionStepKind.Transition:
+                    targets.Add(step.TargetState!);
+                    break;
+                case StateMachine<TState, TTrigger, TData, TCommand>.TransitionStepKind.Conditional:
+                    CollectTransitionTargetStates(step.ConditionalTrueSteps!, targets);
+                    CollectTransitionTargetStates(step.ConditionalFalseSteps!, targets);
+                    break;
+                case StateMachine<TState, TTrigger, TData, TCommand>.TransitionStepKind.ConditionalChain:
+                    foreach (var branch in step.ConditionalBranches!)
+                    {
+                        CollectTransitionTargetStates(branch.Steps, targets);
+                    }
+                    break;
             }
         }
     }

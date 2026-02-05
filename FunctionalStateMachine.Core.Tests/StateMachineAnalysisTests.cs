@@ -208,6 +208,56 @@ public class StateMachineAnalysisTests
     }
 
     [Fact]
+    public void Validate_DetectsConditionalTransitionToAmbiguity()
+    {
+        var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
+            .StartWith(State.A)
+            .For(State.A)
+                .On<Trigger.T1>()
+                    .If(data => data.Value > 5)
+                        .TransitionTo(State.B)
+                        .ElseIf(data => data.Value <= 5)
+                        .TransitionTo(State.C)
+                        .Done()
+            .For(State.B)
+                .On<Trigger.T1>()
+                    .TransitionTo(State.A)
+            .For(State.C)
+                .On<Trigger.T1>()
+                    .TransitionTo(State.A)
+            .Build();
+
+        Assert.NotNull(machine);
+    }
+
+    [Fact]
+    public void Validate_DetectsMultipleTransitionToInSameTransition()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+        {
+            var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
+                .StartWith(State.A)
+                .For(State.A)
+                    .On<Trigger.T1>()
+                        .TransitionTo(State.B)
+                        .If(data => data.Value > 5)
+                            .Execute(() => new Command.Noop())
+                            .Else()
+                            .TransitionTo(State.C)
+                            .Done()
+                .For(State.B)
+                    .On<Trigger.T1>()
+                        .TransitionTo(State.A)
+                .For(State.C)
+                    .On<Trigger.T1>()
+                        .TransitionTo(State.A)
+                .Build();
+        });
+
+        Assert.Contains("TransitionTo", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void Validate_AllowsComplexReachableStateMachine()
     {
         // A valid, more complex state machine

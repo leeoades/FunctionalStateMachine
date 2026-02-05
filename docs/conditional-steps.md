@@ -1,6 +1,6 @@
 # Conditional Steps (If / ElseIf / Else)
 
-Conditional steps let you branch within a single trigger's action, executing different commands or data modifications based on a predicate.
+Conditional steps let you branch within a single trigger's action, executing different commands, data modifications, or state transitions based on a predicate.
 
 ## Why it is useful
 
@@ -55,6 +55,23 @@ var machine = StateMachine<State, Trigger, Data, Command>.Create()
                 .Execute(() => new Command.BasicPayment())
                 .Else()
                 .Execute(() => new Command.MinimumPayment())
+                .Done()
+    .Build();
+```
+
+## Conditional TransitionTo
+
+You can transition to a new state inside an If/ElseIf/Else chain. Each execution path may only include one TransitionTo.
+
+```csharp
+var machine = StateMachine<State, Trigger, Data, Command>.Create()
+    .StartWith(State.Pending)
+    .For(State.Pending)
+        .On<Trigger.Submit>()
+            .If(data => data.IsValid)
+                .TransitionTo(State.Approved)
+                .Else()
+                .Execute(() => new Command.LogRejected())
                 .Done()
     .Build();
 ```
