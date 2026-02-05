@@ -39,6 +39,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionalStateMachine.Comm
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionalStateMachine.CommandRunner.Generator", "FunctionalStateMachine.CommandRunner.Generator\FunctionalStateMachine.CommandRunner.Generator.csproj", "{F2EB10B5-AD83-47A7-BFA3-3A552B06AC76}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VendingMachineSampleApp", "VendingMachineSampleApp\VendingMachineSampleApp.csproj", "{E6646DD6-3BA5-4A57-B644-59D670F81002}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VendingMachineSampleApp.Tests", "VendingMachineSampleApp.Tests\VendingMachineSampleApp.Tests.csproj", "{62D20B6C-490F-4616-A311-18D52A4E8F8C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,5 +81,13 @@ Global
 		{F2EB10B5-AD83-47A7-BFA3-3A552B06AC76}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2EB10B5-AD83-47A7-BFA3-3A552B06AC76}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2EB10B5-AD83-47A7-BFA3-3A552B06AC76}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6646DD6-3BA5-4A57-B644-59D670F81002}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6646DD6-3BA5-4A57-B644-59D670F81002}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6646DD6-3BA5-4A57-B644-59D670F81002}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6646DD6-3BA5-4A57-B644-59D670F81002}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62D20B6C-490F-4616-A311-18D52A4E8F8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62D20B6C-490F-4616-A311-18D52A4E8F8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62D20B6C-490F-4616-A311-18D52A4E8F8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62D20B6C-490F-4616-A311-18D52A4E8F8C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
