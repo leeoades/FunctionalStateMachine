@@ -213,3 +213,9 @@ Use `FunctionalStateMachine.Diagrams.MermaidGenerator` (see samples for examples
 
 ### Add command handler
 Define a concrete record class extending the command hierarchy and add `ICommandRunner<TCommand>` implementations, then call `services.AddCommandRunners<TCommand>()` to wire them up.
+
+### Update CHANGELOG for new tags
+1. List tags with dates: `git --no-pager for-each-ref --sort=creatordate --format="%(refname:short) %(creatordate:short)" refs/tags`
+2. Compare tags to CHANGELOG headers to find missing versions.
+3. For each missing tag, summarize changes from previous tag: `git --no-pager log --oneline vPREVIOUS..vNEW` and `git --no-pager show vNEW --stat`
+4. Add a new `## [x.y.z] - YYYY-MM-DD` section above the older entries with Added/Changed/Fixed bullets based on the tag diff.
