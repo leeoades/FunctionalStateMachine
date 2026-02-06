@@ -14,10 +14,6 @@ public class DispenseItemHandler : ICommandRunner<DispenseItemCommand>
         Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine($"🔊 *motor whirring sounds*");
         Console.WriteLine($"📦 Dispensing {command.ItemCode}...");
-        
-        // Simulate mechanical delay
-        Thread.Sleep(500);
-        
         Console.WriteLine($"✓ Item dispensed successfully");
         Console.ResetColor();
     }

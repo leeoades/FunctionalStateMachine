@@ -18,14 +18,24 @@ public record SelectItemTrigger(string ItemCode) : VendingMachineTrigger;
 public record InsertMoneyTrigger(decimal Amount) : VendingMachineTrigger;
 
 /// <summary>
-/// Triggered when the machine completes dispensing an item.
-/// </summary>
-public record DispenseCompleteTrigger : VendingMachineTrigger;
-
-/// <summary>
 /// Triggered when a customer cancels their current transaction and wants to exit.
 /// </summary>
 public record CancelTrigger : VendingMachineTrigger;
+
+/// <summary>
+/// Triggered when the user asks to see the inventory/help menu.
+/// </summary>
+public record ShowInventoryTrigger : VendingMachineTrigger;
+
+/// <summary>
+/// Triggered when the user requests to exit the application.
+/// </summary>
+public record ExitTrigger : VendingMachineTrigger;
+
+/// <summary>
+/// Triggered when user input does not map to any valid command.
+/// </summary>
+public record InvalidInputTrigger(string Input) : VendingMachineTrigger;
 
 /// <summary>
 /// Triggered when the machine detects a mechanical jam that prevents operation.

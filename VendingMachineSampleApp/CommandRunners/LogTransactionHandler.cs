@@ -13,7 +13,7 @@ public class LogTransactionHandler : ICommandRunner<LogTransactionCommand>
     {
         var status = command.Success ? "✓ SUCCESS" : "✗ FAILED";
         Console.ForegroundColor = ConsoleColor.Gray;
-        Console.WriteLine($"💾 [LOG] Transaction: {command.ItemCode} | Amount: ${command.AmountPaid:F2} | {status}");
+        Console.WriteLine($"💾 [LOG] Transaction: {command.ItemCode} | Amount: £{command.AmountPaid:F2} | {status}");
         Console.ResetColor();
     }
 }

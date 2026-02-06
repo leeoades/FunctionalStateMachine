@@ -6,8 +6,8 @@ A complete, interactive vending machine simulator demonstrating the FunctionalSt
 
 This sample showcases:
 
-- ✅ **Complex State Machine** - 7 states with sophisticated guards and transitions
-- ✅ **Multiple Command Types** - 7 different command handlers with distinct concerns
+- ✅ **Complex State Machine** - Hierarchical states with payment sub-flows
+- ✅ **Multiple Command Types** - Command handlers with distinct concerns
 - ✅ **Dependency Injection** - Automatic handler scanning and registration
 - ✅ **State Data Mutation** - Tracking money, inventory, and metrics throughout transactions
 - ✅ **Real-World Domain** - Domain-driven design with meaningful guards and business logic
@@ -23,57 +23,44 @@ This sample showcases:
                          SelectItem (item in stock?)
                                     │
                      ┌──────────────▼───────────────┐
-                     │    ITEM SELECTED             │
-                     │ (item code validated)        │
-                     └─────────────┬────────────────┘
-                                   │
-                       InsertMoney (first payment)
-                                   │
-            ┌──────────────────────▼───────────────────────┐
-            │  PAYMENT VALIDATION                          │
-            │  (check: MoneyInserted >= ItemPrice?)        │
-            └────────┬──────────────────────────────────┬──┘
-                     │                                  │
-        InsertMoney  │ (insufficient)      InsertMoney  │ (sufficient)
-                     │                                  │
-                     └─────────────┬────────────────────┘
-                                   │
-                    ┌──────────────▼──────────────┐
-                    │  DISPENSING ITEM            │
-                    │ (motor control simulation)  │
-                    └────────────┬────────────────┘
-                                 │
-                         DispenseComplete
-                                 │
-                    ┌───────────┬▼───────────┐
-                    │           │            │
-         (if change>0)    (return change)  (no change)
-                    │           │            │
-                    ▼           ▼            │
-                 ┌──────────────────┐        │
-                 │ RETURNING CHANGE │────────┘
-                 │ (coin mechanism) │
-                 └────────┬─────────┘
-                          │
-                   DispenseComplete
-                          │
-                    ┌─────▼────────┐
-                    │    IDLE      │ (ready for next customer)
-                    └──────────────┘
+                     │      PAYMENT (superstate)    │
+                     └──────────────┬───────────────┘
+                                    │
+                             MONEY DUE (amount due)
+                                    │
+                        InsertMoney (recalculate due)
+                      ┌─────────────┴─────────────┐
+                      │                           │
+                due remains                   overpaid
+                      │                           │
+                MONEY DUE                   PAYMENT REFUND
+                                                  │
+                                           refund issued
+                                                  │
+                                            PAYMENT COMPLETE
+                                                  │
+                                            DISPENSING ITEM
+                                                  │
+                                            RETURNING CHANGE
+                                                  │
+                                               IDLE
 
 ERROR PATHS:
 - SelectItem → OUT OF STOCK (item exists but Quantity=0)
 - SelectItem → IDLE (invalid item code)
 - Any State → MACHINE JAMMED (jam detected trigger)
-- ItemSelected/PaymentValidation → IDLE (cancel trigger)
+- Payment/OutOfStock → IDLE (cancel trigger)
 ```
 
 ## Domain Model
 
 ### States
+- **Operational** - Top-level superstate for common transitions
 - **Idle** - Waiting for customer to select an item
-- **ItemSelected** - Customer selected item, awaiting payment
-- **PaymentValidation** - Checking if payment is sufficient
+- **Payment** - Superstate for payment phase
+- **PaymentMoneyDue** - Displays amount due, waits for money
+- **PaymentRefund** - Issues refund for overpayment
+- **PaymentComplete** - Payment accepted; ready to dispense
 - **DispensingItem** - Physically dispensing the selected item
 - **ReturningChange** - Returning change to customer
 - **OutOfStock** - Item selected is not available
@@ -82,11 +69,13 @@ ERROR PATHS:
 ### Triggers
 - `SelectItemTrigger(itemCode)` - Customer selects an item
 - `InsertMoneyTrigger(amount)` - Customer inserts money
-- `DispenseCompleteTrigger` - Dispensing mechanism completed successfully
+- `ShowInventoryTrigger` - User requests the inventory menu
+- `ExitTrigger` - User requests to exit the application
+- `InvalidInputTrigger(input)` - User input didn't map to a command
 - `CancelTrigger` - Customer cancels the transaction
 - `JamDetectedTrigger` - Machine detects a jam
 
-### Commands (Dispatched on State Entry/Exit)
+### Commands (Dispatched by Transitions/Entry)
 1. **DisplayMessageCommand** → DisplayMessageHandler
    - Shows messages on machine display
    
@@ -107,6 +96,10 @@ ERROR PATHS:
    
 7. **UpdateSalesMetricsCommand** → UpdateSalesMetricsHandler
    - Tracks revenue and transaction success rate
+8. **ShowInventoryCommand** → ShowInventoryHandler
+   - Renders inventory and menu options
+9. **ExitApplicationCommand** → ExitApplicationHandler
+   - Signals the host to exit after commands are executed
 
 ## Key Features
 
@@ -116,12 +109,12 @@ ERROR PATHS:
 .If((data, trigger) =>
     data.Inventory.TryGetValue(trigger.ItemCode, out var item) &&
     item.Quantity > 0)
-    .TransitionTo(VendingMachineState.ItemSelected)
+    .TransitionTo(VendingMachineState.Payment)
 
 // Must have paid enough
 .If(data => data.SelectedItemPrice.HasValue &&
             data.MoneyInserted >= data.SelectedItemPrice)
-    .TransitionTo(VendingMachineState.DispensingItem)
+    .TransitionTo(VendingMachineState.PaymentComplete)
 ```
 
 ### State Data Mutation
@@ -134,10 +127,10 @@ ERROR PATHS:
 })
 ```
 
-### Entry/Exit Actions
+### Entry Actions
 ```csharp
 .For(VendingMachineState.DispensingItem)
-    .OnEntry((data, _) => new VendingMachineCommand[]
+    .OnEntry(data => new VendingMachineCommand[]
     {
         new DisplayMessageCommand($"Dispensing {data.SelectedItemName}..."),
         new PlaySoundCommand(VendingSound.DispensingSound),
@@ -157,16 +150,7 @@ dotnet run --project VendingMachineSampleApp\VendingMachineSampleApp.csproj
 Once running, the machine awaits customer interaction:
 
 ```
-📦 Available Items:
-─────────────────────────────────────
-  A1  Chips           $1.50   (5 in stock)
-  A2  Candy           $0.75   (10 in stock)
-  B1  Soda            $2.00   (3 in stock)
-  B2  Water           $1.00   (8 in stock)
-  C1  Cookies         $1.25   (4 in stock)
-─────────────────────────────────────
-  HELP - Show this menu
-  EXIT - Quit the program
+Type HELP to see items or EXIT to quit.
 
 Enter command:
 ```
@@ -178,17 +162,13 @@ Enter command: B1
 🔊 *beep*
 🖥️  Item selected: Soda
 🖥️  Price: $2.00
-Current state: ItemSelected
+Current state: PaymentMoneyDue
 
-Enter amount to insert ($): 1.50
-
+Enter command: 1.50
 🖥️  Inserted $1.50. Remaining $0.50.
-Current state: PaymentValidation
+Current state: PaymentMoneyDue
 
 Enter command: 0.50
-
-💳 Processing payment...
-
 🖥️  Dispensing Soda...
 🔊 *whirrrr*
 🔊 *motor whirring sounds*
@@ -220,7 +200,9 @@ VendingMachine/
 │   ├── ReturnMoneyHandler.cs
 │   ├── UpdateInventoryHandler.cs
 │   ├── PlaySoundHandler.cs
-│   └── UpdateSalesMetricsHandler.cs
+│   ├── UpdateSalesMetricsHandler.cs
+│   ├── ShowInventoryHandler.cs
+│   └── ExitApplicationHandler.cs
 ├── Configuration/
 │   └── VendingMachineBuilder.cs    # State machine definition
 └── VendingMachineSample.cs         # Interactive console app
@@ -249,6 +231,7 @@ VendingMachine/
 
 ## Notes
 
+- Each user input maps to a trigger; the state machine decides if it is valid
 - Commands are dispatched **immediately after** state transitions
 - State data is immutable - transitions return new data instances
 - Guards use short-circuit evaluation - first matching condition wins

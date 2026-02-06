@@ -15,8 +15,8 @@ public class ReturnMoneyHandler : ICommandRunner<ReturnMoneyCommand>
             return;
 
         Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine($"💰 Returning change: ${command.Amount:F2}");
-        Console.WriteLine($"🪙 *coins/bills dispensed*");
+        Console.WriteLine($"💰 Returning change: £{command.Amount:F2}");
+        Console.WriteLine($"🪙 *coins dispensed*");
         
         // Simulate coin return mechanism
         Thread.Sleep(300);

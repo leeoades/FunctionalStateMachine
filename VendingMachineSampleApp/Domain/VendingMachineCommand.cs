@@ -14,6 +14,11 @@ public abstract record VendingMachineCommand;
 public record DisplayMessageCommand(string Message) : VendingMachineCommand;
 
 /// <summary>
+/// Command to display the inventory and menu options.
+/// </summary>
+public record ShowInventoryCommand : VendingMachineCommand;
+
+/// <summary>
 /// Command to log a transaction to persistent storage.
 /// Records what item was purchased, how much was paid, and whether it was successful.
 /// </summary>
@@ -48,6 +53,11 @@ public record PlaySoundCommand(VendingSound Sound) : VendingMachineCommand;
 /// Tracks daily revenue and transaction success rate for reporting.
 /// </summary>
 public record UpdateSalesMetricsCommand(decimal Revenue, bool Success) : VendingMachineCommand;
+
+/// <summary>
+/// Command to request that the application exit.
+/// </summary>
+public record ExitApplicationCommand : VendingMachineCommand;
 
 /// <summary>
 /// Enumeration of sound effects the vending machine can play.

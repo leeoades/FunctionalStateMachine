@@ -6,14 +6,14 @@ namespace VendingMachineSampleApp.Tests;
 public class VendingMachineSampleTests
 {
     [Fact]
-    public void SelectItem_InStock_TransitionsToItemSelected()
+    public void SelectItem_InStock_TransitionsToPayment()
     {
         var machine = VendingMachineBuilder.BuildMachine();
         var data = VendingMachineData.Initialize(CreateInventory());
 
         var (newState, newData, _) = machine.Fire(new SelectItemTrigger("A1"), VendingMachineState.Idle, data);
 
-        Assert.Equal(VendingMachineState.ItemSelected, newState);
+        Assert.Equal(VendingMachineState.PaymentMoneyDue, newState);
         Assert.Equal("A1", newData.SelectedItemCode);
         Assert.Equal(0m, newData.MoneyInserted);
     }
@@ -26,12 +26,25 @@ public class VendingMachineSampleTests
 
         var (newState, newData, _) = machine.Fire(new SelectItemTrigger("A1"), VendingMachineState.Idle, data);
 
-        Assert.Equal(VendingMachineState.OutOfStock, newState);
+        Assert.Equal(VendingMachineState.Idle, newState);
         Assert.Null(newData.SelectedItemCode);
     }
 
     [Fact]
-    public void InsertMoney_Enough_TransitionsToDispensing()
+    public void InsertMoney_PartialPayment_StaysInMoneyDue()
+    {
+        var machine = VendingMachineBuilder.BuildMachine();
+        var data = VendingMachineData.Initialize(CreateInventory());
+        var (selectedState, selectedData, _) = machine.Fire(new SelectItemTrigger("A1"), VendingMachineState.Idle, data);
+
+        var (newState, newData, _) = machine.Fire(new InsertMoneyTrigger(1.00m), selectedState, selectedData);
+
+        Assert.Equal(VendingMachineState.PaymentMoneyDue, newState);
+        Assert.Equal(1.00m, newData.MoneyInserted);
+    }
+
+    [Fact]
+    public void InsertMoney_Enough_TransitionsToIdle()
     {
         var machine = VendingMachineBuilder.BuildMachine();
         var data = VendingMachineData.Initialize(CreateInventory());
@@ -39,40 +52,23 @@ public class VendingMachineSampleTests
 
         var (newState, newData, _) = machine.Fire(new InsertMoneyTrigger(2.00m), selectedState, selectedData);
 
-        Assert.Equal(VendingMachineState.DispensingItem, newState);
-        Assert.Equal(2.00m, newData.MoneyInserted);
+        Assert.Equal(VendingMachineState.Idle, newState);
+        Assert.Null(newData.SelectedItemCode);
+        Assert.Equal(0m, newData.MoneyInserted);
     }
 
     [Fact]
-    public void DispenseComplete_WithChange_GoesToReturningChangeThenIdle()
+    public void InsertMoney_NoChange_GoesToIdle()
     {
         var machine = VendingMachineBuilder.BuildMachine();
         var data = VendingMachineData.Initialize(CreateInventory());
         var (selectedState, selectedData, _) = machine.Fire(new SelectItemTrigger("A1"), VendingMachineState.Idle, data);
-        var (dispenseState, dispenseData, _) = machine.Fire(new InsertMoneyTrigger(2.00m), selectedState, selectedData);
 
-        var (returningState, returningData, _) = machine.Fire(new DispenseCompleteTrigger(), dispenseState, dispenseData);
-        var (idleState, idleData, _) = machine.Fire(new DispenseCompleteTrigger(), returningState, returningData);
+        var (newState, newData, _) = machine.Fire(new InsertMoneyTrigger(1.50m), selectedState, selectedData);
 
-        Assert.Equal(VendingMachineState.ReturningChange, returningState);
-        Assert.Equal(VendingMachineState.Idle, idleState);
-        Assert.Null(idleData.SelectedItemCode);
-        Assert.Equal(0m, idleData.MoneyInserted);
-    }
-
-    [Fact]
-    public void DispenseComplete_NoChange_GoesDirectlyToIdle()
-    {
-        var machine = VendingMachineBuilder.BuildMachine();
-        var data = VendingMachineData.Initialize(CreateInventory());
-        var (selectedState, selectedData, _) = machine.Fire(new SelectItemTrigger("A1"), VendingMachineState.Idle, data);
-        var (dispenseState, dispenseData, _) = machine.Fire(new InsertMoneyTrigger(1.50m), selectedState, selectedData);
-
-        var (idleState, idleData, _) = machine.Fire(new DispenseCompleteTrigger(), dispenseState, dispenseData);
-
-        Assert.Equal(VendingMachineState.Idle, idleState);
-        Assert.Null(idleData.SelectedItemCode);
-        Assert.Equal(0m, idleData.MoneyInserted);
+        Assert.Equal(VendingMachineState.Idle, newState);
+        Assert.Null(newData.SelectedItemCode);
+        Assert.Equal(0m, newData.MoneyInserted);
     }
 
     private static Dictionary<string, VendingItem> CreateInventory(int stock = 5)

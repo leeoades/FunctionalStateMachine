@@ -27,7 +27,7 @@ public class UpdateSalesMetricsHandler : ICommandRunner<UpdateSalesMetricsComman
             : 0;
 
         Console.ForegroundColor = ConsoleColor.DarkGreen;
-        Console.WriteLine($"📈 [METRICS] Revenue: ${_totalRevenue:F2} | Success Rate: {successRate:F1}% | Successful: {_successfulTransactions} | Failed: {_failedTransactions}");
+        Console.WriteLine($"📈 [METRICS] Revenue: £{_totalRevenue:F2} | Success Rate: {successRate:F1}% | Successful: {_successfulTransactions} | Failed: {_failedTransactions}");
         Console.ResetColor();
     }
 }
