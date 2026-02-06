@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.9.0] - 2026-02-06
+
+### Added
+- **Stock purchaser actor-style sample** - New console app with in-memory persistence, timed price ticks, tests, and README
+- **Diagrams README** - Usage guide for the diagram generator project
+- **Command runner README** - Usage guide for command runner DI integration
+- **Copilot instructions** - Added/updated `.github/copilot-instructions.md`
+
+### Changed
+- **OnUnhandled behavior** - Unhandled handlers now return commands rather than mutating data
+- **Vending machine sample** - Reshaped sample flow and responsibilities
+- **Solution organization** - Projects arranged more neatly in the solution
+
 ## [0.8.0] - 2026-02-05
 
 ### Added
