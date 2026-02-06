@@ -12,7 +12,7 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
     }
 
     private readonly Dictionary<TState, StateDefinition> _states = new();
-    private Action<TTrigger, TState, TData>? _onUnhandled;
+    private Func<TTrigger, TState, IEnumerable<TCommand>>? _onUnhandled;
     private bool _hasInitialState;
     private TState? _initialState;
 
@@ -33,7 +33,7 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
     }
 
     internal StateMachine<TState, TTrigger, TData, TCommand> OnUnhandled(
-        Action<TTrigger, TState, TData> handler)
+        Func<TTrigger, TState, IEnumerable<TCommand>> handler)
     {
         _onUnhandled = handler;
         return this;
@@ -191,10 +191,10 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
     {
         if (_onUnhandled != null)
         {
-            _onUnhandled(trigger, currentState, currentData);
+            var commandList = _onUnhandled(trigger, currentState)?.ToList() ?? new List<TCommand>();
             newState = currentState;
             newData = currentData;
-            commands = [];
+            commands = commandList.Count == 0 ? Array.Empty<TCommand>() : new ReadOnlyCollection<TCommand>(commandList);
             return true;
         }
 
@@ -1914,9 +1914,10 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
 
     public TState CreateState(TState state) => _inner.CreateState(state, new NoData()).State;
 
-    internal StateMachine<TState, TTrigger, TCommand> OnUnhandled(Action<TTrigger, TState> handler)
+    internal StateMachine<TState, TTrigger, TCommand> OnUnhandled(
+        Func<TTrigger, TState, IEnumerable<TCommand>> handler)
     {
-        _inner.OnUnhandled((trigger, state, data) => handler(trigger, state));
+        _inner.OnUnhandled((trigger, state) => handler(trigger, state));
         return this;
     }
 

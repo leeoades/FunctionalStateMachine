@@ -13,11 +13,32 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
         return this;
     }
 
-    public StateMachineBuilder<TState, TTrigger, TData, TCommand> OnUnhandled(
-        Action<TTrigger, TState, TData> handler)
+    public UnhandledConfiguration OnUnhandled()
     {
-        _machine.OnUnhandled(handler);
-        return this;
+        return new UnhandledConfiguration(this);
+    }
+
+    public sealed class UnhandledConfiguration
+    {
+        private readonly StateMachineBuilder<TState, TTrigger, TData, TCommand> _builder;
+
+        internal UnhandledConfiguration(StateMachineBuilder<TState, TTrigger, TData, TCommand> builder)
+        {
+            _builder = builder;
+        }
+
+        public StateMachineBuilder<TState, TTrigger, TData, TCommand> Ignore()
+        {
+            _builder._machine.OnUnhandled((_, _) => Array.Empty<TCommand>());
+            return _builder;
+        }
+
+        public StateMachineBuilder<TState, TTrigger, TData, TCommand> Execute(
+            Func<TTrigger, TState, IEnumerable<TCommand>> handler)
+        {
+            _builder._machine.OnUnhandled(handler);
+            return _builder;
+        }
     }
 
     public StateConfiguration For(TState state)
@@ -1062,11 +1083,39 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
         return this;
     }
 
-    public StateMachineBuilder<TState, TTrigger, TCommand> OnUnhandled(
-        Action<TTrigger, TState> handler)
+    public UnhandledConfiguration OnUnhandled()
     {
-        _machine.OnUnhandled(handler);
-        return this;
+        return new UnhandledConfiguration(this);
+    }
+
+    public sealed class UnhandledConfiguration
+    {
+        private readonly StateMachineBuilder<TState, TTrigger, TCommand> _builder;
+
+        internal UnhandledConfiguration(StateMachineBuilder<TState, TTrigger, TCommand> builder)
+        {
+            _builder = builder;
+        }
+
+        public StateMachineBuilder<TState, TTrigger, TCommand> Ignore()
+        {
+            _builder._machine.OnUnhandled((_, _) => Array.Empty<TCommand>());
+            return _builder;
+        }
+
+        public StateMachineBuilder<TState, TTrigger, TCommand> Execute(
+            Func<TTrigger, TState, IEnumerable<TCommand>> handler)
+        {
+            _builder._machine.OnUnhandled(handler);
+            return _builder;
+        }
+
+        public StateMachineBuilder<TState, TTrigger, TCommand> Execute(
+            Func<TTrigger, TState, TCommand> handler)
+        {
+            _builder._machine.OnUnhandled((trigger, state) => new[] { handler(trigger, state) });
+            return _builder;
+        }
     }
 
     public StateConfiguration For(TState state)

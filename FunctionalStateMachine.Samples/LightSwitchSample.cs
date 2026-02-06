@@ -9,6 +9,8 @@ public static class LightSwitchSample
 [StateMachineDiagram("diagrams/LightSwitch.md")]
     public static StateMachine<LightState, LightTrigger, LightCommand> Build() =>
         StateMachine<LightState, LightTrigger, LightCommand>.Create()
+            .OnUnhandled()
+                .Ignore()
             .StartWith(LightState.Off)
             .For(LightState.Off)
                 .On<LightTrigger.ToggleTrigger>()

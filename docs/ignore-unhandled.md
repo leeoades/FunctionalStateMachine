@@ -12,6 +12,8 @@ You can explicitly ignore triggers or handle them with a global callback.
 
 ```csharp
 var machine = StateMachine<State, Trigger, Data, Command>.Create()
+    .OnUnhandled()
+        .Ignore()
     .For(State.Ready)
         .On(Trigger.Ping)
             .Ignore()
@@ -22,8 +24,9 @@ var machine = StateMachine<State, Trigger, Data, Command>.Create()
 
 ```csharp
 var machine = StateMachine<State, Trigger, Data, Command>.Create()
-    .OnUnhandled((trigger, state, data) =>
-        data.Log.Add($"Unhandled {trigger} in {state}"))
+    .OnUnhandled()
+        .Execute((trigger, state) =>
+            new Command.LogUnhandled(trigger, state))
     .For(State.Active)
         .On(Trigger.Stop)
             .TransitionTo(State.Stopped)

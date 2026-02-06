@@ -21,9 +21,12 @@ public class StateMachineUnhandledTests
     [Fact]
     public void OnUnhandled_InvokesHandler()
     {
-        var log = new List<string>();
         var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
-            .OnUnhandled((trigger, state, data) => log.Add($"{state}:{trigger}"))
+            .OnUnhandled()
+                .Execute((trigger, state) =>
+                [
+                    new LogCommand($"{state}:{trigger}")
+                ])
             .For(State.Ready)
             .Build();
 
@@ -32,8 +35,7 @@ public class StateMachineUnhandledTests
         var handled = machine.TryFire(Trigger.Start, currentState, currentData, out _, out _, out var commands);
 
         Assert.True(handled);
-        Assert.Empty(commands);
-        Assert.Single(log);
+        Assert.Single(commands);
     }
 
     [Fact]
@@ -84,4 +86,6 @@ public class StateMachineUnhandledTests
     }
 
     private abstract record CommandBase;
+
+    private sealed record LogCommand(string Message) : CommandBase;
 }
