@@ -754,14 +754,12 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
 
     internal sealed class ImmediateTransitionConfiguration
     {
-        private readonly StateConfiguration _parent;
         private readonly TransitionDefinition _transition;
 
         internal ImmediateTransitionConfiguration(
             StateConfiguration parent,
             TransitionDefinition transition)
         {
-            _parent = parent;
             _transition = transition;
         }
 
@@ -1130,9 +1128,7 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
         public Func<TState, TData, TTrigger, TData>? DataUpdater { get; private init; }
 
         public Func<TState, TData, TTrigger, IEnumerable<TCommand>>? Executor { get; private init; }
-
-        public Func<TState, TData, TTrigger, bool>? Predicate { get; private init; }
-
+        
         public TState? TargetState { get; private init; }
 
         public List<(Func<TState, TData, TTrigger, bool> Predicate, List<TransitionStep> Steps)>? ConditionalBranches

@@ -32,7 +32,7 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
 
     internal StateConfiguration For(TState state)
     {
-        return new StateConfiguration(this, _inner.For(state));
+        return new StateConfiguration(_inner.For(state));
     }
 
     public (TState NewState, IReadOnlyList<TCommand> Commands) Fire(
@@ -54,14 +54,10 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
 
     internal sealed class StateConfiguration
     {
-        private readonly StateMachine<TState, TTrigger, TCommand> _machine;
         private readonly StateMachine<TState, TTrigger, NoData, TCommand>.StateConfiguration _inner;
 
-        internal StateConfiguration(
-            StateMachine<TState, TTrigger, TCommand> machine,
-            StateMachine<TState, TTrigger, NoData, TCommand>.StateConfiguration inner)
+        internal StateConfiguration(StateMachine<TState, TTrigger, NoData, TCommand>.StateConfiguration inner)
         {
-            _machine = machine;
             _inner = inner;
         }
 
@@ -326,7 +322,7 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
         public ConditionalTransitionConfiguration<TDerivedTrigger> ElseIf(
             Func<TState, TDerivedTrigger, bool> predicate)
         {
-            _inner.ElseIf((state, data, trigger) => predicate(state, (TDerivedTrigger)trigger));
+            _inner.ElseIf((state, data, trigger) => predicate(state, trigger));
             return this;
         }
 
