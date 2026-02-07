@@ -90,9 +90,8 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
                 {
                     foreach (var target in GetTransitionTargetStates(transition.Steps))
                     {
-                        if (!reachable.Contains(target))
+                        if (reachable.Add(target))
                         {
-                            reachable.Add(target);
                             toVisit.Enqueue(target);
 
                             // Mark parent states as reachable too
@@ -105,17 +104,15 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
                             // Add initial sub-states of target
                             if (states.TryGetValue(target, out targetDef) && 
                                 targetDef.HasInitialSubState && 
-                                !reachable.Contains(targetDef.InitialSubState))
+                                reachable.Add(targetDef.InitialSubState))
                             {
-                                reachable.Add(targetDef.InitialSubState);
                                 toVisit.Enqueue(targetDef.InitialSubState);
                             }
                         }
                     }
 
-                    if (transition.HasTargetState && !reachable.Contains(transition.TargetState!))
+                    if (transition.HasTargetState && reachable.Add(transition.TargetState!))
                     {
-                        reachable.Add(transition.TargetState!);
                         toVisit.Enqueue(transition.TargetState!);
 
                         // Mark parent states as reachable too
@@ -128,9 +125,8 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
                         // Add initial sub-states of target
                         if (states.TryGetValue(transition.TargetState!, out targetDef) && 
                             targetDef.HasInitialSubState && 
-                            !reachable.Contains(targetDef.InitialSubState))
+                            reachable.Add(targetDef.InitialSubState))
                         {
-                            reachable.Add(targetDef.InitialSubState);
                             toVisit.Enqueue(targetDef.InitialSubState);
                         }
                     }
@@ -140,9 +136,8 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
             // Add immediate transition targets
             foreach (var immediate in definition.ImmediateTransitions)
             {
-                if (immediate.HasTargetState && !reachable.Contains(immediate.TargetState!))
+                if (immediate.HasTargetState && reachable.Add(immediate.TargetState!))
                 {
-                    reachable.Add(immediate.TargetState!);
                     toVisit.Enqueue(immediate.TargetState!);
 
                     // Mark parent states as reachable too
@@ -155,9 +150,8 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
                     // Add initial sub-states of immediate target
                     if (states.TryGetValue(immediate.TargetState!, out immediateDef) && 
                         immediateDef.HasInitialSubState && 
-                        !reachable.Contains(immediateDef.InitialSubState))
+                        reachable.Add(immediateDef.InitialSubState))
                     {
-                        reachable.Add(immediateDef.InitialSubState);
                         toVisit.Enqueue(immediateDef.InitialSubState);
                     }
                 }
@@ -180,9 +174,8 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
         HashSet<TState> reachable,
         Queue<TState> toVisit)
     {
-        if (!reachable.Contains(parentState))
+        if (reachable.Add(parentState))
         {
-            reachable.Add(parentState);
             toVisit.Enqueue(parentState);
         }
 
@@ -222,14 +215,12 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
         if (visited.Contains(state))
             return;
 
-        if (visiting.Contains(state))
+        if (!visiting.Add(state))
         {
             result.AddError($"Infinite loop detected in immediate transitions involving state '{state}'. " +
                 "Check for circular immediate transitions that could cause stack overflow.");
             return;
         }
-
-        visiting.Add(state);
 
         if (states.TryGetValue(state, out var definition))
         {
