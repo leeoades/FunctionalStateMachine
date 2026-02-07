@@ -5,7 +5,7 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
     where TTrigger : notnull
 {
     private readonly StateMachine<TState, TTrigger, TData, TCommand> _machine = new();
-    private bool _skipAnalysis = false;
+    private bool _skipAnalysis;
 
     public StateMachineBuilder<TState, TTrigger, TData, TCommand> StartWith(TState state)
     {
@@ -171,7 +171,8 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
     }
 
     public sealed class TransitionConfiguration
-        : ITransitionConfiguration<TState, TTrigger, TData, TCommand, TransitionConfiguration, ConditionalTransitionConfiguration>
+        : ITransitionConfiguration<TState, TTrigger, TData, TCommand, TransitionConfiguration,
+            ConditionalTransitionConfiguration>
     {
         private readonly StateConfiguration _parent;
         private readonly StateMachine<TState, TTrigger, TData, TCommand>.TransitionConfiguration _inner;
@@ -248,11 +249,14 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
     }
 
     public sealed class TransitionConfiguration<TDerivedTrigger>
-        : ITransitionConfiguration<TState, TTrigger, TData, TCommand, TDerivedTrigger, TransitionConfiguration<TDerivedTrigger>, ConditionalTransitionConfiguration<TDerivedTrigger>>
+        : ITransitionConfiguration<TState, TTrigger, TData, TCommand, TDerivedTrigger,
+            TransitionConfiguration<TDerivedTrigger>, ConditionalTransitionConfiguration<TDerivedTrigger>>
         where TDerivedTrigger : TTrigger
     {
         private readonly StateConfiguration _parent;
-        private readonly StateMachine<TState, TTrigger, TData, TCommand>.TransitionConfiguration<TDerivedTrigger> _inner;
+
+        private readonly StateMachine<TState, TTrigger, TData, TCommand>.TransitionConfiguration<TDerivedTrigger>
+            _inner;
 
         internal TransitionConfiguration(
             StateConfiguration parent,
@@ -382,11 +386,14 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
     }
 
     public sealed class ConditionalTransitionConfiguration<TDerivedTrigger>
-        : IConditionalTransitionConfiguration<TState, TTrigger, TData, TCommand, TDerivedTrigger, ConditionalTransitionConfiguration<TDerivedTrigger>>
+        : IConditionalTransitionConfiguration<TState, TTrigger, TData, TCommand, TDerivedTrigger,
+            ConditionalTransitionConfiguration<TDerivedTrigger>>
         where TDerivedTrigger : TTrigger
     {
         private readonly TransitionConfiguration<TDerivedTrigger> _parent;
-        private readonly StateMachine<TState, TTrigger, TData, TCommand>.ConditionalTransitionConfiguration<TDerivedTrigger> _inner;
+
+        private readonly StateMachine<TState, TTrigger, TData, TCommand>.ConditionalTransitionConfiguration<
+            TDerivedTrigger> _inner;
 
         internal ConditionalTransitionConfiguration(
             TransitionConfiguration<TDerivedTrigger> parent,
@@ -599,7 +606,8 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
     }
 
     public sealed class TransitionConfiguration
-        : INoDataTransitionConfiguration<TState, TTrigger, TCommand, TransitionConfiguration, ConditionalTransitionConfiguration>
+        : INoDataTransitionConfiguration<TState, TTrigger, TCommand, TransitionConfiguration,
+            ConditionalTransitionConfiguration>
     {
         private readonly StateConfiguration _parent;
         private readonly StateMachine<TState, TTrigger, TCommand>.TransitionConfiguration _inner;
@@ -671,7 +679,8 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
     }
 
     public sealed class TransitionConfiguration<TDerivedTrigger>
-        : INoDataTransitionConfiguration<TState, TTrigger, TCommand, TDerivedTrigger, TransitionConfiguration<TDerivedTrigger>, ConditionalTransitionConfiguration<TDerivedTrigger>>
+        : INoDataTransitionConfiguration<TState, TTrigger, TCommand, TDerivedTrigger,
+            TransitionConfiguration<TDerivedTrigger>, ConditionalTransitionConfiguration<TDerivedTrigger>>
         where TDerivedTrigger : TTrigger
     {
         private readonly StateConfiguration _parent;
@@ -782,11 +791,14 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
     }
 
     public sealed class ConditionalTransitionConfiguration<TDerivedTrigger>
-        : INoDataConditionalTransitionConfiguration<TState, TTrigger, TCommand, TDerivedTrigger, ConditionalTransitionConfiguration<TDerivedTrigger>>
+        : INoDataConditionalTransitionConfiguration<TState, TTrigger, TCommand, TDerivedTrigger,
+            ConditionalTransitionConfiguration<TDerivedTrigger>>
         where TDerivedTrigger : TTrigger
     {
         private readonly TransitionConfiguration<TDerivedTrigger> _parent;
-        private readonly StateMachine<TState, TTrigger, TCommand>.ConditionalTransitionConfiguration<TDerivedTrigger> _inner;
+
+        private readonly StateMachine<TState, TTrigger, TCommand>.ConditionalTransitionConfiguration<TDerivedTrigger>
+            _inner;
 
         internal ConditionalTransitionConfiguration(
             TransitionConfiguration<TDerivedTrigger> parent,

@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+using System.Reflection;
 
 namespace FunctionalStateMachine.Core;
 
@@ -482,7 +482,7 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
     {
         // Records are detected by checking for the generated 'EqualityContract' property
         return type.GetProperty("EqualityContract", 
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance) != null;
+            BindingFlags.NonPublic | BindingFlags.Instance) != null;
     }
 
     private static string GetTriggerTypeName(object triggerKey)
