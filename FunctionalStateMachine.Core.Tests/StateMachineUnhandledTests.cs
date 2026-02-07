@@ -53,6 +53,21 @@ public class StateMachineUnhandledTests
         Assert.Throws<InvalidOperationException>(() => machine.Fire(Trigger.Start, currentState, currentData));
     }
 
+    [Fact]
+    public void Fire_NoData_IgnoresDerivedTriggerWhenConfigured()
+    {
+        var machine = StateMachine<State, Trigger, CommandBase>.Create()
+            .For(State.Ready)
+                .On<Trigger.StartTrigger>()
+                    .Ignore()
+            .Build();
+
+        var (nextState, commands) = machine.Fire(new Trigger.StartTrigger(), State.Ready);
+
+        Assert.Equal(State.Ready, nextState);
+        Assert.Empty(commands);
+    }
+
     private enum State
     {
         Ready
