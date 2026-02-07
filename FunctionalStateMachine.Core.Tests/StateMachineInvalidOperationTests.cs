@@ -1,5 +1,4 @@
 using System.Reflection;
-using FunctionalStateMachine.Core;
 
 namespace FunctionalStateMachine.Core.Tests;
 

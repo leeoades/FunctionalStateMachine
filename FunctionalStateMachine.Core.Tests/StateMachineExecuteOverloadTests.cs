@@ -1,5 +1,3 @@
-using FunctionalStateMachine.Core;
-
 namespace FunctionalStateMachine.Core.Tests;
 
 public class StateMachineExecuteOverloadTests

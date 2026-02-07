@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices.ComTypes;
 using FunctionalStateMachine.Core;
 using FunctionalStateMachine.Diagrams;
 using StockPurchaserSampleApp.Domain;
