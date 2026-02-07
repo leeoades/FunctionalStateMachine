@@ -4,14 +4,13 @@ using System.Diagnostics.CodeAnalysis;
 
 // ReSharper disable UnusedTupleComponentInReturnValue
 // ReSharper disable UnusedMethodReturnValue.Global
-
 // ReSharper disable UnusedMember.Global
 // ReSharper disable UnusedParameter.Local
 
 namespace FunctionalStateMachine.Core;
 
 [SuppressMessage("Performance", "CA1822:Mark members as static")]
-public sealed partial class StateMachine<TState, TTrigger, TData, TCommand>
+public sealed class StateMachine<TState, TTrigger, TData, TCommand>
     where TState : notnull
     where TTrigger : notnull
 {
@@ -31,9 +30,6 @@ public sealed partial class StateMachine<TState, TTrigger, TData, TCommand>
         _initialState = state;
         return this;
     }
-
-    public (TState State, TData Data) CreateState(TState state, TData data)
-        => (ResolveInitialLeaf(state), data);
 
     internal StateConfiguration For(TState state)
     {
@@ -763,39 +759,13 @@ public sealed partial class StateMachine<TState, TTrigger, TData, TCommand>
 
     internal sealed class StateConfiguration
     {
-        private readonly StateMachine<TState, TTrigger, TData, TCommand> _machine;
         private readonly StateDefinition _definition;
 
         internal StateConfiguration(
             StateMachine<TState, TTrigger, TData, TCommand> machine,
             StateDefinition definition)
         {
-            _machine = machine;
             _definition = definition;
-        }
-
-        public StateConfiguration OnEntry(Func<TData, TCommand> action)
-        {
-            _definition.EntryActions.Add((state, data) => [action(data)]);
-            return this;
-        }
-
-        public StateConfiguration OnEntry(Func<TState, TData, TCommand> action)
-        {
-            _definition.EntryActions.Add((state, data) => [action(state, data)]);
-            return this;
-        }
-
-        public StateConfiguration OnEntry(Func<TCommand> action)
-        {
-            _definition.EntryActions.Add((state, data) => [action()]);
-            return this;
-        }
-
-        public StateConfiguration OnEntry(Func<TData, IEnumerable<TCommand>> action)
-        {
-            _definition.EntryActions.Add((state, data) => action(data));
-            return this;
         }
 
         public StateConfiguration OnEntry(Func<TState, TData, IEnumerable<TCommand>> action)
@@ -804,45 +774,9 @@ public sealed partial class StateMachine<TState, TTrigger, TData, TCommand>
             return this;
         }
 
-        public StateConfiguration OnEntry(Func<IEnumerable<TCommand>> action)
-        {
-            _definition.EntryActions.Add((state, data) => action());
-            return this;
-        }
-
-        public StateConfiguration OnExit(Func<TData, TCommand> action)
-        {
-            _definition.ExitActions.Add((state, data) => [action(data)]);
-            return this;
-        }
-
-        public StateConfiguration OnExit(Func<TState, TData, TCommand> action)
-        {
-            _definition.ExitActions.Add((state, data) => [action(state, data)]);
-            return this;
-        }
-
-        public StateConfiguration OnExit(Func<TCommand> action)
-        {
-            _definition.ExitActions.Add((state, data) => [action()]);
-            return this;
-        }
-
-        public StateConfiguration OnExit(Func<TData, IEnumerable<TCommand>> action)
-        {
-            _definition.ExitActions.Add((state, data) => action(data));
-            return this;
-        }
-
         public StateConfiguration OnExit(Func<TState, TData, IEnumerable<TCommand>> action)
         {
             _definition.ExitActions.Add(action);
-            return this;
-        }
-
-        public StateConfiguration OnExit(Func<IEnumerable<TCommand>> action)
-        {
-            _definition.ExitActions.Add((state, data) => action());
             return this;
         }
 
@@ -866,11 +800,6 @@ public sealed partial class StateMachine<TState, TTrigger, TData, TCommand>
             var transition = new TransitionDefinition();
             _definition.AddTransition(typeof(TDerivedTrigger), transition);
             return new TransitionConfiguration<TDerivedTrigger>(this, transition);
-        }
-
-        public StateConfiguration For(TState state)
-        {
-            return _machine.For(state);
         }
 
         public StateConfiguration SubStateOf(TState parentState)
@@ -907,21 +836,9 @@ public sealed partial class StateMachine<TState, TTrigger, TData, TCommand>
             return this;
         }
 
-        public ImmediateTransitionConfiguration Guard(Func<TData, bool> guard)
-        {
-            _transition.Guard = (state, data, trigger) => guard(data);
-            return this;
-        }
-
         public ImmediateTransitionConfiguration Guard(Func<TState, TData, bool> guard)
         {
             _transition.Guard = (state, data, trigger) => guard(state, data);
-            return this;
-        }
-
-        public ImmediateTransitionConfiguration ModifyData(Func<TData, TData> updater)
-        {
-            _transition.Steps.Add(TransitionStep.ForModifyData((state, data, trigger) => updater(data)));
             return this;
         }
 
@@ -931,45 +848,10 @@ public sealed partial class StateMachine<TState, TTrigger, TData, TCommand>
             return this;
         }
 
-        public ImmediateTransitionConfiguration Execute(Func<TData, TCommand> action)
-        {
-            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) => [action(data)]));
-            return this;
-        }
-
-        public ImmediateTransitionConfiguration Execute(Func<TState, TData, TCommand> action)
-        {
-            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) => [action(state, data)]));
-            return this;
-        }
-
-        public ImmediateTransitionConfiguration Execute(Func<TData, IEnumerable<TCommand>> action)
-        {
-            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) => action(data)));
-            return this;
-        }
-
         public ImmediateTransitionConfiguration Execute(Func<TState, TData, IEnumerable<TCommand>> action)
         {
             _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) => action(state, data)));
             return this;
-        }
-
-        public ImmediateTransitionConfiguration Execute(Func<TCommand> action)
-        {
-            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) => [action()]));
-            return this;
-        }
-
-        public ImmediateTransitionConfiguration Execute(Func<IEnumerable<TCommand>> action)
-        {
-            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) => action()));
-            return this;
-        }
-
-        public StateConfiguration Done()
-        {
-            return _parent;
         }
     }
 
@@ -990,34 +872,9 @@ public sealed partial class StateMachine<TState, TTrigger, TData, TCommand>
             return this;
         }
 
-        public TransitionConfiguration Guard(Func<TData, TTrigger, bool> guard)
-        {
-            _transition.Guard = (state, data, trigger) => guard(data, trigger);
-            return this;
-        }
-
         public TransitionConfiguration Guard(Func<TState, TData, TTrigger, bool> guard)
         {
             _transition.Guard = guard;
-            return this;
-        }
-
-        public TransitionConfiguration Guard(Func<TData, bool> guard)
-        {
-            _transition.Guard = (state, data, trigger) => guard(data);
-            return this;
-        }
-
-        public TransitionConfiguration Guard(Func<TState, TData, bool> guard)
-        {
-            _transition.Guard = (state, data, trigger) => guard(state, data);
-            return this;
-        }
-
-        public TransitionConfiguration ModifyData(Func<TData, TTrigger, TData> updater)
-        {
-            _transition.Steps.Add(
-                TransitionStep.ForModifyData((state, data, trigger) => updater(data, trigger)));
             return this;
         }
 
@@ -1027,118 +884,15 @@ public sealed partial class StateMachine<TState, TTrigger, TData, TCommand>
             return this;
         }
 
-        public TransitionConfiguration ModifyData(Func<TData, TData> updater)
-        {
-            _transition.Steps.Add(TransitionStep.ForModifyData((state, data, trigger) => updater(data)));
-            return this;
-        }
-
-        public TransitionConfiguration ModifyData(Func<TState, TData, TData> updater)
-        {
-            _transition.Steps.Add(TransitionStep.ForModifyData((state, data, trigger) => updater(state, data)));
-            return this;
-        }
-
-        public TransitionConfiguration Execute(Func<TData, TTrigger, TCommand> action)
-        {
-            _transition.Steps.Add(
-                TransitionStep.ForExecute((state, data, trigger) => [action(data, trigger)]));
-            return this;
-        }
-
-        public TransitionConfiguration Execute(Func<TState, TData, TTrigger, TCommand> action)
-        {
-            _transition.Steps.Add(
-                TransitionStep.ForExecute((state, data, trigger) => [action(state, data, trigger)]));
-            return this;
-        }
-
-        public TransitionConfiguration Execute(Func<TData, TTrigger, IEnumerable<TCommand>> action)
-        {
-            _transition.Steps.Add(
-                TransitionStep.ForExecute((state, data, trigger) => action(data, trigger)));
-            return this;
-        }
-
         public TransitionConfiguration Execute(Func<TState, TData, TTrigger, IEnumerable<TCommand>> action)
         {
             _transition.Steps.Add(TransitionStep.ForExecute(action));
             return this;
         }
 
-        public TransitionConfiguration Execute(Func<TData, TCommand> action)
-        {
-            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) => [action(data)]));
-            return this;
-        }
-
-        public TransitionConfiguration Execute(Func<TState, TData, TCommand> action)
-        {
-            _transition.Steps.Add(
-                TransitionStep.ForExecute((state, data, trigger) => [action(state, data)]));
-            return this;
-        }
-
-        public TransitionConfiguration Execute(Func<TData, IEnumerable<TCommand>> action)
-        {
-            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) => action(data)));
-            return this;
-        }
-
-        public TransitionConfiguration Execute(Func<TState, TData, IEnumerable<TCommand>> action)
-        {
-            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) => action(state, data)));
-            return this;
-        }
-
-        public TransitionConfiguration Execute(Func<TTrigger, TCommand> action)
-        {
-            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) => [action(trigger)]));
-            return this;
-        }
-
-        public TransitionConfiguration Execute(Func<TTrigger, IEnumerable<TCommand>> action)
-        {
-            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) => action(trigger)));
-            return this;
-        }
-
-        public TransitionConfiguration Execute(Func<TCommand> action)
-        {
-            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) => [action()]));
-            return this;
-        }
-
-        public TransitionConfiguration Execute(Func<IEnumerable<TCommand>> action)
-        {
-            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) => action()));
-            return this;
-        }
-
-        public ConditionalTransitionConfiguration If(Func<TData, TTrigger, bool> predicate)
-        {
-            return new ConditionalTransitionConfiguration(
-                this,
-                _transition,
-                (state, data, trigger) => predicate(data, trigger));
-        }
-
         public ConditionalTransitionConfiguration If(Func<TState, TData, TTrigger, bool> predicate)
         {
             return new ConditionalTransitionConfiguration(this, _transition, predicate);
-        }
-
-        public ConditionalTransitionConfiguration If(Func<TData, bool> predicate)
-        {
-            return new ConditionalTransitionConfiguration(this, _transition, (state, data, trigger) => predicate(data));
-        }
-
-        public ConditionalTransitionConfiguration If(Func<TState, TData, bool> predicate)
-        {
-            return new ConditionalTransitionConfiguration(
-                this,
-                _transition,
-                (state, data, trigger) => predicate(state, data));
         }
 
         public StateConfiguration Ignore()
@@ -1150,22 +904,6 @@ public sealed partial class StateMachine<TState, TTrigger, TData, TCommand>
         public StateConfiguration Done()
         {
             return _parent;
-        }
-
-        public TransitionConfiguration On(TTrigger trigger)
-        {
-            return _parent.On(trigger);
-        }
-
-        public TransitionConfiguration<TDerivedTrigger> On<TDerivedTrigger>()
-            where TDerivedTrigger : TTrigger
-        {
-            return _parent.On<TDerivedTrigger>();
-        }
-
-        public StateConfiguration For(TState state)
-        {
-            return _parent.For(state);
         }
     }
 
@@ -1187,42 +925,10 @@ public sealed partial class StateMachine<TState, TTrigger, TData, TCommand>
             return this;
         }
 
-        public TransitionConfiguration<TDerivedTrigger> Guard(Func<TData, TDerivedTrigger, bool> guard)
-        {
-            _transition.Guard = (state, data, trigger) => guard(data, (TDerivedTrigger)trigger);
-            return this;
-        }
-
         public TransitionConfiguration<TDerivedTrigger> Guard(
             Func<TState, TData, TDerivedTrigger, bool> guard)
         {
             _transition.Guard = (state, data, trigger) => guard(state, data, (TDerivedTrigger)trigger);
-            return this;
-        }
-
-        public TransitionConfiguration<TDerivedTrigger> Guard(Func<TState, bool> guard)
-        {
-            _transition.Guard = (state, data, trigger) => guard(state);
-            return this;
-        }
-
-        public TransitionConfiguration<TDerivedTrigger> Guard(Func<TData, bool> guard)
-        {
-            _transition.Guard = (state, data, trigger) => guard(data);
-            return this;
-        }
-
-        public TransitionConfiguration<TDerivedTrigger> Guard(Func<TState, TData, bool> guard)
-        {
-            _transition.Guard = (state, data, trigger) => guard(state, data);
-            return this;
-        }
-
-        public TransitionConfiguration<TDerivedTrigger> ModifyData(
-            Func<TData, TDerivedTrigger, TData> updater)
-        {
-            _transition.Steps.Add(TransitionStep.ForModifyData((state, data, trigger) =>
-                updater(data, (TDerivedTrigger)trigger)));
             return this;
         }
 
@@ -1234,42 +940,6 @@ public sealed partial class StateMachine<TState, TTrigger, TData, TCommand>
             return this;
         }
 
-        public TransitionConfiguration<TDerivedTrigger> ModifyData(Func<TData, TData> updater)
-        {
-            _transition.Steps.Add(TransitionStep.ForModifyData((state, data, trigger) => updater(data)));
-            return this;
-        }
-
-        public TransitionConfiguration<TDerivedTrigger> ModifyData(Func<TState, TData, TData> updater)
-        {
-            _transition.Steps.Add(TransitionStep.ForModifyData((state, data, trigger) => updater(state, data)));
-            return this;
-        }
-
-        public TransitionConfiguration<TDerivedTrigger> Execute(
-            Func<TData, TDerivedTrigger, TCommand> action)
-        {
-            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) =>
-                [action(data, (TDerivedTrigger)trigger)]));
-            return this;
-        }
-
-        public TransitionConfiguration<TDerivedTrigger> Execute(
-            Func<TState, TData, TDerivedTrigger, TCommand> action)
-        {
-            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) =>
-                [action(state, data, (TDerivedTrigger)trigger)]));
-            return this;
-        }
-
-        public TransitionConfiguration<TDerivedTrigger> Execute(
-            Func<TData, TDerivedTrigger, IEnumerable<TCommand>> action)
-        {
-            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) =>
-                action(data, (TDerivedTrigger)trigger)));
-            return this;
-        }
-
         public TransitionConfiguration<TDerivedTrigger> Execute(
             Func<TState, TData, TDerivedTrigger, IEnumerable<TCommand>> action)
         {
@@ -1277,69 +947,7 @@ public sealed partial class StateMachine<TState, TTrigger, TData, TCommand>
                 action(state, data, (TDerivedTrigger)trigger)));
             return this;
         }
-
-        public TransitionConfiguration<TDerivedTrigger> Execute(Func<TData, TCommand> action)
-        {
-            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) => [action(data)]));
-            return this;
-        }
-
-        public TransitionConfiguration<TDerivedTrigger> Execute(Func<TState, TData, TCommand> action)
-        {
-            _transition.Steps.Add(
-                TransitionStep.ForExecute((state, data, trigger) => [action(state, data)]));
-            return this;
-        }
-
-        public TransitionConfiguration<TDerivedTrigger> Execute(Func<TData, IEnumerable<TCommand>> action)
-        {
-            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) => action(data)));
-            return this;
-        }
-
-        public TransitionConfiguration<TDerivedTrigger> Execute(
-            Func<TState, TData, IEnumerable<TCommand>> action)
-        {
-            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) => action(state, data)));
-            return this;
-        }
-
-        public TransitionConfiguration<TDerivedTrigger> Execute(Func<TDerivedTrigger, TCommand> action)
-        {
-            _transition.Steps.Add(
-                TransitionStep.ForExecute((state, data, trigger) => [action((TDerivedTrigger)trigger)]));
-            return this;
-        }
-
-        public TransitionConfiguration<TDerivedTrigger> Execute(
-            Func<TDerivedTrigger, IEnumerable<TCommand>> action)
-        {
-            _transition.Steps.Add(
-                TransitionStep.ForExecute((state, data, trigger) => action((TDerivedTrigger)trigger)));
-            return this;
-        }
-
-        public TransitionConfiguration<TDerivedTrigger> Execute(Func<TCommand> action)
-        {
-            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) => [action()]));
-            return this;
-        }
-
-        public TransitionConfiguration<TDerivedTrigger> Execute(Func<IEnumerable<TCommand>> action)
-        {
-            _transition.Steps.Add(TransitionStep.ForExecute((state, data, trigger) => action()));
-            return this;
-        }
-
-        public ConditionalTransitionConfiguration<TDerivedTrigger> If(
-            Func<TData, TDerivedTrigger, bool> predicate)
-        {
-            return new ConditionalTransitionConfiguration<TDerivedTrigger>(
-                this,
-                _transition,
-                (state, data, trigger) => predicate(data, trigger));
-        }
-
+        
         public ConditionalTransitionConfiguration<TDerivedTrigger> If(
             Func<TState, TData, TDerivedTrigger, bool> predicate)
         {
@@ -1347,22 +955,6 @@ public sealed partial class StateMachine<TState, TTrigger, TData, TCommand>
                 this,
                 _transition,
                 predicate);
-        }
-
-        public ConditionalTransitionConfiguration<TDerivedTrigger> If(Func<TData, bool> predicate)
-        {
-            return new ConditionalTransitionConfiguration<TDerivedTrigger>(
-                this,
-                _transition,
-                (state, data, trigger) => predicate(data));
-        }
-
-        public ConditionalTransitionConfiguration<TDerivedTrigger> If(Func<TState, TData, bool> predicate)
-        {
-            return new ConditionalTransitionConfiguration<TDerivedTrigger>(
-                this,
-                _transition,
-                (state, data, trigger) => predicate(state, data));
         }
 
         public StateConfiguration Ignore()
@@ -1374,22 +966,6 @@ public sealed partial class StateMachine<TState, TTrigger, TData, TCommand>
         public StateConfiguration Done()
         {
             return _parent;
-        }
-
-        public TransitionConfiguration On(TTrigger trigger)
-        {
-            return _parent.On(trigger);
-        }
-
-        public TransitionConfiguration<TNextTrigger> On<TNextTrigger>()
-            where TNextTrigger : TTrigger
-        {
-            return _parent.On<TNextTrigger>();
-        }
-
-        public StateConfiguration For(TState state)
-        {
-            return _parent.For(state);
         }
     }
 
@@ -1413,133 +989,33 @@ public sealed partial class StateMachine<TState, TTrigger, TData, TCommand>
             _branches.Add((predicate, []));
             _currentBranchSteps = _branches[0].Steps;
         }
-
-        public ConditionalTransitionConfiguration ModifyData(Func<TData, TTrigger, TData> updater)
-        {
-            _currentBranchSteps!.Add(TransitionStep.ForModifyData((state, data, trigger) => updater(data, trigger)));
-            return this;
-        }
-
+        
         public ConditionalTransitionConfiguration ModifyData(Func<TState, TData, TTrigger, TData> updater)
         {
             _currentBranchSteps!.Add(TransitionStep.ForModifyData(updater));
             return this;
         }
-
-        public ConditionalTransitionConfiguration ModifyData(Func<TData, TData> updater)
-        {
-            return ModifyData((state, data, trigger) => updater(data));
-        }
-
-        public ConditionalTransitionConfiguration ModifyData(Func<TState, TData, TData> updater)
-        {
-            return ModifyData((state, data, trigger) => updater(state, data));
-        }
-
-        public ConditionalTransitionConfiguration Execute(Func<TData, TTrigger, TCommand> action)
-        {
-            return Execute((state, data, trigger) => [action(data, trigger)]);
-        }
-
-        public ConditionalTransitionConfiguration Execute(Func<TState, TData, TTrigger, TCommand> action)
-        {
-            return Execute((state, data, trigger) => [action(state, data, trigger)]);
-        }
-
-        public ConditionalTransitionConfiguration Execute(
-            Func<TData, TTrigger, IEnumerable<TCommand>> action)
-        {
-            _currentBranchSteps!.Add(TransitionStep.ForExecute((state, data, trigger) => action(data, trigger)));
-            return this;
-        }
-
+        
         public ConditionalTransitionConfiguration Execute(
             Func<TState, TData, TTrigger, IEnumerable<TCommand>> action)
         {
             _currentBranchSteps!.Add(TransitionStep.ForExecute(action));
             return this;
         }
-
-        public ConditionalTransitionConfiguration Execute(Func<TData, TCommand> action)
-        {
-            return Execute((state, data, trigger) => [action(data)]);
-        }
-
-        public ConditionalTransitionConfiguration Execute(Func<TState, TData, TCommand> action)
-        {
-            return Execute((state, data, trigger) => [action(state, data)]);
-        }
-
-        public ConditionalTransitionConfiguration Execute(Func<TData, IEnumerable<TCommand>> action)
-        {
-            return Execute((state, data, trigger) => action(data));
-        }
-
-        public ConditionalTransitionConfiguration Execute(Func<TState, TData, IEnumerable<TCommand>> action)
-        {
-            return Execute((state, data, trigger) => action(state, data));
-        }
-
-        public ConditionalTransitionConfiguration Execute(Func<TTrigger, TCommand> action)
-        {
-            return Execute((state, data, trigger) => [action(trigger)]);
-        }
-
-        public ConditionalTransitionConfiguration Execute(Func<TTrigger, IEnumerable<TCommand>> action)
-        {
-            return Execute((state, data, trigger) => action(trigger));
-        }
-
-        public ConditionalTransitionConfiguration Execute(Func<TCommand> action)
-        {
-            return Execute((state, data, trigger) => [action()]);
-        }
-
-        public ConditionalTransitionConfiguration Execute(Func<IEnumerable<TCommand>> action)
-        {
-            return Execute((state, data, trigger) => action());
-        }
-
+        
         public ConditionalTransitionConfiguration TransitionTo(TState state)
         {
             _currentBranchSteps!.Add(TransitionStep.ForTransition(state));
             return this;
         }
-
-        public ConditionalTransitionConfiguration ElseIf(Func<TData, TTrigger, bool> predicate)
-        {
-            _branches.Add(((state, data, trigger) => predicate(data, trigger), []));
-            _currentBranchSteps = _branches[^1].Steps;
-            return this;
-        }
-
+        
         public ConditionalTransitionConfiguration ElseIf(Func<TState, TData, TTrigger, bool> predicate)
         {
             _branches.Add((predicate, []));
             _currentBranchSteps = _branches[^1].Steps;
             return this;
         }
-
-        public ConditionalTransitionConfiguration ElseIf(Func<TData, bool> predicate)
-        {
-            return ElseIf((state, data, trigger) => predicate(data));
-        }
-
-        public ConditionalTransitionConfiguration ElseIf(Func<TState, TData, bool> predicate)
-        {
-            return ElseIf((state, data, trigger) => predicate(state, data));
-        }
-
-        public ConditionalTransitionConfiguration ElseIf(Func<TState, TTrigger, bool> predicate)
-        {
-            return ElseIf((state, data, trigger) => predicate(state, trigger));
-        }
-
-        public ConditionalTransitionConfiguration ElseIf(Func<TTrigger, bool> predicate)
-        {
-            return ElseIf((state, data, trigger) => predicate(trigger));
-        }
-
+        
         public ConditionalTransitionConfiguration Else()
         {
             _branches.Add(((state, data, trigger) => true, []));
@@ -1579,51 +1055,13 @@ public sealed partial class StateMachine<TState, TTrigger, TData, TCommand>
         }
 
         public ConditionalTransitionConfiguration<TDerivedTrigger> ModifyData(
-            Func<TData, TDerivedTrigger, TData> updater)
-        {
-            _currentBranchSteps!.Add(
-                TransitionStep.ForModifyData((state, data, trigger) => updater(data, (TDerivedTrigger)trigger)));
-            return this;
-        }
-
-        public ConditionalTransitionConfiguration<TDerivedTrigger> ModifyData(
             Func<TState, TData, TDerivedTrigger, TData> updater)
         {
             _currentBranchSteps!.Add(TransitionStep.ForModifyData((state, data, trigger) =>
                 updater(state, data, (TDerivedTrigger)trigger)));
             return this;
         }
-
-        public ConditionalTransitionConfiguration<TDerivedTrigger> ModifyData(Func<TData, TData> updater)
-        {
-            return ModifyData((state, data, trigger) => updater(data));
-        }
-
-        public ConditionalTransitionConfiguration<TDerivedTrigger> ModifyData(Func<TState, TData, TData> updater)
-        {
-            return ModifyData((state, data, trigger) => updater(state, data));
-        }
-
-        public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(
-            Func<TData, TDerivedTrigger, TCommand> action)
-        {
-            return Execute((state, data, trigger) => [action(data, trigger)]);
-        }
-
-        public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(
-            Func<TState, TData, TDerivedTrigger, TCommand> action)
-        {
-            return Execute((state, data, trigger) => [action(state, data, trigger)]);
-        }
-
-        public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(
-            Func<TData, TDerivedTrigger, IEnumerable<TCommand>> action)
-        {
-            _currentBranchSteps!.Add(TransitionStep.ForExecute((state, data, trigger) =>
-                action(data, (TDerivedTrigger)trigger)));
-            return this;
-        }
-
+        
         public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(
             Func<TState, TData, TDerivedTrigger, IEnumerable<TCommand>> action)
         {
@@ -1632,59 +1070,9 @@ public sealed partial class StateMachine<TState, TTrigger, TData, TCommand>
             return this;
         }
 
-        public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(Func<TData, TCommand> action)
-        {
-            return Execute((state, data, trigger) => [action(data)]);
-        }
-
-        public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(Func<TState, TData, TCommand> action)
-        {
-            return Execute((state, data, trigger) => [action(state, data)]);
-        }
-
-        public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(Func<TData, IEnumerable<TCommand>> action)
-        {
-            return Execute((state, data, trigger) => action(data));
-        }
-
-        public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(
-            Func<TState, TData, IEnumerable<TCommand>> action)
-        {
-            return Execute((state, data, trigger) => action(state, data));
-        }
-
-        public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(Func<TDerivedTrigger, TCommand> action)
-        {
-            return Execute((state, data, trigger) => [action(trigger)]);
-        }
-
-        public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(
-            Func<TDerivedTrigger, IEnumerable<TCommand>> action)
-        {
-            return Execute((state, data, trigger) => action(trigger));
-        }
-
-        public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(Func<TCommand> action)
-        {
-            return Execute((state, data, trigger) => [action()]);
-        }
-
-        public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(Func<IEnumerable<TCommand>> action)
-        {
-            return Execute((state, data, trigger) => action());
-        }
-
         public ConditionalTransitionConfiguration<TDerivedTrigger> TransitionTo(TState state)
         {
             _currentBranchSteps!.Add(TransitionStep.ForTransition(state));
-            return this;
-        }
-
-        public ConditionalTransitionConfiguration<TDerivedTrigger> ElseIf(
-            Func<TData, TDerivedTrigger, bool> predicate)
-        {
-            _branches.Add(((state, data, trigger) => predicate(data, (TDerivedTrigger)trigger), []));
-            _currentBranchSteps = _branches[^1].Steps;
             return this;
         }
 
@@ -1695,27 +1083,6 @@ public sealed partial class StateMachine<TState, TTrigger, TData, TCommand>
                 predicate(state, data, (TDerivedTrigger)trigger), []));
             _currentBranchSteps = _branches[^1].Steps;
             return this;
-        }
-
-        public ConditionalTransitionConfiguration<TDerivedTrigger> ElseIf(Func<TData, bool> predicate)
-        {
-            return ElseIf((state, data, trigger) => predicate(data));
-        }
-
-        public ConditionalTransitionConfiguration<TDerivedTrigger> ElseIf(Func<TState, TData, bool> predicate)
-        {
-            return ElseIf((state, data, trigger) => predicate(state, data));
-        }
-
-        public ConditionalTransitionConfiguration<TDerivedTrigger> ElseIf(
-            Func<TState, TDerivedTrigger, bool> predicate)
-        {
-            return ElseIf((state, data, trigger) => predicate(state, trigger));
-        }
-
-        public ConditionalTransitionConfiguration<TDerivedTrigger> ElseIf(Func<TDerivedTrigger, bool> predicate)
-        {
-            return ElseIf((state, data, trigger) => predicate(trigger));
         }
 
         public ConditionalTransitionConfiguration<TDerivedTrigger> Else()
@@ -1857,19 +1224,6 @@ public sealed partial class StateMachine<TState, TTrigger, TData, TCommand>
         public static TransitionStep ForTransition(TState targetState)
         {
             return new TransitionStep(TransitionStepKind.Transition) { TargetState = targetState };
-        }
-
-        public static TransitionStep ForConditional(
-            Func<TState, TData, TTrigger, bool> predicate,
-            List<TransitionStep> trueSteps,
-            List<TransitionStep> falseSteps)
-        {
-            return new TransitionStep(TransitionStepKind.Conditional)
-            {
-                Predicate = predicate,
-                ConditionalTrueSteps = trueSteps,
-                ConditionalFalseSteps = falseSteps
-            };
         }
 
         public static TransitionStep ForConditionalChain(

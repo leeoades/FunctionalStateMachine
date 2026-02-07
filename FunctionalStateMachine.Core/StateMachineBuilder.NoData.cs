@@ -1,14 +1,10 @@
 namespace FunctionalStateMachine.Core;
-
-
 // ReSharper disable UnusedTupleComponentInReturnValue
 // ReSharper disable UnusedMethodReturnValue.Global
-
 // ReSharper disable UnusedMember.Global
 // ReSharper disable UnusedParameter.Local
 
-
-public sealed partial class StateMachineBuilder<TState, TTrigger, TCommand>
+public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
     where TState : notnull
     where TTrigger : notnull
 {
@@ -80,23 +76,6 @@ public sealed partial class StateMachineBuilder<TState, TTrigger, TCommand>
             _inner = inner;
         }
 
-        public StateConfiguration OnEntry(Func<TState, IEnumerable<TCommand>> action)
-        {
-            _inner.OnEntry(action);
-            return this;
-        }
-
-        public StateConfiguration OnExit(Func<TState, IEnumerable<TCommand>> action)
-        {
-            _inner.OnExit(action);
-            return this;
-        }
-
-        public ImmediateTransitionConfiguration Immediately()
-        {
-            return new ImmediateTransitionConfiguration(this, _inner.Immediately());
-        }
-
         public TransitionConfiguration On(TTrigger trigger)
         {
             return new TransitionConfiguration(this, _inner.On(trigger));
@@ -116,56 +95,6 @@ public sealed partial class StateMachineBuilder<TState, TTrigger, TCommand>
         public StateMachine<TState, TTrigger, TCommand> Build()
         {
             return _builder.Build();
-        }
-
-        public StateConfiguration SubStateOf(TState parentState)
-        {
-            _inner.SubStateOf(parentState);
-            return this;
-        }
-
-        public StateConfiguration StartsWith(TState initialSubState)
-        {
-            _inner.StartsWith(initialSubState);
-            return this;
-        }
-    }
-
-    public sealed class ImmediateTransitionConfiguration
-        : INoDataImmediateTransitionConfiguration<TState, TTrigger, TCommand, ImmediateTransitionConfiguration>
-    {
-        private readonly StateConfiguration _parent;
-        private readonly StateMachine<TState, TTrigger, TCommand>.ImmediateTransitionConfiguration _inner;
-
-        internal ImmediateTransitionConfiguration(
-            StateConfiguration parent,
-            StateMachine<TState, TTrigger, TCommand>.ImmediateTransitionConfiguration inner)
-        {
-            _parent = parent;
-            _inner = inner;
-        }
-
-        public ImmediateTransitionConfiguration TransitionTo(TState state)
-        {
-            _inner.TransitionTo(state);
-            return this;
-        }
-
-        public ImmediateTransitionConfiguration Guard(Func<TState, bool> guard)
-        {
-            _inner.Guard(guard);
-            return this;
-        }
-
-        public ImmediateTransitionConfiguration Execute(Func<TState, IEnumerable<TCommand>> action)
-        {
-            _inner.Execute(action);
-            return this;
-        }
-
-        public StateConfiguration Done()
-        {
-            return _parent;
         }
     }
 
@@ -206,12 +135,6 @@ public sealed partial class StateMachineBuilder<TState, TTrigger, TCommand>
             return new ConditionalTransitionConfiguration(this, _inner.If(predicate));
         }
 
-        public StateConfiguration Ignore()
-        {
-            _inner.Ignore();
-            return _parent;
-        }
-
         public StateConfiguration Done()
         {
             _inner.Done();
@@ -227,16 +150,6 @@ public sealed partial class StateMachineBuilder<TState, TTrigger, TCommand>
             where TDerivedTrigger : TTrigger
         {
             return _parent.On<TDerivedTrigger>();
-        }
-
-        public StateConfiguration For(TState state)
-        {
-            return _parent.For(state);
-        }
-
-        public StateMachine<TState, TTrigger, TCommand> Build()
-        {
-            return _parent.Build();
         }
     }
 
@@ -316,7 +229,6 @@ public sealed partial class StateMachineBuilder<TState, TTrigger, TCommand>
     }
 
     public sealed class ConditionalTransitionConfiguration
-        : INoDataConditionalTransitionConfiguration<TState, TTrigger, TCommand, ConditionalTransitionConfiguration>
     {
         private readonly TransitionConfiguration _parent;
         private readonly StateMachine<TState, TTrigger, TCommand>.ConditionalTransitionConfiguration _inner;
@@ -350,7 +262,6 @@ public sealed partial class StateMachineBuilder<TState, TTrigger, TCommand>
     }
 
     public sealed class ConditionalTransitionConfiguration<TDerivedTrigger>
-        : INoDataConditionalTransitionConfiguration<TState, TTrigger, TCommand, TDerivedTrigger, ConditionalTransitionConfiguration<TDerivedTrigger>>
         where TDerivedTrigger : TTrigger
     {
         private readonly TransitionConfiguration<TDerivedTrigger> _parent;

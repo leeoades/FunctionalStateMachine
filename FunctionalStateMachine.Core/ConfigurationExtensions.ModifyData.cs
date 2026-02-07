@@ -11,17 +11,7 @@ public static partial class StateMachineBuilderExtensions
     {
         return configuration.ModifyData((state, data) => updater(data));
     }
-
-    public static TTransitionConfiguration ModifyData<TState, TTrigger, TData, TCommand, TTransitionConfiguration, TConditional>(
-        this ITransitionConfiguration<TState, TTrigger, TData, TCommand, TTransitionConfiguration, TConditional> configuration,
-        Func<TData, TTrigger, TData> updater)
-        where TState : notnull
-        where TTrigger : notnull
-        where TTransitionConfiguration : ITransitionConfiguration<TState, TTrigger, TData, TCommand, TTransitionConfiguration, TConditional>
-    {
-        return configuration.ModifyData((state, data, trigger) => updater(data, trigger));
-    }
-
+    
     public static TTransitionConfiguration ModifyData<TState, TTrigger, TData, TCommand, TTransitionConfiguration, TConditional>(
         this ITransitionConfiguration<TState, TTrigger, TData, TCommand, TTransitionConfiguration, TConditional> configuration,
         Func<TData, TData> updater)
@@ -30,46 +20,6 @@ public static partial class StateMachineBuilderExtensions
         where TTransitionConfiguration : ITransitionConfiguration<TState, TTrigger, TData, TCommand, TTransitionConfiguration, TConditional>
     {
         return configuration.ModifyData((state, data, trigger) => updater(data));
-    }
-
-    public static TTransitionConfiguration ModifyData<TState, TTrigger, TData, TCommand, TTransitionConfiguration, TConditional>(
-        this ITransitionConfiguration<TState, TTrigger, TData, TCommand, TTransitionConfiguration, TConditional> configuration,
-        Func<TState, TData, TData> updater)
-        where TState : notnull
-        where TTrigger : notnull
-        where TTransitionConfiguration : ITransitionConfiguration<TState, TTrigger, TData, TCommand, TTransitionConfiguration, TConditional>
-    {
-        return configuration.ModifyData((state, data, trigger) => updater(state, data));
-    }
-
-    public static TConditionalConfiguration ModifyData<TState, TTrigger, TData, TCommand, TConditionalConfiguration>(
-        this IConditionalTransitionConfiguration<TState, TTrigger, TData, TCommand, TConditionalConfiguration> configuration,
-        Func<TData, TTrigger, TData> updater)
-        where TState : notnull
-        where TTrigger : notnull
-        where TConditionalConfiguration : IConditionalTransitionConfiguration<TState, TTrigger, TData, TCommand, TConditionalConfiguration>
-    {
-        return configuration.ModifyData((state, data, trigger) => updater(data, trigger));
-    }
-
-    public static TConditionalConfiguration ModifyData<TState, TTrigger, TData, TCommand, TConditionalConfiguration>(
-        this IConditionalTransitionConfiguration<TState, TTrigger, TData, TCommand, TConditionalConfiguration> configuration,
-        Func<TData, TData> updater)
-        where TState : notnull
-        where TTrigger : notnull
-        where TConditionalConfiguration : IConditionalTransitionConfiguration<TState, TTrigger, TData, TCommand, TConditionalConfiguration>
-    {
-        return configuration.ModifyData((state, data, trigger) => updater(data));
-    }
-
-    public static TConditionalConfiguration ModifyData<TState, TTrigger, TData, TCommand, TConditionalConfiguration>(
-        this IConditionalTransitionConfiguration<TState, TTrigger, TData, TCommand, TConditionalConfiguration> configuration,
-        Func<TState, TData, TData> updater)
-        where TState : notnull
-        where TTrigger : notnull
-        where TConditionalConfiguration : IConditionalTransitionConfiguration<TState, TTrigger, TData, TCommand, TConditionalConfiguration>
-    {
-        return configuration.ModifyData((state, data, trigger) => updater(state, data));
     }
 
     public static TConditionalConfiguration ModifyData<TState, TTrigger, TData, TCommand, TDerivedTrigger, TConditionalConfiguration>(
@@ -94,17 +44,6 @@ public static partial class StateMachineBuilderExtensions
         return configuration.ModifyData((state, data, trigger) => updater(data));
     }
 
-    public static TConditionalConfiguration ModifyData<TState, TTrigger, TData, TCommand, TDerivedTrigger, TConditionalConfiguration>(
-        this IConditionalTransitionConfiguration<TState, TTrigger, TData, TCommand, TDerivedTrigger, TConditionalConfiguration> configuration,
-        Func<TState, TData, TData> updater)
-        where TState : notnull
-        where TTrigger : notnull
-        where TDerivedTrigger : TTrigger
-        where TConditionalConfiguration : IConditionalTransitionConfiguration<TState, TTrigger, TData, TCommand, TDerivedTrigger, TConditionalConfiguration>
-    {
-        return configuration.ModifyData((state, data, trigger) => updater(state, data));
-    }
-
     public static TTransitionConfiguration ModifyData<TState, TTrigger, TData, TCommand, TDerivedTrigger, TTransitionConfiguration, TConditional>(
         this ITransitionConfiguration<TState, TTrigger, TData, TCommand, TDerivedTrigger, TTransitionConfiguration, TConditional> configuration,
         Func<TData, TDerivedTrigger, TData> updater)
@@ -125,16 +64,5 @@ public static partial class StateMachineBuilderExtensions
         where TTransitionConfiguration : ITransitionConfiguration<TState, TTrigger, TData, TCommand, TDerivedTrigger, TTransitionConfiguration, TConditional>
     {
         return configuration.ModifyData((state, data, trigger) => updater(data));
-    }
-
-    public static TTransitionConfiguration ModifyData<TState, TTrigger, TData, TCommand, TDerivedTrigger, TTransitionConfiguration, TConditional>(
-        this ITransitionConfiguration<TState, TTrigger, TData, TCommand, TDerivedTrigger, TTransitionConfiguration, TConditional> configuration,
-        Func<TState, TData, TData> updater)
-        where TState : notnull
-        where TTrigger : notnull
-        where TDerivedTrigger : TTrigger
-        where TTransitionConfiguration : ITransitionConfiguration<TState, TTrigger, TData, TCommand, TDerivedTrigger, TTransitionConfiguration, TConditional>
-    {
-        return configuration.ModifyData((state, data, trigger) => updater(state, data));
     }
 }
