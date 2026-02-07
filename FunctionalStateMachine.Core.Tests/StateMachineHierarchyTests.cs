@@ -105,4 +105,86 @@ public class StateMachineHierarchyTests
     private abstract record TestCommand;
 
     private sealed record LogCommand(string Message) : TestCommand;
+
+    #region Undefined State Tests
+    
+    // Note: These branches (TryGetValue returning false) are defensive code paths.
+    // The validation at build time ensures all states are configured, so these
+    // branches cannot be reached through normal API usage. They serve as safety
+    // guards in case internal invariants are ever violated.
+    
+    // The following tests verify that validation correctly rejects undefined states.
+
+    [Fact]
+    public void Fire_FromUndefinedState_ThrowsInvalidOperationException()
+    {
+        // Validation catches undefined states at build time, but if we skip validation,
+        // Fire() itself validates that the current state exists
+        var machine = StateMachine<WorkState, WorkerTrigger, WorkerData, TestCommand>.Create()
+            .SkipAnalysis()
+            .StartWith(WorkState.Idle)
+            .OnUnhandled().Ignore()
+            .For(WorkState.Idle)
+                .On(WorkerTrigger.StartWork)
+                    .TransitionTo(WorkState.Busy)
+            .For(WorkState.Busy)
+            .Build();
+
+        // Fire from a state that has no .For() definition
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            machine.Fire(WorkerTrigger.Cancel, WorkState.Closed, new WorkerData(0)));
+
+        Assert.Contains("Closed", ex.Message);
+        Assert.Contains("not configured", ex.Message);
+    }
+
+    [Fact]
+    public void Build_TransitionToUndefinedState_ThrowsInvalidOperationException()
+    {
+        // Tests that validation catches undefined transition targets
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            StateMachine<WorkState, WorkerTrigger, WorkerData, TestCommand>.Create()
+                .StartWith(WorkState.Idle)
+                .For(WorkState.Idle)
+                    .On(WorkerTrigger.StartWork)
+                        .TransitionTo(WorkState.Closed) // Closed has no .For() definition
+                .Build());
+
+        Assert.Contains("Closed", ex.Message);
+        Assert.Contains("not configured", ex.Message);
+    }
+
+    [Fact]
+    public void Build_SubStateOfUndefinedParent_ThrowsInvalidOperationException()
+    {
+        // Tests that validation catches undefined parent states
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            StateMachine<WorkState, WorkerTrigger, WorkerData, TestCommand>.Create()
+                .StartWith(WorkState.Idle)
+                .For(WorkState.Idle)
+                    .SubStateOf(WorkState.Active) // Active has no .For() definition
+                .Build());
+
+        Assert.Contains("Active", ex.Message);
+        Assert.Contains("not configured", ex.Message);
+    }
+
+    [Fact]
+    public void Build_StartsWithNonChildState_ThrowsInvalidOperationException()
+    {
+        // Tests that validation catches StartsWith referencing a non-child state
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            StateMachine<WorkState, WorkerTrigger, WorkerData, TestCommand>.Create()
+                .StartWith(WorkState.Active)
+                .For(WorkState.Active)
+                    .StartsWith(WorkState.Idle)
+                .For(WorkState.Idle) // Not a sub-state of Active
+                .Build());
+
+        // The error mentions Active has StartsWith but no children
+        Assert.Contains("Active", ex.Message);
+        Assert.Contains("StartsWith", ex.Message);
+    }
+
+    #endregion
 }
