@@ -6,7 +6,7 @@
 
 namespace FunctionalStateMachine.Core;
 
-public sealed partial class StateMachineBuilder<TState, TTrigger, TData, TCommand>
+public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
     where TState : notnull
     where TTrigger : notnull
 {
