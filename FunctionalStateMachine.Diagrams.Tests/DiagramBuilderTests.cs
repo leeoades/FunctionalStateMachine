@@ -174,8 +174,8 @@ public sealed class DiagramBuilderTests
         var diagram = DiagramBuilder.GenerateDiagram(source, "Build", "TimerLike");
 
         Assert.NotNull(diagram);
-        Assert.Equal(1, CountOccurrences(diagram!, "Trigger.Tick"));
-        Assert.Equal(1, CountOccurrences(diagram!, "Trigger.Resume"));
+        Assert.Equal(1, CountOccurrences(diagram, "Trigger.Tick"));
+        Assert.Equal(1, CountOccurrences(diagram, "Trigger.Resume"));
     }
 
     [Fact]
