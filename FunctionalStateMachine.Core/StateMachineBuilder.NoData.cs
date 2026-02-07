@@ -9,6 +9,7 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
     where TTrigger : notnull
 {
     private readonly StateMachine<TState, TTrigger, TCommand> _machine = new();
+    private bool _skipAnalysis;
 
     public StateMachineBuilder<TState, TTrigger, TCommand> StartWith(TState state)
     {
@@ -56,9 +57,18 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
         return new StateConfiguration(this, _machine.For(state));
     }
 
+    /// <summary>
+    /// Skip static analysis when building. Use with caution - analysis catches real configuration errors.
+    /// </summary>
+    public StateMachineBuilder<TState, TTrigger, TCommand> SkipAnalysis()
+    {
+        _skipAnalysis = true;
+        return this;
+    }
+
     public StateMachine<TState, TTrigger, TCommand> Build()
     {
-        _machine.Validate();
+        _machine.Validate(_skipAnalysis);
         return _machine;
     }
 
@@ -76,6 +86,23 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
             _inner = inner;
         }
 
+        public StateConfiguration OnEntry(Func<TState, IEnumerable<TCommand>> action)
+        {
+            _inner.OnEntry(action);
+            return this;
+        }
+
+        public StateConfiguration OnExit(Func<TState, IEnumerable<TCommand>> action)
+        {
+            _inner.OnExit(action);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Immediately()
+        {
+            return new ImmediateTransitionConfiguration(this, _inner.Immediately());
+        }
+
         public TransitionConfiguration On(TTrigger trigger)
         {
             return new TransitionConfiguration(this, _inner.On(trigger));
@@ -87,6 +114,18 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
             return new TransitionConfiguration<TDerivedTrigger>(this, _inner.On<TDerivedTrigger>());
         }
 
+        public StateConfiguration SubStateOf(TState parentState)
+        {
+            _inner.SubStateOf(parentState);
+            return this;
+        }
+
+        public StateConfiguration StartsWith(TState initialSubState)
+        {
+            _inner.StartsWith(initialSubState);
+            return this;
+        }
+
         public StateConfiguration For(TState state)
         {
             return _builder.For(state);
@@ -95,6 +134,44 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
         public StateMachine<TState, TTrigger, TCommand> Build()
         {
             return _builder.Build();
+        }
+    }
+
+    public sealed class ImmediateTransitionConfiguration
+        : INoDataImmediateTransitionConfiguration<TState, TTrigger, TCommand, ImmediateTransitionConfiguration>
+    {
+        private readonly StateConfiguration _parent;
+        private readonly StateMachine<TState, TTrigger, TCommand>.ImmediateTransitionConfiguration _inner;
+
+        internal ImmediateTransitionConfiguration(
+            StateConfiguration parent,
+            StateMachine<TState, TTrigger, TCommand>.ImmediateTransitionConfiguration inner)
+        {
+            _parent = parent;
+            _inner = inner;
+        }
+
+        public ImmediateTransitionConfiguration TransitionTo(TState state)
+        {
+            _inner.TransitionTo(state);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Guard(Func<TState, bool> guard)
+        {
+            _inner.Guard(guard);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Execute(Func<TState, IEnumerable<TCommand>> action)
+        {
+            _inner.Execute(action);
+            return this;
+        }
+
+        public StateConfiguration Done()
+        {
+            return _parent;
         }
     }
 
@@ -133,6 +210,12 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
         public ConditionalTransitionConfiguration If(Func<TState, TTrigger, bool> predicate)
         {
             return new ConditionalTransitionConfiguration(this, _inner.If(predicate));
+        }
+
+        public StateConfiguration Ignore()
+        {
+            _inner.Ignore();
+            return _parent;
         }
 
         public StateConfiguration Done()
@@ -249,6 +332,12 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
             return this;
         }
 
+        public ConditionalTransitionConfiguration TransitionTo(TState state)
+        {
+            _inner.TransitionTo(state);
+            return this;
+        }
+
         public ConditionalTransitionConfiguration ElseIf(Func<TState, TTrigger, bool> predicate)
         {
             _inner.ElseIf(predicate);
@@ -288,6 +377,12 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
             Func<TState, TDerivedTrigger, IEnumerable<TCommand>> action)
         {
             _inner.Execute(action);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration<TDerivedTrigger> TransitionTo(TState state)
+        {
+            _inner.TransitionTo(state);
             return this;
         }
 

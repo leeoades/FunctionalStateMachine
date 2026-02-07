@@ -17,9 +17,9 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
         return this;
     }
 
-    internal void Validate()
+    internal void Validate(bool skipAnalysis = false)
     {
-        _inner.Validate();
+        _inner.Validate(skipAnalysis: skipAnalysis);
     }
 
     internal StateMachine<TState, TTrigger, TCommand> OnUnhandled(
@@ -42,6 +42,12 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
         return (newState, commands);
     }
 
+    public (TState State, IReadOnlyList<TCommand> Commands) Start()
+    {
+        var (state, _, commands) = _inner.Start(new NoData());
+        return (state, commands);
+    }
+
     public TState InitialState => _inner.InitialState;
 
 
@@ -58,6 +64,23 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
             _inner = inner;
         }
 
+        public StateConfiguration OnEntry(Func<TState, IEnumerable<TCommand>> action)
+        {
+            _inner.OnEntry((state, _) => action(state));
+            return this;
+        }
+
+        public StateConfiguration OnExit(Func<TState, IEnumerable<TCommand>> action)
+        {
+            _inner.OnExit((state, _) => action(state));
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Immediately()
+        {
+            return new ImmediateTransitionConfiguration(this, _inner.Immediately());
+        }
+
         public TransitionConfiguration On(TTrigger trigger)
         {
             return new TransitionConfiguration(this, _inner.On(trigger));
@@ -67,6 +90,55 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
             where TDerivedTrigger : TTrigger
         {
             return new TransitionConfiguration<TDerivedTrigger>(this, _inner.On<TDerivedTrigger>());
+        }
+
+        public StateConfiguration SubStateOf(TState parentState)
+        {
+            _inner.SubStateOf(parentState);
+            return this;
+        }
+
+        public StateConfiguration StartsWith(TState initialSubState)
+        {
+            _inner.StartsWith(initialSubState);
+            return this;
+        }
+    }
+
+    internal sealed class ImmediateTransitionConfiguration
+    {
+        private readonly StateConfiguration _parent;
+        private readonly StateMachine<TState, TTrigger, NoData, TCommand>.ImmediateTransitionConfiguration _inner;
+
+        internal ImmediateTransitionConfiguration(
+            StateConfiguration parent,
+            StateMachine<TState, TTrigger, NoData, TCommand>.ImmediateTransitionConfiguration inner)
+        {
+            _parent = parent;
+            _inner = inner;
+        }
+
+        public ImmediateTransitionConfiguration TransitionTo(TState state)
+        {
+            _inner.TransitionTo(state);
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Guard(Func<TState, bool> guard)
+        {
+            _inner.Guard((state, _) => guard(state));
+            return this;
+        }
+
+        public ImmediateTransitionConfiguration Execute(Func<TState, IEnumerable<TCommand>> action)
+        {
+            _inner.Execute((state, _) => action(state));
+            return this;
+        }
+
+        public StateConfiguration Done()
+        {
+            return _parent;
         }
     }
 
@@ -105,6 +177,12 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
         {
             return new ConditionalTransitionConfiguration(this,
                 _inner.If((state, data, trigger) => predicate(state, trigger)));
+        }
+
+        public StateConfiguration Ignore()
+        {
+            _inner.Ignore();
+            return _parent;
         }
 
         public StateConfiguration Done()
@@ -190,6 +268,12 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
             return this;
         }
 
+        public ConditionalTransitionConfiguration TransitionTo(TState state)
+        {
+            _inner.TransitionTo(state);
+            return this;
+        }
+
         public ConditionalTransitionConfiguration ElseIf(Func<TState, TTrigger, bool> predicate)
         {
             _inner.ElseIf((state, data, trigger) => predicate(state, trigger));
@@ -229,6 +313,12 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
             Func<TState, TDerivedTrigger, IEnumerable<TCommand>> action)
         {
             _inner.Execute((state, data, trigger) => action(state, trigger));
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration<TDerivedTrigger> TransitionTo(TState state)
+        {
+            _inner.TransitionTo(state);
             return this;
         }
 
