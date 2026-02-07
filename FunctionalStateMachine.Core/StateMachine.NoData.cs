@@ -222,6 +222,12 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
             return this;
         }
 
+        public ConditionalTransitionConfiguration ElseIf(Func<TState, TTrigger, bool> predicate)
+        {
+            _inner.ElseIf((state, data, trigger) => predicate(state, trigger));
+            return this;
+        }
+
         public ConditionalTransitionConfiguration Else()
         {
             _inner.Else();
@@ -255,6 +261,13 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
             Func<TState, TDerivedTrigger, IEnumerable<TCommand>> action)
         {
             _inner.Execute((state, data, trigger) => action(state, trigger));
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration<TDerivedTrigger> ElseIf(
+            Func<TState, TDerivedTrigger, bool> predicate)
+        {
+            _inner.ElseIf((state, data, trigger) => predicate(state, (TDerivedTrigger)trigger));
             return this;
         }
 

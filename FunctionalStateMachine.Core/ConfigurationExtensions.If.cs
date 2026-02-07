@@ -86,6 +86,16 @@ public static partial class StateMachineBuilderExtensions
         return configuration.If((state, trigger) => predicate(state));
     }
 
+    public static TConditional If<TState, TTrigger, TCommand, TTransitionConfiguration, TConditional>(
+        this INoDataTransitionConfiguration<TState, TTrigger, TCommand, TTransitionConfiguration, TConditional> configuration,
+        Func<TTrigger, bool> predicate)
+        where TState : notnull
+        where TTrigger : notnull
+        where TTransitionConfiguration : INoDataTransitionConfiguration<TState, TTrigger, TCommand, TTransitionConfiguration, TConditional>
+    {
+        return configuration.If((state, trigger) => predicate(trigger));
+    }
+
     public static TConditional If<TState, TTrigger, TCommand, TDerivedTrigger, TTransitionConfiguration, TConditional>(
         this INoDataTransitionConfiguration<TState, TTrigger, TCommand, TDerivedTrigger, TTransitionConfiguration, TConditional> configuration,
         Func<TState, bool> predicate)
@@ -95,5 +105,16 @@ public static partial class StateMachineBuilderExtensions
         where TTransitionConfiguration : INoDataTransitionConfiguration<TState, TTrigger, TCommand, TDerivedTrigger, TTransitionConfiguration, TConditional>
     {
         return configuration.If((state, trigger) => predicate(state));
+    }
+
+    public static TConditional If<TState, TTrigger, TCommand, TDerivedTrigger, TTransitionConfiguration, TConditional>(
+        this INoDataTransitionConfiguration<TState, TTrigger, TCommand, TDerivedTrigger, TTransitionConfiguration, TConditional> configuration,
+        Func<TDerivedTrigger, bool> predicate)
+        where TState : notnull
+        where TTrigger : notnull
+        where TDerivedTrigger : TTrigger
+        where TTransitionConfiguration : INoDataTransitionConfiguration<TState, TTrigger, TCommand, TDerivedTrigger, TTransitionConfiguration, TConditional>
+    {
+        return configuration.If((state, trigger) => predicate(trigger));
     }
 }

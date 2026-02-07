@@ -84,4 +84,25 @@ public static partial class StateMachineBuilderExtensions
     {
         return configuration.ElseIf((state, data, trigger) => predicate(state, data));
     }
+
+    public static TConditionalConfiguration ElseIf<TState, TTrigger, TCommand, TConditionalConfiguration>(
+        this INoDataConditionalTransitionConfiguration<TState, TTrigger, TCommand, TConditionalConfiguration> configuration,
+        Func<TState, bool> predicate)
+        where TState : notnull
+        where TTrigger : notnull
+        where TConditionalConfiguration : INoDataConditionalTransitionConfiguration<TState, TTrigger, TCommand, TConditionalConfiguration>
+    {
+        return configuration.ElseIf((state, trigger) => predicate(state));
+    }
+
+    public static TConditionalConfiguration ElseIf<TState, TTrigger, TCommand, TDerivedTrigger, TConditionalConfiguration>(
+        this INoDataConditionalTransitionConfiguration<TState, TTrigger, TCommand, TDerivedTrigger, TConditionalConfiguration> configuration,
+        Func<TState, bool> predicate)
+        where TState : notnull
+        where TTrigger : notnull
+        where TDerivedTrigger : TTrigger
+        where TConditionalConfiguration : INoDataConditionalTransitionConfiguration<TState, TTrigger, TCommand, TDerivedTrigger, TConditionalConfiguration>
+    {
+        return configuration.ElseIf((state, trigger) => predicate(state));
+    }
 }

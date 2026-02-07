@@ -229,6 +229,7 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
     }
 
     public sealed class ConditionalTransitionConfiguration
+        : INoDataConditionalTransitionConfiguration<TState, TTrigger, TCommand, ConditionalTransitionConfiguration>
     {
         private readonly TransitionConfiguration _parent;
         private readonly StateMachine<TState, TTrigger, TCommand>.ConditionalTransitionConfiguration _inner;
@@ -248,6 +249,12 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
             return this;
         }
 
+        public ConditionalTransitionConfiguration ElseIf(Func<TState, TTrigger, bool> predicate)
+        {
+            _inner.ElseIf(predicate);
+            return this;
+        }
+
         public ConditionalTransitionConfiguration Else()
         {
             _inner.Else();
@@ -262,6 +269,8 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
     }
 
     public sealed class ConditionalTransitionConfiguration<TDerivedTrigger>
+        : INoDataConditionalTransitionConfiguration<TState, TTrigger, TCommand, TDerivedTrigger,
+            ConditionalTransitionConfiguration<TDerivedTrigger>>
         where TDerivedTrigger : TTrigger
     {
         private readonly TransitionConfiguration<TDerivedTrigger> _parent;
@@ -279,6 +288,13 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
             Func<TState, TDerivedTrigger, IEnumerable<TCommand>> action)
         {
             _inner.Execute(action);
+            return this;
+        }
+
+        public ConditionalTransitionConfiguration<TDerivedTrigger> ElseIf(
+            Func<TState, TDerivedTrigger, bool> predicate)
+        {
+            _inner.ElseIf(predicate);
             return this;
         }
 
