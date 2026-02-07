@@ -141,18 +141,18 @@ public class StateMachineAnalysisTests
             var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
                 .StartWith(State.A)
                 .For(State.A)
-                .On<Trigger.T1Trigger>()
-                    .TransitionTo(State.B)
-                    .Execute(() => new Command.Noop())
-                .On<Trigger.T1Trigger>()
-                    .TransitionTo(State.C) // Multiple transitions
-                    .Execute(() => new Command.Noop())
-            .For(State.B)
-                .On<Trigger.T1Trigger>()
-                    .TransitionTo(State.A)
-            .For(State.C)
-                .On<Trigger.T1Trigger>()
-                    .TransitionTo(State.A)
+                    .On<Trigger.T1Trigger>()
+                        .TransitionTo(State.B)
+                        .Execute(() => new Command.Noop())
+                    .On<Trigger.T1Trigger>()
+                        .TransitionTo(State.C) // Multiple transitions
+                        .Execute(() => new Command.Noop())
+                .For(State.B)
+                    .On<Trigger.T1Trigger>()
+                        .TransitionTo(State.A)
+                .For(State.C)
+                    .On<Trigger.T1Trigger>()
+                        .TransitionTo(State.A)
                 .Build();
         });
 
@@ -238,19 +238,19 @@ public class StateMachineAnalysisTests
             var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
                 .StartWith(State.A)
                 .For(State.A)
-                .On<Trigger.T1Trigger>()
-                    .TransitionTo(State.B)
-                    .If(data => data.Value > 5)
-                        .Execute(() => new Command.Noop())
-                        .Else()
-                        .TransitionTo(State.C)
-                        .Done()
-            .For(State.B)
-                .On<Trigger.T1Trigger>()
-                    .TransitionTo(State.A)
-            .For(State.C)
-                .On<Trigger.T1Trigger>()
-                    .TransitionTo(State.A)
+                    .On<Trigger.T1Trigger>()
+                        .TransitionTo(State.B)
+                        .If(data => data.Value > 5)
+                            .Execute(() => new Command.Noop())
+                            .Else()
+                            .TransitionTo(State.C)
+                            .Done()
+                .For(State.B)
+                    .On<Trigger.T1Trigger>()
+                        .TransitionTo(State.A)
+                .For(State.C)
+                    .On<Trigger.T1Trigger>()
+                        .TransitionTo(State.A)
                 .Build();
         });
 
@@ -265,19 +265,19 @@ public class StateMachineAnalysisTests
             var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
                 .StartWith(State.A)
                 .For(State.A)
-                .On<Trigger.T1Trigger>()
-                    .If(data => data.Value > 5)
-                        .TransitionTo(State.B)
-                        .Else()
-                        .Execute(() => new Command.Noop())
-                        .Done()
-                    .TransitionTo(State.C)
-            .For(State.B)
-                .On<Trigger.T1Trigger>()
-                    .TransitionTo(State.A)
-            .For(State.C)
-                .On<Trigger.T1Trigger>()
-                    .TransitionTo(State.A)
+                    .On<Trigger.T1Trigger>()
+                        .If(data => data.Value > 5)
+                            .TransitionTo(State.B)
+                            .Else()
+                            .Execute(() => new Command.Noop())
+                            .Done()
+                        .TransitionTo(State.C)
+                .For(State.B)
+                    .On<Trigger.T1Trigger>()
+                        .TransitionTo(State.A)
+                .For(State.C)
+                    .On<Trigger.T1Trigger>()
+                        .TransitionTo(State.A)
                 .Build();
         });
 
@@ -292,23 +292,23 @@ public class StateMachineAnalysisTests
             var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
                 .StartWith(State.A)
                 .For(State.A)
-                .On<Trigger.T1Trigger>()
-                    .If(data => data.Value > 5)
-                        .TransitionTo(State.B)
-                        .Else()
-                        .Execute(() => new Command.Noop())
-                        .Done()
-                    .If(data => data.Value > 1)
-                        .TransitionTo(State.C)
-                        .Else()
-                        .Execute(() => new Command.Noop())
-                        .Done()
-            .For(State.B)
-                .On<Trigger.T1Trigger>()
-                    .TransitionTo(State.A)
-            .For(State.C)
-                .On<Trigger.T1Trigger>()
-                    .TransitionTo(State.A)
+                    .On<Trigger.T1Trigger>()
+                        .If(data => data.Value > 5)
+                            .TransitionTo(State.B)
+                            .Else()
+                            .Execute(() => new Command.Noop())
+                            .Done()
+                        .If(data => data.Value > 1)
+                            .TransitionTo(State.C)
+                            .Else()
+                            .Execute(() => new Command.Noop())
+                            .Done()
+                .For(State.B)
+                    .On<Trigger.T1Trigger>()
+                        .TransitionTo(State.A)
+                .For(State.C)
+                    .On<Trigger.T1Trigger>()
+                        .TransitionTo(State.A)
                 .Build();
         });
 
@@ -420,6 +420,57 @@ public class StateMachineAnalysisTests
             .Build();
 
         Assert.NotNull(machine);
+    }
+
+    [Fact]
+    public void Validate_CollectsConditionalTransitionTargets_StatesAreReachable()
+    {
+        // States B and C are ONLY reachable via conditional branches.
+        // If CollectTransitionTargetStates didn't handle Conditional steps,
+        // validation would fail with "unreachable" error.
+        var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
+            .StartWith(State.A)
+            .For(State.A)
+                .On<Trigger.T1Trigger>()
+                    .If(data => data.Value > 0)
+                        .TransitionTo(State.B)
+                        .Else()
+                        .TransitionTo(State.C)
+                        .Done()
+            .For(State.B)
+                .On<Trigger.T1Trigger>()
+                    .TransitionTo(State.A)
+            .For(State.C)
+                .On<Trigger.T1Trigger>()
+                    .TransitionTo(State.A)
+            .Build();
+
+        // Build succeeded means conditional targets B and C were collected as reachable
+        Assert.NotNull(machine);
+    }
+
+    [Fact]
+    public void Validate_DetectsUnconfiguredConditionalTransitionTarget()
+    {
+        // State C is a conditional target but not configured - should fail validation
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+        {
+            StateMachine<State, Trigger, Data, CommandBase>.Create()
+                .StartWith(State.A)
+                .For(State.A)
+                    .On<Trigger.T1Trigger>()
+                        .If(data => data.Value > 0)
+                            .TransitionTo(State.B)
+                            .Else()
+                            .TransitionTo(State.C)  // C is not configured
+                            .Done()
+                .For(State.B)
+                    .On<Trigger.T1Trigger>()
+                        .TransitionTo(State.A)
+                .Build();
+        });
+
+        Assert.Contains("not configured", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     private enum State
