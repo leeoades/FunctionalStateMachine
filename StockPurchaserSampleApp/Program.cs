@@ -2,6 +2,8 @@ using StockPurchaserSampleApp.Configuration;
 using StockPurchaserSampleApp.Domain;
 using StockPurchaserSampleApp.Runtime;
 
+namespace StockPurchaserSampleApp;
+
 public static class Program
 {
     public static void Main()

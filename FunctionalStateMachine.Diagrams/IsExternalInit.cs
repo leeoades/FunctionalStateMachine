@@ -1,4 +1,4 @@
-namespace System.Runtime.CompilerServices
+namespace FunctionalStateMachine.Diagrams
 {
     internal static class IsExternalInit
     {

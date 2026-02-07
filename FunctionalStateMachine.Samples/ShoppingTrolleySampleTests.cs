@@ -1,6 +1,6 @@
-using FunctionalStateMachine.Samples;
+using FunctionalStateMachine.Core;
 
-namespace FunctionalStateMachine.Core.Tests;
+namespace FunctionalStateMachine.Samples;
 
 public class ShoppingTrolleySampleTests
 {
