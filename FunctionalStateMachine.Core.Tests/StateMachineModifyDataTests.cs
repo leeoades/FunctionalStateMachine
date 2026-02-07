@@ -73,10 +73,76 @@ public class StateMachineModifyDataTests
         Assert.Empty(commands);
     }
 
+    [Fact]
+    public void ModifyData_GenericTransition_UpdatesDataWithDerivedTrigger()
+    {
+        var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
+            .StartWith(State.Ready)
+            .For(State.Ready)
+                .On<Trigger.DerivedTrigger>()
+                    .ModifyData((state, data, trigger) => data with { Value = data.Value + trigger.Amount })
+                    .TransitionTo(State.Done)
+                    .Done()
+            .For(State.Done)
+                .On<Trigger.DerivedTrigger>()
+                    .Done()
+            .Build();
+
+        var (state, data, _) = machine.Fire(new Trigger.DerivedTrigger(10), State.Ready, new Data(5));
+
+        Assert.Equal(State.Done, state);
+        Assert.Equal(15, data.Value);
+    }
+
+    [Fact]
+    public void ModifyData_GenericTransition_ChainsMultipleModifications()
+    {
+        var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
+            .StartWith(State.Ready)
+            .For(State.Ready)
+                .On<Trigger.DerivedTrigger>()
+                    .ModifyData((state, data, trigger) => data with { Value = data.Value + trigger.Amount })
+                    .ModifyData((state, data, trigger) => data with { Value = data.Value * 2 })
+                    .Done()
+            .Build();
+
+        var (_, data, _) = machine.Fire(new Trigger.DerivedTrigger(5), State.Ready, new Data(3));
+
+        // (3 + 5) * 2 = 16
+        Assert.Equal(16, data.Value);
+    }
+
+    [Fact]
+    public void On_FromGenericTransition_SwitchesToNonGenericTrigger()
+    {
+        var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
+            .StartWith(State.Ready)
+            .For(State.Ready)
+                .On<Trigger.DerivedTrigger>()
+                    .TransitionTo(State.Done)
+                .On(Trigger.Advance)
+                    .TransitionTo(State.Other)
+                    .Done()
+            .For(State.Done)
+                .On(Trigger.Advance)
+                    .Done()
+            .For(State.Other)
+                .On(Trigger.Advance)
+                    .Done()
+            .Build();
+
+        var result1 = machine.Fire(new Trigger.DerivedTrigger(1), State.Ready, new Data(0));
+        var result2 = machine.Fire(Trigger.Advance, State.Ready, new Data(0));
+
+        Assert.Equal(State.Done, result1.NewState);
+        Assert.Equal(State.Other, result2.NewState);
+    }
+
     private enum State
     {
         Ready,
-        Done
+        Done,
+        Other
     }
 
     private abstract record Trigger
