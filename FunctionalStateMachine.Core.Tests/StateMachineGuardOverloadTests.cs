@@ -9,6 +9,8 @@ public class StateMachineGuardOverloadTests
     {
         var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
             .StartWith(State.Ready)
+            .OnUnhandled()
+                .Ignore()
             .For(State.Ready)
                 .On(Trigger.Advance)
                     .Guard((Data data, Trigger trigger) => data.Value > 0 && trigger == Trigger.Advance)
@@ -115,6 +117,8 @@ public class StateMachineGuardOverloadTests
     {
         var machine = StateMachine<State, Trigger, CommandBase>.Create()
             .StartWith(State.Ready)
+            .OnUnhandled()
+                .Ignore()
             .For(State.Ready)
                 .On(Trigger.Advance)
                     .Guard((State state, Trigger trigger) => state == State.Ready && trigger == Trigger.Advance)
