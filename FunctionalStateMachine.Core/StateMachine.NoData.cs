@@ -44,15 +44,6 @@ public sealed partial class StateMachine<TState, TTrigger, TCommand>
         return (newState, commands);
     }
 
-    public bool TryFire(
-        TTrigger trigger,
-        TState currentState,
-        out TState newState,
-        out IReadOnlyList<TCommand> commands)
-    {
-        return _inner.TryFire(trigger, currentState, new NoData(), out newState, out _, out commands);
-    }
-
     public TState InitialState => _inner.InitialState;
 
     public (TState State, IReadOnlyList<TCommand> Commands) Start()

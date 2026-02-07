@@ -68,24 +68,6 @@ public sealed partial class StateMachine<TState, TTrigger, TData, TCommand>
         throw new InvalidOperationException("Unhandled trigger.");
     }
 
-    public bool TryFire(
-        TTrigger trigger,
-        TState currentState,
-        TData currentData,
-        out TState newState,
-        out TData newData,
-        out IReadOnlyList<TCommand> commands)
-    {
-        return TryFireInternal(
-            trigger,
-            currentState,
-            currentData,
-            out newState,
-            out newData,
-            out commands,
-            throwOnUnhandled: false);
-    }
-
     public TState InitialState
     {
         get

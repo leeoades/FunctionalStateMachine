@@ -1,25 +1,11 @@
+using FunctionalStateMachine.Core;
+
 namespace FunctionalStateMachine.Core.Tests;
 
 public class StateMachineUnhandledTests
 {
     [Fact]
-    public void TryFire_ReturnsFalseWhenUnhandled()
-    {
-        var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
-            .For(State.Ready)
-            .Build();
-
-        var currentState = State.Ready;
-        var currentData = new Data("x");
-        var handled = machine.TryFire(Trigger.Start, currentState, currentData, out var nextState, out _, out var commands);
-
-        Assert.False(handled);
-        Assert.Equal(State.Ready, nextState);
-        Assert.Empty(commands);
-    }
-
-    [Fact]
-    public void OnUnhandled_InvokesHandler()
+    public void Fire_InvokesOnUnhandledHandler()
     {
         var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
             .OnUnhandled()
@@ -32,9 +18,10 @@ public class StateMachineUnhandledTests
 
         var currentState = State.Ready;
         var currentData = new Data("x");
-        var handled = machine.TryFire(Trigger.Start, currentState, currentData, out _, out _, out var commands);
+        var (nextState, newData, commands) = machine.Fire(Trigger.Start, currentState, currentData);
 
-        Assert.True(handled);
+        Assert.Equal(State.Ready, nextState);
+        Assert.Equal(currentData, newData);
         Assert.Single(commands);
     }
 
