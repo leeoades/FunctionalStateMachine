@@ -1265,18 +1265,6 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
             return this;
         }
 
-        public ImmediateTransitionConfiguration ModifyData(Func<NoData, NoData> updater)
-        {
-            _inner.ModifyData(updater);
-            return this;
-        }
-
-        public ImmediateTransitionConfiguration ModifyData(Func<TState, NoData> updater)
-        {
-            _inner.ModifyData(updater);
-            return this;
-        }
-
         public ImmediateTransitionConfiguration Execute(Func<TCommand> action)
         {
             _inner.Execute(action);
@@ -1358,18 +1346,6 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
         public TransitionConfiguration Execute(Func<TState, IEnumerable<TCommand>> action)
         {
             _inner.Execute(action);
-            return this;
-        }
-
-        public TransitionConfiguration ModifyData(Func<NoData, NoData> updater)
-        {
-            _inner.ModifyData(updater);
-            return this;
-        }
-
-        public TransitionConfiguration ModifyData(Func<TState, NoData> updater)
-        {
-            _inner.ModifyData(updater);
             return this;
         }
 
@@ -1515,18 +1491,6 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
             return this;
         }
 
-        public TransitionConfiguration<TDerivedTrigger> ModifyData(Func<NoData, NoData> updater)
-        {
-            _inner.ModifyData(updater);
-            return this;
-        }
-
-        public TransitionConfiguration<TDerivedTrigger> ModifyData(Func<TState, NoData> updater)
-        {
-            _inner.ModifyData(updater);
-            return this;
-        }
-
         public TransitionConfiguration<TDerivedTrigger> Execute(Func<TDerivedTrigger, TCommand> action)
         {
             _inner.Execute(action);
@@ -1610,18 +1574,6 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
             _inner = inner;
         }
 
-        public ConditionalTransitionConfiguration ModifyData(Func<NoData, NoData> updater)
-        {
-            _inner.ModifyData(updater);
-            return this;
-        }
-
-        public ConditionalTransitionConfiguration ModifyData(Func<TState, NoData> updater)
-        {
-            _inner.ModifyData(updater);
-            return this;
-        }
-
         public ConditionalTransitionConfiguration Execute(Func<TState, TTrigger, TCommand> action)
         {
             _inner.Execute(action);
@@ -1697,20 +1649,6 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
         {
             _parent = parent;
             _inner = inner;
-        }
-
-        public ConditionalTransitionConfiguration<TDerivedTrigger> ModifyData(
-            Func<NoData, NoData> updater)
-        {
-            _inner.ModifyData(updater);
-            return this;
-        }
-
-        public ConditionalTransitionConfiguration<TDerivedTrigger> ModifyData(
-            Func<TState, NoData> updater)
-        {
-            _inner.ModifyData(updater);
-            return this;
         }
 
         public ConditionalTransitionConfiguration<TDerivedTrigger> Execute(
