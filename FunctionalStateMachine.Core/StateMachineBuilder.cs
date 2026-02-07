@@ -1,3 +1,9 @@
+// ReSharper disable UnusedTupleComponentInReturnValue
+// ReSharper disable UnusedMethodReturnValue.Global
+
+// ReSharper disable UnusedMember.Global
+// ReSharper disable UnusedParameter.Local
+
 namespace FunctionalStateMachine.Core;
 
 public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
@@ -29,7 +35,7 @@ public sealed class StateMachineBuilder<TState, TTrigger, TData, TCommand>
 
         public StateMachineBuilder<TState, TTrigger, TData, TCommand> Ignore()
         {
-            _builder._machine.OnUnhandled((_, _) => Array.Empty<TCommand>());
+            _builder._machine.OnUnhandled((_, _) => []);
             return _builder;
         }
 
@@ -472,7 +478,7 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
 
         public StateMachineBuilder<TState, TTrigger, TCommand> Ignore()
         {
-            _builder._machine.OnUnhandled((_, _) => Array.Empty<TCommand>());
+            _builder._machine.OnUnhandled((_, _) => []);
             return _builder;
         }
 
@@ -486,7 +492,7 @@ public sealed class StateMachineBuilder<TState, TTrigger, TCommand>
         public StateMachineBuilder<TState, TTrigger, TCommand> Execute(
             Func<TTrigger, TState, TCommand> handler)
         {
-            _builder._machine.OnUnhandled((trigger, state) => new[] { handler(trigger, state) });
+            _builder._machine.OnUnhandled((trigger, state) => [handler(trigger, state)]);
             return _builder;
         }
     }
