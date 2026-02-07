@@ -134,26 +134,23 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
             }
 
             // Add immediate transition targets
-            foreach (var immediate in definition.ImmediateTransitions)
+            foreach (var immediate in definition.ImmediateTransitions.Where(immediate => immediate.HasTargetState && reachable.Add(immediate.TargetState!)))
             {
-                if (immediate.HasTargetState && reachable.Add(immediate.TargetState!))
+                toVisit.Enqueue(immediate.TargetState!);
+
+                // Mark parent states as reachable too
+                if (states.TryGetValue(immediate.TargetState!, out var immediateDef) && 
+                    immediateDef.HasParentState)
                 {
-                    toVisit.Enqueue(immediate.TargetState!);
+                    MarkParentStatesReachable(immediateDef.ParentState, states, reachable, toVisit);
+                }
 
-                    // Mark parent states as reachable too
-                    if (states.TryGetValue(immediate.TargetState!, out var immediateDef) && 
-                        immediateDef.HasParentState)
-                    {
-                        MarkParentStatesReachable(immediateDef.ParentState, states, reachable, toVisit);
-                    }
-
-                    // Add initial sub-states of immediate target
-                    if (states.TryGetValue(immediate.TargetState!, out immediateDef) && 
-                        immediateDef.HasInitialSubState && 
-                        reachable.Add(immediateDef.InitialSubState))
-                    {
-                        toVisit.Enqueue(immediateDef.InitialSubState);
-                    }
+                // Add initial sub-states of immediate target
+                if (states.TryGetValue(immediate.TargetState!, out immediateDef) && 
+                    immediateDef.HasInitialSubState && 
+                    reachable.Add(immediateDef.InitialSubState))
+                {
+                    toVisit.Enqueue(immediateDef.InitialSubState);
                 }
             }
         }
@@ -377,7 +374,7 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
         foreach (var (state, definition) in states)
         {
             // Skip initial state - it's okay for it to be a dead-end (terminal state)
-            if (state!.Equals(initialState))
+            if (state.Equals(initialState))
                 continue;
 
             // Check if this state has no outgoing transitions
@@ -479,6 +476,6 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
     private static string GetTriggerTypeName(object triggerKey)
     {
         // triggerKey is typically the trigger type or trigger value
-        return triggerKey?.GetType().Name ?? "Unknown";
+        return triggerKey.GetType().Name;
     }
 }
