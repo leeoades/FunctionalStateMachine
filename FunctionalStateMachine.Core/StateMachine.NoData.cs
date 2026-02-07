@@ -1,3 +1,4 @@
+// ReSharper disable UnusedParameter.Local - Keep (state, data, trigger) arguments for clarity
 namespace FunctionalStateMachine.Core;
 
 public sealed class StateMachine<TState, TTrigger, TCommand>
