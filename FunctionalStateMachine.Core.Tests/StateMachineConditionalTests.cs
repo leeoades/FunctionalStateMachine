@@ -268,6 +268,108 @@ public class StateMachineConditionalTests
         Assert.Equal(State.Ready, newState);
     }
 
+    #region Non-Generic ConditionalTransitionConfiguration Tests
+
+    [Fact]
+    public void If_NonGeneric_ModifyData_UpdatesDataInBranch()
+    {
+        var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
+            .StartWith(State.Ready)
+            .For(State.Ready)
+                .On(Trigger.Go)
+                    .If((state, data, trigger) => data.Total < 50m)
+                        .ModifyData((state, data, trigger) => data with { Total = data.Total + 25m })
+                        .Execute((state, data, trigger) => new LogCommand($"Total:{data.Total}"))
+                        .Done()
+                    .Done()
+            .Build();
+
+        var (_, newData, commands) = machine.Fire(Trigger.Go, State.Ready, new Data(10m));
+
+        Assert.Equal(35m, newData.Total);
+        Assert.Single(commands);
+        Assert.Equal("Total:35", ((LogCommand)commands[0]).Message);
+    }
+
+    [Fact]
+    public void If_NonGeneric_Else_ExecutesWhenPredicateFalse()
+    {
+        var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
+            .StartWith(State.Ready)
+            .For(State.Ready)
+                .On(Trigger.Go)
+                    .If((state, data, trigger) => data.Total >= 100m)
+                        .Execute((state, data, trigger) => new LogCommand("Rich"))
+                        .Else()
+                        .Execute((state, data, trigger) => new LogCommand("Poor"))
+                        .Done()
+                    .Done()
+            .Build();
+
+        var (_, _, commands) = machine.Fire(Trigger.Go, State.Ready, new Data(50m));
+
+        Assert.Single(commands);
+        Assert.Equal("Poor", ((LogCommand)commands[0]).Message);
+    }
+
+    [Fact]
+    public void If_NonGeneric_ElseIf_EvaluatesMultipleConditions()
+    {
+        var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
+            .StartWith(State.Ready)
+            .For(State.Ready)
+                .On(Trigger.Go)
+                    .If((state, data, trigger) => data.Total >= 100m)
+                        .Execute((state, data, trigger) => new LogCommand("Gold"))
+                        .ElseIf((state, data, trigger) => data.Total >= 50m)
+                        .Execute((state, data, trigger) => new LogCommand("Silver"))
+                        .ElseIf((state, data, trigger) => data.Total >= 25m)
+                        .Execute((state, data, trigger) => new LogCommand("Bronze"))
+                        .Else()
+                        .Execute((state, data, trigger) => new LogCommand("None"))
+                        .Done()
+                    .Done()
+            .Build();
+
+        var result1 = machine.Fire(Trigger.Go, State.Ready, new Data(150m));
+        var result2 = machine.Fire(Trigger.Go, State.Ready, new Data(75m));
+        var result3 = machine.Fire(Trigger.Go, State.Ready, new Data(30m));
+        var result4 = machine.Fire(Trigger.Go, State.Ready, new Data(10m));
+
+        Assert.Equal("Gold", ((LogCommand)result1.Commands[0]).Message);
+        Assert.Equal("Silver", ((LogCommand)result2.Commands[0]).Message);
+        Assert.Equal("Bronze", ((LogCommand)result3.Commands[0]).Message);
+        Assert.Equal("None", ((LogCommand)result4.Commands[0]).Message);
+    }
+
+    [Fact]
+    public void If_NonGeneric_ElseIf_ModifyDataInEachBranch()
+    {
+        var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
+            .StartWith(State.Ready)
+            .For(State.Ready)
+                .On(Trigger.Go)
+                    .If((state, data, trigger) => data.Total >= 100m)
+                        .ModifyData((state, data, trigger) => data with { Total = data.Total * 2 })
+                        .ElseIf((state, data, trigger) => data.Total >= 50m)
+                        .ModifyData((state, data, trigger) => data with { Total = data.Total * 1.5m })
+                        .Else()
+                        .ModifyData((state, data, trigger) => data with { Total = data.Total + 10m })
+                        .Done()
+                    .Done()
+            .Build();
+
+        var result1 = machine.Fire(Trigger.Go, State.Ready, new Data(100m));
+        var result2 = machine.Fire(Trigger.Go, State.Ready, new Data(60m));
+        var result3 = machine.Fire(Trigger.Go, State.Ready, new Data(20m));
+
+        Assert.Equal(200m, result1.NewData.Total);
+        Assert.Equal(90m, result2.NewData.Total);
+        Assert.Equal(30m, result3.NewData.Total);
+    }
+
+    #endregion
+
     private enum State
     {
         Ready,
@@ -277,6 +379,9 @@ public class StateMachineConditionalTests
     private abstract record Trigger
     {
         public sealed record PayTrigger(decimal Amount) : Trigger;
+        public sealed record GoTrigger : Trigger;
+
+        public static readonly Trigger Go = new GoTrigger();
     }
 
     private sealed record Data(decimal Total)
