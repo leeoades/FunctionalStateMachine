@@ -70,38 +70,6 @@ public sealed class StateMachine<TState, TTrigger, TCommand>
         }
     }
 
-    internal sealed class ImmediateTransitionConfiguration
-    {
-        private readonly StateConfiguration _parent;
-        private readonly StateMachine<TState, TTrigger, NoData, TCommand>.ImmediateTransitionConfiguration _inner;
-
-        internal ImmediateTransitionConfiguration(
-            StateConfiguration parent,
-            StateMachine<TState, TTrigger, NoData, TCommand>.ImmediateTransitionConfiguration inner)
-        {
-            _parent = parent;
-            _inner = inner;
-        }
-
-        public ImmediateTransitionConfiguration TransitionTo(TState state)
-        {
-            _inner.TransitionTo(state);
-            return this;
-        }
-
-        public ImmediateTransitionConfiguration Guard(Func<TState, bool> guard)
-        {
-            _inner.Guard((state, data) => guard(state));
-            return this;
-        }
-
-        public ImmediateTransitionConfiguration Execute(Func<TState, IEnumerable<TCommand>> action)
-        {
-            _inner.Execute((state, data) => action(state));
-            return this;
-        }
-    }
-
     internal sealed class TransitionConfiguration
     {
         private readonly StateConfiguration _parent;
