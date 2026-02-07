@@ -1,3 +1,4 @@
+using System.Reflection;
 using FunctionalStateMachine.Core;
 
 namespace FunctionalStateMachine.Core.Tests;
@@ -187,6 +188,30 @@ public class StateMachineInvalidOperationTests
         var exception = Assert.Throws<InvalidOperationException>(() => machine.Start(Data.Initial));
 
         Assert.Contains("Immediate transition loop", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void InitialState_ThrowsWhenParentMissingInitialSubState()
+    {
+        var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
+            .StartWith(State.Parent)
+            .For(State.Parent)
+                .StartsWith(State.Child)
+            .For(State.Child)
+                .SubStateOf(State.Parent)
+            .Build();
+
+        var statesField = typeof(StateMachine<State, Trigger, Data, CommandBase>)
+            .GetField("_states", BindingFlags.Instance | BindingFlags.NonPublic);
+        var states = (System.Collections.IDictionary)statesField!.GetValue(machine)!;
+        var parentDefinition = states[State.Parent]!;
+        var hasInitialSubState = parentDefinition.GetType()
+            .GetProperty("HasInitialSubState", BindingFlags.Instance | BindingFlags.Public);
+        hasInitialSubState!.SetValue(parentDefinition, false);
+
+        var exception = Assert.Throws<InvalidOperationException>(() => _ = machine.InitialState);
+
+        Assert.Contains("initial sub-state", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     private enum State
