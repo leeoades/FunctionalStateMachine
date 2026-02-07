@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.10.0] - 2026-02-07
+
+### Added
+- **NoData builder API parity** - The NoData state machine builder now supports all features available in the Data builder
+  - `Start()` method for triggering initial state entry and immediate transitions
+  - `Ignore()` for non-generic `TransitionConfiguration`
+  - `TransitionTo()` in conditional branches (`If`/`ElseIf`/`Else`)
+  - `SkipAnalysis()` to disable build-time validation
+  - `OnEntry()`, `OnExit()`, `Immediately()` for state lifecycle
+  - `SubStateOf()`, `StartsWith()` for hierarchical states
+- **Comprehensive test coverage** - 141 tests covering all core functionality
+  - Extension method overload tests (OnEntry, OnExit, Guard, If, ElseIf, ModifyData variants)
+  - NoData feature tests for new API methods
+  - Undefined state validation tests
+  - Conditional transition configuration tests
+
+### Removed
+- **Dead code cleanup** - Removed unreachable `TransitionStepKind.Conditional` code path
+  - Removed enum value and associated properties (`ConditionalTrueSteps`, `ConditionalFalseSteps`)
+  - Removed switch cases in Core and Analysis (37 lines total)
+  - `ConditionalChain` already handles all If/ElseIf/Else scenarios
+  - `TryFireInternal` removed
+
 ## [0.9.0] - 2026-02-06
 
 ### Added
