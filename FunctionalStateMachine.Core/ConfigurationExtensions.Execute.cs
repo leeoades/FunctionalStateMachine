@@ -4,36 +4,6 @@ public static partial class StateMachineBuilderExtensions
 {
     public static TImmediateTransitionConfiguration Execute<TState, TTrigger, TData, TCommand, TImmediateTransitionConfiguration>(
         this IImmediateTransitionConfiguration<TState, TTrigger, TData, TCommand, TImmediateTransitionConfiguration> configuration,
-        Func<TCommand> action)
-        where TState : notnull
-        where TTrigger : notnull
-        where TImmediateTransitionConfiguration : IImmediateTransitionConfiguration<TState, TTrigger, TData, TCommand, TImmediateTransitionConfiguration>
-    {
-        return configuration.Execute((state, data) => Single(action()));
-    }
-
-    public static TImmediateTransitionConfiguration Execute<TState, TTrigger, TData, TCommand, TImmediateTransitionConfiguration>(
-        this IImmediateTransitionConfiguration<TState, TTrigger, TData, TCommand, TImmediateTransitionConfiguration> configuration,
-        Func<TData, TCommand> action)
-        where TState : notnull
-        where TTrigger : notnull
-        where TImmediateTransitionConfiguration : IImmediateTransitionConfiguration<TState, TTrigger, TData, TCommand, TImmediateTransitionConfiguration>
-    {
-        return configuration.Execute((state, data) => Single(action(data)));
-    }
-
-    public static TImmediateTransitionConfiguration Execute<TState, TTrigger, TData, TCommand, TImmediateTransitionConfiguration>(
-        this IImmediateTransitionConfiguration<TState, TTrigger, TData, TCommand, TImmediateTransitionConfiguration> configuration,
-        Func<TState, TData, TCommand> action)
-        where TState : notnull
-        where TTrigger : notnull
-        where TImmediateTransitionConfiguration : IImmediateTransitionConfiguration<TState, TTrigger, TData, TCommand, TImmediateTransitionConfiguration>
-    {
-        return configuration.Execute((state, data) => Single(action(state, data)));
-    }
-
-    public static TImmediateTransitionConfiguration Execute<TState, TTrigger, TData, TCommand, TImmediateTransitionConfiguration>(
-        this IImmediateTransitionConfiguration<TState, TTrigger, TData, TCommand, TImmediateTransitionConfiguration> configuration,
         Func<IEnumerable<TCommand>> action)
         where TState : notnull
         where TTrigger : notnull
@@ -42,26 +12,6 @@ public static partial class StateMachineBuilderExtensions
         return configuration.Execute((state, data) => action());
     }
 
-    public static TImmediateTransitionConfiguration Execute<TState, TTrigger, TData, TCommand, TImmediateTransitionConfiguration>(
-        this IImmediateTransitionConfiguration<TState, TTrigger, TData, TCommand, TImmediateTransitionConfiguration> configuration,
-        Func<TData, IEnumerable<TCommand>> action)
-        where TState : notnull
-        where TTrigger : notnull
-        where TImmediateTransitionConfiguration : IImmediateTransitionConfiguration<TState, TTrigger, TData, TCommand, TImmediateTransitionConfiguration>
-    {
-        return configuration.Execute((state, data) => action(data));
-    }
-
-    public static TImmediateTransitionConfiguration Execute<TState, TTrigger, TData, TCommand, TImmediateTransitionConfiguration>(
-        this IImmediateTransitionConfiguration<TState, TTrigger, TData, TCommand, TImmediateTransitionConfiguration> configuration,
-        Func<TState, IEnumerable<TCommand>> action)
-        where TState : notnull
-        where TTrigger : notnull
-        where TImmediateTransitionConfiguration : IImmediateTransitionConfiguration<TState, TTrigger, TData, TCommand, TImmediateTransitionConfiguration>
-    {
-        return configuration.Execute((state, data) => action(state));
-    }
-
     public static TTransitionConfiguration Execute<TState, TTrigger, TData, TCommand, TTransitionConfiguration, TConditional>(
         this ITransitionConfiguration<TState, TTrigger, TData, TCommand, TTransitionConfiguration, TConditional> configuration,
         Func<TCommand> action)
@@ -280,16 +230,6 @@ public static partial class StateMachineBuilderExtensions
         where TConditionalConfiguration : IConditionalTransitionConfiguration<TState, TTrigger, TData, TCommand, TConditionalConfiguration>
     {
         return configuration.Execute((state, data, trigger) => action(data, trigger));
-    }
-
-    public static TConditionalConfiguration Execute<TState, TTrigger, TData, TCommand, TConditionalConfiguration>(
-        this IConditionalTransitionConfiguration<TState, TTrigger, TData, TCommand, TConditionalConfiguration> configuration,
-        Func<TState, TData, TTrigger, IEnumerable<TCommand>> action)
-        where TState : notnull
-        where TTrigger : notnull
-        where TConditionalConfiguration : IConditionalTransitionConfiguration<TState, TTrigger, TData, TCommand, TConditionalConfiguration>
-    {
-        return configuration.Execute((state, data, trigger) => action(state, data, trigger));
     }
 
     public static TConditionalConfiguration Execute<TState, TTrigger, TData, TCommand, TDerivedTrigger, TConditionalConfiguration>(
@@ -543,47 +483,6 @@ public static partial class StateMachineBuilderExtensions
         where TTransitionConfiguration : ITransitionConfiguration<TState, TTrigger, TData, TCommand, TDerivedTrigger, TTransitionConfiguration, TConditional>
     {
         return configuration.Execute((state, data, trigger) => action(data, trigger));
-    }
-
-    public static TTransitionConfiguration Execute<TState, TTrigger, TData, TCommand, TDerivedTrigger, TTransitionConfiguration, TConditional>(
-        this ITransitionConfiguration<TState, TTrigger, TData, TCommand, TDerivedTrigger, TTransitionConfiguration, TConditional> configuration,
-        Func<TState, TData, TDerivedTrigger, IEnumerable<TCommand>> action)
-        where TState : notnull
-        where TTrigger : notnull
-        where TDerivedTrigger : TTrigger
-        where TTransitionConfiguration : ITransitionConfiguration<TState, TTrigger, TData, TCommand, TDerivedTrigger, TTransitionConfiguration, TConditional>
-    {
-        return configuration.Execute((state, data, trigger) => action(state, data, trigger));
-    }
-
-    public static TImmediateTransitionConfiguration Execute<TState, TTrigger, TCommand, TImmediateTransitionConfiguration>(
-        this INoDataImmediateTransitionConfiguration<TState, TTrigger, TCommand, TImmediateTransitionConfiguration> configuration,
-        Func<TCommand> action)
-        where TState : notnull
-        where TTrigger : notnull
-        where TImmediateTransitionConfiguration : INoDataImmediateTransitionConfiguration<TState, TTrigger, TCommand, TImmediateTransitionConfiguration>
-    {
-        return configuration.Execute(state => Single(action()));
-    }
-
-    public static TImmediateTransitionConfiguration Execute<TState, TTrigger, TCommand, TImmediateTransitionConfiguration>(
-        this INoDataImmediateTransitionConfiguration<TState, TTrigger, TCommand, TImmediateTransitionConfiguration> configuration,
-        Func<TState, TCommand> action)
-        where TState : notnull
-        where TTrigger : notnull
-        where TImmediateTransitionConfiguration : INoDataImmediateTransitionConfiguration<TState, TTrigger, TCommand, TImmediateTransitionConfiguration>
-    {
-        return configuration.Execute(state => Single(action(state)));
-    }
-
-    public static TImmediateTransitionConfiguration Execute<TState, TTrigger, TCommand, TImmediateTransitionConfiguration>(
-        this INoDataImmediateTransitionConfiguration<TState, TTrigger, TCommand, TImmediateTransitionConfiguration> configuration,
-        Func<IEnumerable<TCommand>> action)
-        where TState : notnull
-        where TTrigger : notnull
-        where TImmediateTransitionConfiguration : INoDataImmediateTransitionConfiguration<TState, TTrigger, TCommand, TImmediateTransitionConfiguration>
-    {
-        return configuration.Execute(state => action());
     }
 
     public static TTransitionConfiguration Execute<TState, TTrigger, TCommand, TTransitionConfiguration, TConditional>(
