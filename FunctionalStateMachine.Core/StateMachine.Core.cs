@@ -43,27 +43,7 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
         _onUnhandled = handler;
         return this;
     }
-
-    public (TState NewState, TData NewData, IReadOnlyList<TCommand> Commands) Fire(
-        TTrigger trigger,
-        TState currentState,
-        TData currentData)
-    {
-        if (TryFireInternal(
-                trigger,
-                currentState,
-                currentData,
-                out var newState,
-                out var newData,
-                out var commands,
-                throwOnUnhandled: true))
-        {
-            return (newState, newData, commands);
-        }
-
-        throw new InvalidOperationException("Unhandled trigger.");
-    }
-
+    
     public TState InitialState
     {
         get
@@ -91,15 +71,10 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
         return (finalState, finalData, commands);
     }
 
-
-    private bool TryFireInternal(
+    public (TState NewState, TData NewData, IReadOnlyList<TCommand> Commands) Fire(
         TTrigger trigger,
         TState currentState,
-        TData currentData,
-        out TState newState,
-        out TData newData,
-        out IReadOnlyList<TCommand> commands,
-        bool throwOnUnhandled)
+        TData currentData)
     {
         if (!_states.TryGetValue(currentState, out var definition))
         {
@@ -114,8 +89,7 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
 
         if (!TryGetTransitionsInHierarchy(currentState, trigger, out var transitions))
         {
-            return HandleUnhandled(trigger, currentState, currentData, out newState, out newData, out commands,
-                throwOnUnhandled);
+            return HandleUnhandled(trigger, currentState, currentData);
         }
 
         foreach (var transition in transitions)
@@ -127,10 +101,7 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
 
             if (transition.IsIgnored)
             {
-                newState = currentState;
-                newData = currentData;
-                commands = [];
-                return true;
+                return (currentState, currentData, []);
             }
 
             var commandList = new List<TCommand>();
@@ -159,43 +130,30 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
                 (targetState, updatedData) = ApplyImmediateTransitions(commandList, targetState, updatedData);
             }
 
-            newState = targetState;
-            newData = updatedData;
-            commands = commandList.Count == 0 ? Array.Empty<TCommand>() : new ReadOnlyCollection<TCommand>(commandList);
-            return true;
+            IReadOnlyList<TCommand> commands = commandList.Count == 0
+                ? Array.Empty<TCommand>()
+                : new ReadOnlyCollection<TCommand>(commandList);
+            return (targetState, updatedData, commands);
         }
 
-        return HandleUnhandled(trigger, currentState, currentData, out newState, out newData, out commands,
-            throwOnUnhandled);
+        return HandleUnhandled(trigger, currentState, currentData);
     }
 
-    private bool HandleUnhandled(
+    private (TState NewState, TData NewData, IReadOnlyList<TCommand> Commands) HandleUnhandled(
         TTrigger trigger,
         TState currentState,
-        TData currentData,
-        out TState newState,
-        out TData newData,
-        out IReadOnlyList<TCommand> commands,
-        bool throwOnUnhandled)
+        TData currentData)
     {
         if (_onUnhandled != null)
         {
             var commandList = _onUnhandled(trigger, currentState).ToList();
-            newState = currentState;
-            newData = currentData;
-            commands = commandList.Count == 0 ? Array.Empty<TCommand>() : new ReadOnlyCollection<TCommand>(commandList);
-            return true;
+            IReadOnlyList<TCommand> commands = commandList.Count == 0
+                ? Array.Empty<TCommand>()
+                : new ReadOnlyCollection<TCommand>(commandList);
+            return (currentState, currentData, commands);
         }
 
-        if (throwOnUnhandled)
-        {
-            throw new InvalidOperationException($"Unhandled trigger '{trigger}' in state '{currentState}'.");
-        }
-
-        newState = currentState;
-        newData = currentData;
-        commands = [];
-        return false;
+        throw new InvalidOperationException($"Unhandled trigger '{trigger}' in state '{currentState}'.");
     }
 
     internal void Validate(bool skipAnalysis = false)
