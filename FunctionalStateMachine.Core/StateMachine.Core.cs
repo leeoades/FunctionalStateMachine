@@ -517,10 +517,6 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
                 case TransitionStepKind.Transition:
                     targets.Add(step.TargetState!);
                     break;
-                case TransitionStepKind.Conditional:
-                    CollectTransitionTargetStates(step.ConditionalTrueSteps!, targets);
-                    CollectTransitionTargetStates(step.ConditionalFalseSteps!, targets);
-                    break;
                 case TransitionStepKind.ConditionalChain:
                     foreach (var branch in step.ConditionalBranches!)
                     {
@@ -668,25 +664,6 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
                 case TransitionStepKind.Transition:
                     hasTargetState = true;
                     targetState = step.TargetState!;
-                    break;
-                case TransitionStepKind.Conditional:
-                    var branch = step.Predicate!(currentState, updatedData, trigger)
-                        ? step.ConditionalTrueSteps!
-                        : step.ConditionalFalseSteps!;
-                    updatedData = ApplyTransitionSteps(
-                        commands,
-                        branch,
-                        currentState,
-                        updatedData,
-                        trigger,
-                        out var conditionalHasTargetState,
-                        out var conditionalTargetState);
-                    if (conditionalHasTargetState && !hasTargetState)
-                    {
-                        hasTargetState = true;
-                        targetState = conditionalTargetState;
-                    }
-
                     break;
                 case TransitionStepKind.ConditionalChain:
                     var matchedBranch = step.ConditionalBranches!.FirstOrDefault(b =>
@@ -1138,7 +1115,6 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
         ModifyData,
         Execute,
         Transition,
-        Conditional,
         ConditionalChain
     }
 
@@ -1158,10 +1134,6 @@ public sealed class StateMachine<TState, TTrigger, TData, TCommand>
         public Func<TState, TData, TTrigger, bool>? Predicate { get; private init; }
 
         public TState? TargetState { get; private init; }
-
-        public List<TransitionStep>? ConditionalTrueSteps { get; private init; }
-
-        public List<TransitionStep>? ConditionalFalseSteps { get; private init; }
 
         public List<(Func<TState, TData, TTrigger, bool> Predicate, List<TransitionStep> Steps)>? ConditionalBranches
         {

@@ -311,11 +311,6 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
                 case StateMachine<TState, TTrigger, TData, TCommand>.TransitionStepKind.ModifyData:
                 case StateMachine<TState, TTrigger, TData, TCommand>.TransitionStepKind.Execute:
                     break;
-                case StateMachine<TState, TTrigger, TData, TCommand>.TransitionStepKind.Conditional:
-                    count += Math.Max(
-                        GetMaxTransitionCountPerPath(step.ConditionalTrueSteps!),
-                        GetMaxTransitionCountPerPath(step.ConditionalFalseSteps!));
-                    break;
                 case StateMachine<TState, TTrigger, TData, TCommand>.TransitionStepKind.ConditionalChain:
                     var maxBranch = 0;
                     foreach (var branch in step.ConditionalBranches!)
@@ -348,10 +343,6 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
             {
                 case StateMachine<TState, TTrigger, TData, TCommand>.TransitionStepKind.Transition:
                     targets.Add(step.TargetState!);
-                    break;
-                case StateMachine<TState, TTrigger, TData, TCommand>.TransitionStepKind.Conditional:
-                    CollectTransitionTargetStates(step.ConditionalTrueSteps!, targets);
-                    CollectTransitionTargetStates(step.ConditionalFalseSteps!, targets);
                     break;
                 case StateMachine<TState, TTrigger, TData, TCommand>.TransitionStepKind.ConditionalChain:
                     foreach (var branch in step.ConditionalBranches!)
