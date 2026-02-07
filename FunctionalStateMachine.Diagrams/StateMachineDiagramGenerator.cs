@@ -57,7 +57,7 @@ public sealed class StateMachineDiagramGenerator : IIncrementalGenerator
                 }
 
                 var model = compilation.GetSemanticModel(methodSyntax.SyntaxTree);
-                if (model.GetDeclaredSymbol(methodSyntax, ctx.CancellationToken) is not IMethodSymbol methodSymbol)
+                if (model.GetDeclaredSymbol(methodSyntax, ctx.CancellationToken) is not { } methodSymbol)
                 {
                     return;
                 }
@@ -315,8 +315,6 @@ internal static class DiagramBuilder
                 sb,
                 ids,
                 parentToChildren,
-                transitionStates,
-                startState,
                 portStates,
                 rendered,
                 renderedPorts,
@@ -385,7 +383,7 @@ internal static class DiagramBuilder
     private static List<InvocationInfo> UnwindChain(InvocationExpressionSyntax invocation)
     {
         var chain = new List<InvocationInfo>();
-        ExpressionSyntax? current = invocation;
+        ExpressionSyntax current = invocation;
         while (current is InvocationExpressionSyntax currentInvocation)
         {
             if (currentInvocation.Expression is MemberAccessExpressionSyntax memberAccess)
@@ -471,7 +469,7 @@ internal static class DiagramBuilder
         return !string.IsNullOrWhiteSpace(label);
     }
 
-    private static string UnwrapStringLiteral(string value)
+    private static string UnwrapStringLiteral(string? value)
     {
         var trimmed = value?.Trim() ?? string.Empty;
         if (trimmed.Length >= 2
@@ -527,8 +525,6 @@ internal static class DiagramBuilder
         StringBuilder sb,
         IReadOnlyDictionary<string, string> ids,
         IReadOnlyDictionary<string, List<string>> parentToChildren,
-        ISet<string> transitionStates,
-        string? startState,
         ISet<string> portStates,
         ISet<string> rendered,
         ISet<string> renderedPorts,
@@ -557,8 +553,6 @@ internal static class DiagramBuilder
                 sb,
                 ids,
                 parentToChildren,
-                transitionStates,
-                startState,
                 portStates,
                 rendered,
                 renderedPorts,
