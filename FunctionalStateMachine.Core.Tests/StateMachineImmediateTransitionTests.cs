@@ -70,6 +70,44 @@ public class StateMachineImmediateTransitionTests
     }
 
     [Fact]
+    public void ImmediateTransition_ExecutesCommands()
+    {
+        var machine = StateMachine<State, Trigger, Data, Command>.Create()
+            .StartWith(State.Starting)
+            .For(State.Starting)
+                .Immediately()
+                    .Execute((State state, Data data) => [new Command($"immediate-{state}-{data.Value}")])
+                    .TransitionTo(State.Ready)
+                    .Done()
+            .For(State.Ready)
+            .Build();
+
+        var (state, _, commands) = machine.Start(new Data("go"));
+
+        Assert.Equal(State.Ready, state);
+        Assert.Single(commands);
+        Assert.Equal("immediate-Starting-go", commands[0].Message);
+    }
+
+    [Fact]
+    public void ImmediateTransition_WithoutGuard_Transitions()
+    {
+        var machine = StateMachine<State, Trigger, Data, Command>.Create()
+            .StartWith(State.Starting)
+            .For(State.Starting)
+                .Immediately()
+                    .TransitionTo(State.Ready)
+                    .Done()
+            .For(State.Ready)
+            .Build();
+
+        var (state, _, commands) = machine.Start(Data.Initial);
+
+        Assert.Equal(State.Ready, state);
+        Assert.Empty(commands);
+    }
+
+    [Fact]
     public void ImmediateTransitionLoop_Throws()
     {
         var exception = Assert.Throws<InvalidOperationException>(() =>
