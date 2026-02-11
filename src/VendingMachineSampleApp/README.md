@@ -142,7 +142,7 @@ ERROR PATHS:
 ## Running the Sample
 
 ```bash
-dotnet run --project VendingMachineSampleApp\VendingMachineSampleApp.csproj
+dotnet run --project src\VendingMachineSampleApp\VendingMachineSampleApp.csproj
 ```
 
 ## Interactive Commands
