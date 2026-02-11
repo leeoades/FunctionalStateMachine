@@ -4,7 +4,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionalStateMachine.Core
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionalStateMachine.Core.Tests", "test\FunctionalStateMachine.Core.Tests\FunctionalStateMachine.Core.Tests.csproj", "{4D89E683-D2D1-41DF-90A2-32A861C973E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionalStateMachine.Samples", "src\FunctionalStateMachine.Samples\FunctionalStateMachine.Samples.csproj", "{E7D8C5B2-1B74-4F9E-8B1F-9B5E8B0A6E3C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionalStateMachine.Samples", "samples\Basic\FunctionalStateMachine.Samples\FunctionalStateMachine.Samples.csproj", "{E7D8C5B2-1B74-4F9E-8B1F-9B5E8B0A6E3C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionalStateMachine.Diagrams", "src\FunctionalStateMachine.Diagrams\FunctionalStateMachine.Diagrams.csproj", "{7F846C55-DF94-48C6-A004-6899B617F52A}"
 EndProject
@@ -39,13 +39,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionalStateMachine.Comm
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionalStateMachine.CommandRunner.Generator", "src\FunctionalStateMachine.CommandRunner.Generator\FunctionalStateMachine.CommandRunner.Generator.csproj", "{F2EB10B5-AD83-47A7-BFA3-3A552B06AC76}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VendingMachineSampleApp", "src\VendingMachineSampleApp\VendingMachineSampleApp.csproj", "{E6646DD6-3BA5-4A57-B644-59D670F81002}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VendingMachineSampleApp", "samples\VendingMachine\VendingMachineSampleApp\VendingMachineSampleApp.csproj", "{E6646DD6-3BA5-4A57-B644-59D670F81002}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VendingMachineSampleApp.Tests", "test\VendingMachineSampleApp.Tests\VendingMachineSampleApp.Tests.csproj", "{62D20B6C-490F-4616-A311-18D52A4E8F8C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VendingMachineSampleApp.Tests", "samples\VendingMachine\VendingMachineSampleApp.Tests\VendingMachineSampleApp.Tests.csproj", "{62D20B6C-490F-4616-A311-18D52A4E8F8C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockPurchaserSampleApp", "src\StockPurchaserSampleApp\StockPurchaserSampleApp.csproj", "{B0E56FA5-6B54-4B0D-9B2B-CB0C7C17B9AB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockPurchaserSampleApp", "samples\StockPurchaser\StockPurchaserSampleApp\StockPurchaserSampleApp.csproj", "{B0E56FA5-6B54-4B0D-9B2B-CB0C7C17B9AB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockPurchaserSampleApp.Tests", "test\StockPurchaserSampleApp.Tests\StockPurchaserSampleApp.Tests.csproj", "{A01993F9-4A08-4E9C-88B6-1E12A8700F7A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockPurchaserSampleApp.Tests", "samples\StockPurchaser\StockPurchaserSampleApp.Tests\StockPurchaserSampleApp.Tests.csproj", "{A01993F9-4A08-4E9C-88B6-1E12A8700F7A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "State Machine", "State Machine", "{5D56FBA8-097F-4A7D-8BD0-CB1FAE1CCA2F}"
 EndProject

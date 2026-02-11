@@ -19,8 +19,8 @@
     </ItemGroup>
     
     <ItemGroup>
-        <ProjectReference Include="..\FunctionalStateMachine.Core\FunctionalStateMachine.Core.csproj" />
-        <ProjectReference Include="..\FunctionalStateMachine.Diagrams\FunctionalStateMachine.Diagrams.csproj"
+        <ProjectReference Include="..\..\..\src\FunctionalStateMachine.Core\FunctionalStateMachine.Core.csproj" />
+        <ProjectReference Include="..\..\..\src\FunctionalStateMachine.Diagrams\FunctionalStateMachine.Diagrams.csproj"
                           OutputItemType="Analyzer"
                           ReferenceOutputAssembly="false" />
     </ItemGroup>

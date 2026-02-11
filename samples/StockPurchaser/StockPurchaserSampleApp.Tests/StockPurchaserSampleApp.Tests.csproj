@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\StockPurchaserSampleApp\StockPurchaserSampleApp.csproj" />
+    <ProjectReference Include="..\StockPurchaserSampleApp\StockPurchaserSampleApp.csproj" />
   </ItemGroup>
 
 </Project>

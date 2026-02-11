@@ -18,7 +18,7 @@ execute commands
 ## Run
 
 ```bash
-dotnet run --project src\StockPurchaserSampleApp\StockPurchaserSampleApp.csproj
+dotnet run --project samples\StockPurchaser\StockPurchaserSampleApp\StockPurchaserSampleApp.csproj
 ```
 
 ## Files

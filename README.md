@@ -102,4 +102,4 @@ Each feature has its own short guide with simple and more advanced examples.
 
 ## Additional
 
-- See Samples in `src/FunctionalStateMachine.Samples`, plus `src/VendingMachineSampleApp` and `src/StockPurchaserSampleApp`.
+- See Samples in `samples/Basic/FunctionalStateMachine.Samples`, plus `samples/VendingMachine` and `samples/StockPurchaser`.
