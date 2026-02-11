@@ -19,7 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\FunctionalStateMachine.Core\FunctionalStateMachine.Core.csproj"/>
+        <ProjectReference Include="..\..\src\FunctionalStateMachine.Core\FunctionalStateMachine.Core.csproj"/>
     </ItemGroup>
 
 </Project>

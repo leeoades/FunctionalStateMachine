@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\\FunctionalStateMachine.Diagrams\\FunctionalStateMachine.Diagrams.csproj" />
+    <ProjectReference Include="..\..\src\FunctionalStateMachine.Diagrams\FunctionalStateMachine.Diagrams.csproj" />
   </ItemGroup>
 
   <ItemGroup>

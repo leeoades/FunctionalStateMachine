@@ -19,8 +19,8 @@
     </ItemGroup>
 
   <ItemGroup>
-      <ProjectReference Include="..\FunctionalStateMachine.CommandRunner\FunctionalStateMachine.CommandRunner.csproj" />
-      <ProjectReference Include="..\FunctionalStateMachine.CommandRunner.Generator\FunctionalStateMachine.CommandRunner.Generator.csproj"
+      <ProjectReference Include="..\..\src\FunctionalStateMachine.CommandRunner\FunctionalStateMachine.CommandRunner.csproj" />
+      <ProjectReference Include="..\..\src\FunctionalStateMachine.CommandRunner.Generator\FunctionalStateMachine.CommandRunner.Generator.csproj"
                         OutputItemType="Analyzer"
                         ReferenceOutputAssembly="false" />
   </ItemGroup>
