@@ -1,15 +1,33 @@
 # Conditional Steps (If / ElseIf / Else)
 
-Conditional steps let you branch within a single trigger's action, executing different commands, data modifications, or state transitions based on a predicate.
+Conditional steps let you branch within a single trigger's action, executing different commands, data modifications, or state transitions based on a predicate. This provides fine-grained control within a transition without creating multiple guarded transitions.
 
-## Why it is useful
+## Table of Contents
 
-- Handle multiple scenarios within a single transition without creating separate transitions.
-- Execute conditional commands or data updates based on state and trigger data.
-- More natural and readable than multiple guarded transitions.
-- Cleaner code when you have many related conditions.
+1. [Why Use Conditional Steps](#why-use-conditional-steps)
+2. [Basic If Statement](#basic-if-statement)
+3. [If with Else](#if-with-else)
+4. [If with ElseIf and Else](#if-with-elseif-and-else)
+5. [Conditional TransitionTo](#conditional-transitionto)
+6. [Using with ModifyData](#using-with-modifydata)
+7. [Predicate Signatures](#predicate-signatures)
+8. [Multiple Execute Steps](#multiple-execute-steps)
+9. [Best Practices](#best-practices)
 
-## Simple example
+---
+
+## Why Use Conditional Steps
+
+## Why Use Conditional Steps
+
+**Handle multiple scenarios** — Branch within a single transition without creating separate transitions  
+**Execute conditional commands** — Run different commands based on state and trigger data  
+**More natural and readable** — Cleaner than multiple guarded transitions for related conditions  
+**Fine-grained control** — Combine with ModifyData and Execute for complex branching
+
+---
+
+## Basic If Statement
 
 ```csharp
 var machine = StateMachine<State, Trigger, Data, Command>.Create()
@@ -160,3 +178,33 @@ var machine = StateMachine<State, Trigger, Data, Command>.Create()
                 .Done()
     .Build();
 ```
+
+---
+
+## Best Practices
+
+✅ **Use for variations within a transition**  
+When branches go to the same state or stay in current state, If/Else is cleaner than guards.
+
+✅ **Chain multiple Execute and ModifyData**  
+Each branch can have multiple steps.
+
+✅ **Use guards for different target states**  
+If conditions lead to completely different states, use guards instead.
+
+✅ **Keep conditions simple**  
+Complex logic should be extracted to methods.
+
+❌ **Don't nest If statements**  
+Use ElseIf instead for flat, readable conditions.
+
+❌ **Don't mix too many concerns**  
+If your If/ElseIf chain is very long, consider refactoring.
+
+---
+
+## Next Steps
+
+- Compare with [Guards](guards.md) to understand when to use each approach
+- Combine with [ModifyData](state-data.md) for conditional data updates
+- Use with [Execute Steps](execute-steps.md) for conditional command emission
