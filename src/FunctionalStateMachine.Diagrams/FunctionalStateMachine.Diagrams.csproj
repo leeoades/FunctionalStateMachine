@@ -13,6 +13,9 @@
     <Description>Roslyn analyzer that generates Mermaid state machine diagrams from FunctionalStateMachine configurations</Description>
     <PackageTags>$(PackageTags);roslyn;analyzer;mermaid;diagrams</PackageTags>
     <DevelopmentDependency>true</DevelopmentDependency>
+    
+    <!-- Suppress warning about no lib/ref assemblies -->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,8 +23,9 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all"/>
   </ItemGroup>
 
+  <!-- Include the analyzer DLL in the package -->
   <ItemGroup>
-    <None Include="$(TargetPath)" Pack="true" PackagePath="analyzers/dotnet/cs" />
+    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>
