@@ -8,6 +8,11 @@
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <NoWarn>$(NoWarn);RS1035</NoWarn>
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    
+    <!-- Package metadata specific to this analyzer -->
+    <Description>Roslyn analyzer that generates Mermaid state machine diagrams from FunctionalStateMachine configurations</Description>
+    <PackageTags>$(PackageTags);roslyn;analyzer;mermaid;diagrams</PackageTags>
+    <DevelopmentDependency>true</DevelopmentDependency>
   </PropertyGroup>
 
   <ItemGroup>

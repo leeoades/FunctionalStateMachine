@@ -37,7 +37,7 @@ jobs:
         run: |
           dotnet pack src/FunctionalStateMachine.Core/FunctionalStateMachine.Core.csproj --configuration Release --no-build --output ./artifacts --include-symbols --include-source /p:PackageVersion=${VERSION}
           dotnet pack src/FunctionalStateMachine.CommandRunner/FunctionalStateMachine.CommandRunner.csproj --configuration Release --no-build --output ./artifacts --include-symbols --include-source /p:PackageVersion=${VERSION}
-          dotnet pack src/FunctionalStateMachine.Diagrams/FunctionalStateMachine.Diagrams.csproj --configuration Release --no-build --output ./artifacts --include-symbols --include-source /p:PackageVersion=${VERSION}
+          dotnet pack src/FunctionalStateMachine.Diagrams/FunctionalStateMachine.Diagrams.csproj --configuration Release --no-build --output ./artifacts /p:PackageVersion=${VERSION}
 
       - name: NuGet login (Trusted Publishing)
         uses: NuGet/login@v1

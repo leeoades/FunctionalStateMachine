@@ -4,6 +4,9 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        
+        <!-- Package metadata -->
+        <Description>Command execution framework for FunctionalStateMachine with dependency injection support and source generation</Description>
     </PropertyGroup>
 
   <ItemGroup>
