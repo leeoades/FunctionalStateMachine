@@ -40,14 +40,18 @@ jobs:
 
           cd ..
 
+          # Define reusable sed pattern for converting markdown links to wiki links
+          WIKI_LINK_PATTERN='s/\(\[[^]]*\]\)\(([^)]*\)\.md)/\1\2)/g'
+
           # Copy main README.md as Home.md (the wiki root/introduction)
           # Convert links:
-          # - docs/file.md -> file (remove docs/ prefix and .md extension)
-          # - file.md -> file (remove .md extension)
-          # - samples/Basic/FunctionalStateMachine.Samples -> samples/Basic/README
-          # - samples/VendingMachine -> samples/VendingMachine/README
-          # - samples/StockPurchaser -> samples/StockPurchaser/README
-          sed 's|\(\[[^]]*\]\)(README\.md)|\1(Home)|g; s|docs/\([^)]*\)\.md|\1|g; s|\(\[[^]]*\]\)(\([^)]*\)\.md)|\1(\2)|g; s|(samples/Basic/FunctionalStateMachine.Samples)|(samples/Basic/README)|g; s|(samples/VendingMachine)|(samples/VendingMachine/README)|g; s|(samples/StockPurchaser)|(samples/StockPurchaser/README)|g' README.md > wiki/Home.md
+          # 1. README.md -> Home
+          # 2. docs/file.md -> file (remove docs/ prefix and .md extension)
+          # 3. file.md -> file (remove .md extension)
+          # 4. samples/Basic/FunctionalStateMachine.Samples -> samples/Basic/README
+          # 5. samples/VendingMachine -> samples/VendingMachine/README
+          # 6. samples/StockPurchaser -> samples/StockPurchaser/README
+          sed 's|\(\[[^]]*\]\)(README\.md)|\1(Home)|g; s|docs/\([^)]*\)\.md|\1|g; '"$WIKI_LINK_PATTERN"'; s|(samples/Basic/FunctionalStateMachine.Samples)|(samples/Basic/README)|g; s|(samples/VendingMachine)|(samples/VendingMachine/README)|g; s|(samples/StockPurchaser)|(samples/StockPurchaser/README)|g' README.md > wiki/Home.md
 
           # Copy docs to wiki
           for file in docs/*.md; do
@@ -59,8 +63,7 @@ jobs:
             target="wiki/$filename"
 
             # Copy file and convert relative .md links to wiki links
-            # e.g., [Guards](guards.md) -> [Guards](guards)
-            sed 's/\(\[[^]]*\]\)(index\.md)/\1(Home)/g; s/\(\[[^]]*\]\)\(([^)]*\)\.md)/\1\2)/g' "$file" > "$target"
+            sed 's/\(\[[^]]*\]\)(index\.md)/\1(Home)/g; '"$WIKI_LINK_PATTERN" "$file" > "$target"
           done
           
           # Create samples directory in wiki
@@ -70,19 +73,19 @@ jobs:
           # Basic samples
           if [ -f "samples/Basic/README.md" ]; then
             mkdir -p wiki/samples/Basic
-            sed 's/\(\[[^]]*\]\)\(([^)]*\)\.md)/\1\2)/g' samples/Basic/README.md > wiki/samples/Basic/README.md
+            sed "$WIKI_LINK_PATTERN" samples/Basic/README.md > wiki/samples/Basic/README.md
           fi
           
           # VendingMachine sample
           if [ -f "samples/VendingMachine/VendingMachineSampleApp/README.md" ]; then
             mkdir -p wiki/samples/VendingMachine
-            sed 's/\(\[[^]]*\]\)\(([^)]*\)\.md)/\1\2)/g' samples/VendingMachine/VendingMachineSampleApp/README.md > wiki/samples/VendingMachine/README.md
+            sed "$WIKI_LINK_PATTERN" samples/VendingMachine/VendingMachineSampleApp/README.md > wiki/samples/VendingMachine/README.md
           fi
           
           # StockPurchaser sample
           if [ -f "samples/StockPurchaser/StockPurchaserSampleApp/README.md" ]; then
             mkdir -p wiki/samples/StockPurchaser
-            sed 's/\(\[[^]]*\]\)\(([^)]*\)\.md)/\1\2)/g' samples/StockPurchaser/StockPurchaserSampleApp/README.md > wiki/samples/StockPurchaser/README.md
+            sed "$WIKI_LINK_PATTERN" samples/StockPurchaser/StockPurchaserSampleApp/README.md > wiki/samples/StockPurchaser/README.md
           fi
 
       - name: Push to wiki
