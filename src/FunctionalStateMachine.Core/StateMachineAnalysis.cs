@@ -235,7 +235,8 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
     }
 
     /// <summary>
-    /// Detect multiple unguarded transitions for the same trigger (ambiguous routing).
+    /// Detect multiple transitions for the same trigger and unreachable transitions.
+    /// Uses first-match semantics: only the first matching transition executes.
     /// </summary>
     private static void AnalyzeAmbiguousTransitions(
         IReadOnlyDictionary<TState, StateMachine<TState, TTrigger, TData, TCommand>.StateDefinition> states,
@@ -249,6 +250,33 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
             {
                 var triggerKey = transitionKvp.Key;
                 var transitions = transitionKvp.Value;
+                var triggerType = GetTriggerTypeName(triggerKey);
+
+                // Error: Multiple transitions on the same trigger
+                if (transitions.Count > 1)
+                {
+                    // Check if there's an unguarded transition before the last one
+                    for (int i = 0; i < transitions.Count - 1; i++)
+                    {
+                        if (transitions[i].Guard == null)
+                        {
+                            result.AddError(
+                                $"State '{state}' has an unguarded transition for trigger '{triggerType}' at position {i + 1}, " +
+                                "making subsequent transitions unreachable. Only the first matching transition executes (first-match semantics). " +
+                                "Either add a guard to this transition or remove subsequent transitions for this trigger.");
+                        }
+                    }
+
+                    // Warning: Multiple guarded transitions (might be intentional routing, but worth noting)
+                    if (transitions.All(t => t.Guard != null))
+                    {
+                        result.AddWarning(
+                            $"State '{state}' has {transitions.Count} guarded transitions for trigger '{triggerType}'. " +
+                            "Only the first matching guard will execute (first-match semantics). " +
+                            "Ensure guards are ordered from most specific to least specific.");
+                    }
+                }
+
                 // Find unguarded transitions
                 var unguardedTransitions = transitions.Where(t => t.Guard == null).ToList();
 
@@ -262,11 +290,10 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
                     // Error if they go to different states (ambiguous routing)
                     if (targets.Count > 1)
                     {
-                        var triggerType = GetTriggerTypeName(triggerKey);
                         result.AddError(
-                            $"State '{state}' has ambiguous transitions for trigger '{triggerType}' leading to different states: " +
-                            string.Join(", ", targets.Select(t => $"'{t}'")) +
-                            ". Add guards or consolidate transitions to resolve the ambiguity.");
+                            $"State '{state}' has {unguardedTransitions.Count} unguarded transitions for trigger '{triggerType}' " +
+                            $"leading to different states: {string.Join(", ", targets.Select(t => $"'{t}'"))}. " +
+                            "Add guards or consolidate transitions to resolve the ambiguity.");
                     }
                 }
             }

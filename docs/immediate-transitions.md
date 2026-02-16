@@ -141,8 +141,7 @@ var machine = StateMachine<ProcessState, ProcessTrigger, ProcessData, ProcessCom
             .Guard(data => data.Score < 30)                 // Very low score
             .Execute(() => new ProcessCommand.SendRejection())
             .TransitionTo(ProcessState.Rejected)
-        .Immediately()
-            .Guard(data => true)                            // Catch-all
+        .Immediately()  // Catch-all: no guard means "always execute"
             .Execute(() => new ProcessCommand.RequestReview())
             .TransitionTo(ProcessState.NeedsReview)
         .Done()
@@ -489,8 +488,7 @@ Not every state needs an immediate transition. Use triggers for external events.
     .Immediately()
         .Guard(data => data.Condition2)
         .TransitionTo(State.Path2)
-    .Immediately()
-        .Guard(data => true)
+    .Immediately()  // No guard = catch-all
         .TransitionTo(State.DefaultPath)
     .Done()
 ```

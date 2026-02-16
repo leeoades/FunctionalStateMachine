@@ -26,12 +26,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
   - Added conceptual pages section for non-feature topics
   - Improved consistency across all documentation pages
   - Added comprehensive index page with links to all documentation
+  - **Clarified first-match semantics** - Made it explicit that transitions evaluate in order and first match wins
+  - Replaced `Guard(() => true)` catch-all pattern with clearer "no guard" approach
 - **🚀 NuGet publishing** - Set up automated Trusted Publishing with GitHub Actions
   - Configured OIDC-based authentication (no long-lived API keys)
   - Added comprehensive PUBLISHING.md guide
   - Fixed symbol package generation for analyzer projects
   - Added proper package descriptions for all projects
   - Separate handling for analyzer vs library packages
+
+### Added
+- **🔍 Enhanced static analysis** - New build-time validations for guard patterns
+  - **Error**: Unguarded transition appearing before other transitions for same trigger (makes subsequent transitions unreachable)
+  - **Warning**: Multiple guarded transitions on same trigger (reminder about first-match semantics)
+  - Helps prevent common guard ordering mistakes
+  - Clear error messages explain first-match behavior
 
 ### Fixed
 - **📦 Analyzer packaging** - Fixed NuGet pack errors for Roslyn analyzer project

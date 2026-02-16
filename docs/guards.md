@@ -2,6 +2,8 @@
 
 Guards let you choose between multiple transitions for the same trigger based on state, data, or trigger properties. They encode business rules directly in your transitions.
 
+> **🎯 First-Match Semantics**: Transitions are evaluated **in order**. The **first matching transition wins** and executes immediately. Subsequent transitions for the same trigger are never checked.
+
 ## Table of Contents
 
 1. [Why Use Guards](#why-use-guards)
@@ -62,33 +64,36 @@ var (newState, newData, commands) = machine.Fire(
 **How it works:**
 - Guard evaluates the predicate `data.CreditScore >= 700`
 - If **true**, the transition executes
-- If **false**, this transition is skipped
+- If **false**, this transition is skipped and the next transition for the same trigger is checked
 
-**What happens if the guard fails?** If no other transition handles this trigger, it's **unhandled** and throws an exception.
+**What happens if the guard fails?** If no other transition handles this trigger, it's **unhandled** and throws an exception (unless you've configured `.OnUnhandled()`).
 
 ---
 
 ## Multiple Guarded Transitions
 
-Handle different cases by defining multiple transitions for the same trigger:
+Handle different cases by defining multiple transitions for the same trigger with **first-match semantics**:
 
 ```csharp
 var machine = StateMachine<LoanState, LoanTrigger, LoanData, LoanCommand>.Create()
     .StartWith(LoanState.Application)
     .For(LoanState.Application)
+        // ⚠️ ORDER MATTERS: First matching guard wins!
         .On<LoanTrigger.Submit>()
-            .Guard(data => data.CreditScore >= 700)        // First guard
+            .Guard(data => data.CreditScore >= 700)        // Checked first
             .Execute(() => new LoanCommand.SendApproval())
             .TransitionTo(LoanState.Approved)
         .On<LoanTrigger.Submit>()
-            .Guard(data => data.CreditScore < 700)         // Second guard
+            .Guard(data => data.CreditScore < 700)         // Checked second
             .Execute(() => new LoanCommand.SendRejection())
             .TransitionTo(LoanState.Rejected)
     .Build();
 ```
 
-**Evaluation order:**  
-Guards are evaluated **in the order you define them**. The **first matching guard wins**.
+**⚠️ First-Match Evaluation:**  
+- Transitions are evaluated **in the order you define them**
+- The **first matching guard wins** and executes
+- Subsequent transitions are **never checked** (short-circuit evaluation)
 
 ```csharp
 // CreditScore = 650
@@ -96,16 +101,16 @@ var (newState, _, commands) = machine.Fire(
     new LoanTrigger.Submit(), 
     LoanState.Application, 
     new LoanData(50000, 650));
-// First guard fails (650 < 700 is false)
-// Second guard passes (650 < 700 is true) ✅
+// First guard fails (650 >= 700 is false) → check next
+// Second guard passes (650 < 700 is true) → EXECUTE, STOP ✅
 // newState == LoanState.Rejected
 ```
 
 ---
 
-## Guard with Multiple Conditions
+## Catch-All Pattern (No Guard)
 
-Guards can check multiple properties:
+For the final "else" case, **omit the guard entirely** instead of using `Guard(data => true)`:
 
 ```csharp
 public sealed record LoanData(decimal Amount, int CreditScore, bool HasCollateral);
@@ -125,15 +130,19 @@ var machine = StateMachine<LoanState, LoanTrigger, LoanData, LoanCommand>.Create
             .Execute(() => new LoanCommand.SendApproval())
             .TransitionTo(LoanState.Approved)
         
-        // Everything else rejected
-        .On<LoanTrigger.Submit>()
-            .Guard(data => true)  // Catch-all guard
+        // Catch-all: everything else rejected (NO GUARD)
+        .On<LoanTrigger.Submit>()  // ← No guard = always matches
             .Execute(() => new LoanCommand.SendRejection())
             .TransitionTo(LoanState.Rejected)
     .Build();
 ```
 
-**Pattern:** Use a catch-all guard (`data => true`) as the last option to ensure all cases are handled.
+**Why no guard?** 
+- A transition with no guard **always matches** (same as `Guard(data => true)`)
+- Clearer intent: "this is the default case"
+- More idiomatic and concise
+
+**Pattern:** Order your transitions from **most specific to least specific**, with the catch-all (no guard) last.
 
 ---
 
@@ -274,9 +283,8 @@ var machine = StateMachine<ATMState, ATMTrigger, ATMData, ATMCommand>.Create()
             .Execute(() => new ATMCommand.ShowMessage("Insufficient funds"))
             .TransitionTo(ATMState.InsufficientFunds)
         
-        // Guard 3: Successful withdrawal (catch-all)
-        .On<ATMTrigger.ConfirmAmount>()
-            .Guard((data, trigger) => true)  // If we got here, all checks passed
+        // Guard 3: Successful withdrawal (no guard = catch-all)
+        .On<ATMTrigger.ConfirmAmount>()  // No guard - if we got here, all checks passed
             .ModifyData((data, trigger) => data with 
             {
                 Balance = data.Balance - trigger.Amount,
@@ -337,20 +345,24 @@ var (state3, _, commands3) = machine.Fire(
 ```
 
 **What's happening:**
-1. Three guards check conditions in order: daily limit, insufficient funds, success
-2. Each guard routes to a different state based on the condition
-3. The success guard modifies data and emits commands
-4. All guards use the same trigger but produce different outcomes
+1. ⚠️ **First-match semantics**: Transitions are evaluated in order
+2. First guard checks daily limit, if it passes → go to DailyLimitReached, STOP
+3. Second guard checks insufficient funds, if it passes → go to InsufficientFunds, STOP
+4. Third transition has no guard (catch-all) → always executes if we reach it
+5. The catch-all modifies data, emits commands, and transitions to Dispensing
 
 ---
 
 ## Best Practices
 
-✅ **Order guards from most specific to most general**  
-Put stricter conditions first, catch-all guards last.
+✅ **⚠️ Remember first-match semantics**  
+Only the **first matching transition executes**. Order matters!
 
-✅ **Use a catch-all guard for completeness**  
-`Guard(data => true)` ensures all cases are handled.
+✅ **Order guards from most specific to most general**  
+Put stricter conditions first, catch-all (no guard) last.
+
+✅ **Omit the guard for catch-all cases**  
+Use no guard instead of `Guard(data => true)` for the final "else" case. It's clearer and more idiomatic.
 
 ✅ **Keep guards pure**  
 Don't perform I/O or side effects in guard predicates. Only inspect data.
@@ -358,8 +370,8 @@ Don't perform I/O or side effects in guard predicates. Only inspect data.
 ✅ **Consider If/ElseIf/Else for single-state variations**  
 Use guards when you need to go to different states. Use If/Else when you stay in the same state.
 
-❌ **Avoid overlapping guards without intention**  
-If two guards can both be true, only the first will execute.
+❌ **Avoid unguarded transitions before other transitions**  
+An unguarded transition matches everything, making subsequent transitions for the same trigger unreachable. The build-time analyzer will detect this error.
 
 ---
 

@@ -137,7 +137,7 @@ public class StateMachineAnalysisTests
     {
         var exception = Assert.Throws<InvalidOperationException>(() =>
         {
-            // Multiple transitions are not allowed
+            // Multiple unguarded transitions are not allowed
             var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
                 .StartWith(State.A)
                 .For(State.A)
@@ -145,7 +145,7 @@ public class StateMachineAnalysisTests
                         .TransitionTo(State.B)
                         .Execute(() => new Command.Noop())
                     .On<Trigger.T1Trigger>()
-                        .TransitionTo(State.C) // Multiple transitions
+                        .TransitionTo(State.C) // Multiple unguarded transitions
                         .Execute(() => new Command.Noop())
                 .For(State.B)
                     .On<Trigger.T1Trigger>()
@@ -156,7 +156,8 @@ public class StateMachineAnalysisTests
                 .Build();
         });
 
-        Assert.Contains("ambiguous", exception.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("unguarded", exception.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("unreachable", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -376,6 +377,88 @@ public class StateMachineAnalysisTests
                     .Done()
             .Build();
 
+        Assert.NotNull(machine);
+    }
+
+    [Fact]
+    public void Validate_DetectsUnguardedTransitionBeforeOtherTransitions()
+    {
+        // Unguarded transition before other transitions makes them unreachable
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+        {
+            StateMachine<State, Trigger, Data, CommandBase>.Create()
+                .StartWith(State.A)
+                .For(State.A)
+                    .On<Trigger.T1Trigger>()
+                        .TransitionTo(State.B)  // No guard - always matches
+                        .Execute(() => new Command.Noop())
+                    .On<Trigger.T1Trigger>()    // This is unreachable!
+                        .Guard(data => data.Value > 10)
+                        .TransitionTo(State.C)
+                        .Execute(() => new Command.Noop())
+                .For(State.B)
+                    .On<Trigger.T1Trigger>()
+                        .TransitionTo(State.A)
+                .For(State.C)
+                    .On<Trigger.T1Trigger>()
+                        .TransitionTo(State.A)
+                .Build();
+        });
+
+        Assert.Contains("unguarded transition", exception.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("unreachable", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Validate_AllowsUnguardedTransitionAsLast()
+    {
+        // Unguarded transition as the last one is the catch-all pattern
+        var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
+            .StartWith(State.A)
+            .For(State.A)
+                .On<Trigger.T1Trigger>()
+                    .Guard(data => data.Value > 10)
+                    .TransitionTo(State.B)
+                    .Execute(() => new Command.Noop())
+                .On<Trigger.T1Trigger>()  // Catch-all: no guard, last position
+                    .TransitionTo(State.C)
+                    .Execute(() => new Command.Noop())
+            .For(State.B)
+                .On<Trigger.T1Trigger>()
+                    .TransitionTo(State.A)
+            .For(State.C)
+                .On<Trigger.T1Trigger>()
+                    .TransitionTo(State.A)
+            .Build();
+
+        Assert.NotNull(machine);
+    }
+
+    [Fact]
+    public void Validate_WarnsAboutMultipleGuardedTransitions()
+    {
+        // Multiple guarded transitions should produce a warning (but not error)
+        // This is allowed but worth noting to users
+        var machine = StateMachine<State, Trigger, Data, CommandBase>.Create()
+            .StartWith(State.A)
+            .For(State.A)
+                .On<Trigger.T1Trigger>()
+                    .Guard(data => data.Value > 10)
+                    .TransitionTo(State.B)
+                    .Execute(() => new Command.Noop())
+                .On<Trigger.T1Trigger>()
+                    .Guard(data => data.Value <= 10)
+                    .TransitionTo(State.C)
+                    .Execute(() => new Command.Noop())
+            .For(State.B)
+                .On<Trigger.T1Trigger>()
+                    .TransitionTo(State.A)
+            .For(State.C)
+                .On<Trigger.T1Trigger>()
+                    .TransitionTo(State.A)
+            .Build();
+
+        // Should build successfully (warning, not error)
         Assert.NotNull(machine);
     }
 

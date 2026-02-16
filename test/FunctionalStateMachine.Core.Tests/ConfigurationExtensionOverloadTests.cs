@@ -278,7 +278,7 @@ public class ConfigurationExtensionOverloadTests
             .StartWith(State.Ready)
             .For(State.Ready)
                 .On(Trigger.Go)
-                    .Guard("FullCheck", (State state, Data data, Trigger trigger) => true)
+                    .Guard("FullCheck", (State state, Data data, Trigger trigger) => state == State.Ready)
                     .TransitionTo(State.Done)
             .For(State.Done)
             .Build();
@@ -393,7 +393,7 @@ public class ConfigurationExtensionOverloadTests
             .StartWith(State.Ready)
             .For(State.Ready)
                 .On(Trigger.Go)
-                    .Guard("FullCheck", (State state, Trigger trigger) => true)
+                    .Guard("FullCheck", (State state, Trigger trigger) => state == State.Ready && trigger == Trigger.Go)
                     .TransitionTo(State.Done)
                     .Done()
             .For(State.Done)
