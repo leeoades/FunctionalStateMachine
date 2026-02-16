@@ -465,9 +465,9 @@ await dispatcher.RunAsync(commands);
 
 Explore complete, runnable examples in the `/samples` directory:
 
-- **[Basic Samples](samples/Basic/FunctionalStateMachine.Samples)** — Light switch, login session, shopping cart, timer
-- **[Vending Machine](samples/VendingMachine)** — Complex hierarchical states, payment flow, inventory management
-- **[Stock Purchaser](samples/StockPurchaser)** — Actor-model example with persistence simulation
+- **[Basic Samples](samples/Basic)** — Light switch, login session, shopping cart, timer
+- **[Vending Machine](samples/VendingMachine/VendingMachineSampleApp)** — Complex hierarchical states, payment flow, inventory management
+- **[Stock Purchaser](samples/StockPurchaser/StockPurchaserSampleApp)** — Actor-model example with persistence simulation
 
 ---
 
