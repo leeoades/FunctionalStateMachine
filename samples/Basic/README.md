@@ -250,12 +250,12 @@ dotnet test samples/Basic/FunctionalStateMachine.Samples/FunctionalStateMachine.
 
 ## Diagrams
 
-Each sample includes an auto-generated Mermaid diagram in the `diagrams/` subdirectory:
+Each sample includes an auto-generated Mermaid diagram in the sample project's `diagrams/` subdirectory:
 
-- `diagrams/LightSwitch.md` - Simple toggle flow
-- `diagrams/SessionLogin.md` - Hierarchical authentication
-- `diagrams/ShoppingTrolley.md` - Complex payment workflow
-- `diagrams/Timer.md` - Counter state machine
+- `samples/Basic/FunctionalStateMachine.Samples/diagrams/LightSwitch.md` - Simple toggle flow
+- `samples/Basic/FunctionalStateMachine.Samples/diagrams/SessionLogin.md` - Hierarchical authentication
+- `samples/Basic/FunctionalStateMachine.Samples/diagrams/ShoppingTrolley.md` - Complex payment workflow
+- `samples/Basic/FunctionalStateMachine.Samples/diagrams/Timer.md` - Counter state machine
 
 Diagrams are automatically updated when the state machine definition changes, thanks to the `[StateMachineDiagram]` attribute.
 
