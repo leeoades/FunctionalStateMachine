@@ -241,10 +241,14 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
         IReadOnlyDictionary<TState, StateMachine<TState, TTrigger, TData, TCommand>.StateDefinition> states,
         AnalysisResult result)
     {
-        foreach (var (state, definition) in states)
+        foreach (var kvp in states)
         {
-            foreach (var (triggerKey, transitions) in definition.Transitions)
+            var state = kvp.Key;
+            var definition = kvp.Value;
+            foreach (var transitionKvp in definition.Transitions)
             {
+                var triggerKey = transitionKvp.Key;
+                var transitions = transitionKvp.Value;
                 // Find unguarded transitions
                 var unguardedTransitions = transitions.Where(t => t.Guard == null).ToList();
 
@@ -273,10 +277,14 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
         IReadOnlyDictionary<TState, StateMachine<TState, TTrigger, TData, TCommand>.StateDefinition> states,
         AnalysisResult result)
     {
-        foreach (var (state, definition) in states)
+        foreach (var kvp in states)
         {
-            foreach (var (triggerKey, transitions) in definition.Transitions)
+            var state = kvp.Key;
+            var definition = kvp.Value;
+            foreach (var transitionKvp in definition.Transitions)
             {
+                var triggerKey = transitionKvp.Key;
+                var transitions = transitionKvp.Value;
                 foreach (var transition in transitions)
                 {
                     var maxTransitionCount = GetMaxTransitionCountPerPath(transition.Steps);
@@ -362,8 +370,10 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
         TState initialState,
         AnalysisResult result)
     {
-        foreach (var (state, definition) in states)
+        foreach (var kvp in states)
         {
+            var state = kvp.Key;
+            var definition = kvp.Value;
             // Skip initial state - it's okay for it to be a dead-end (terminal state)
             if (state.Equals(initialState))
                 continue;

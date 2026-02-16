@@ -1,12 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         
         <!-- Package metadata -->
         <Description>Functional state machine library for .NET with command-based side effects, perfect for actor-model architectures and event sourcing</Description>
     </PropertyGroup>
+
+    <!-- Polyfills for C# 9+ features on netstandard2.0 -->
+    <ItemGroup>
+        <PackageReference Include="PolySharp" Version="1.14.1" PrivateAssets="all" />
+    </ItemGroup>
 
 </Project>

@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         
@@ -9,9 +10,11 @@
         <Description>Command execution framework for FunctionalStateMachine with dependency injection support and source generation</Description>
     </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.12" />
-  </ItemGroup>
+    <!-- Polyfills for C# 9+ features on netstandard2.0 -->
+    <ItemGroup>
+        <PackageReference Include="PolySharp" Version="1.14.1" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.0.0" />
+    </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\FunctionalStateMachine.CommandRunner.Generator\FunctionalStateMachine.CommandRunner.Generator.csproj"

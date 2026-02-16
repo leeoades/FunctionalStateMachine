@@ -8,7 +8,7 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services,
         CommandRunnerOptions? options = null)
     {
-        ArgumentNullException.ThrowIfNull(services);
+        if (services == null) throw new ArgumentNullException(nameof(services));
 
         var resolvedOptions = options ?? new CommandRunnerOptions();
         if (!CommandRunnerRegistry.TryGet<TCommand>(out var registration))
