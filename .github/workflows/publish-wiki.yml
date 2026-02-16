@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - "docs/**"
+      - "README.md"
+      - "samples/**/README.md"
   workflow_dispatch:
 
 permissions:
@@ -32,22 +34,55 @@ jobs:
           # Remove all .md files in wiki root that we manage
           # (files that exist in docs/ or were previously synced)
           find . -maxdepth 1 -name '*.md' ! -name '_*' -delete
+          
+          # Remove old samples directory if it exists
+          rm -rf samples
 
           cd ..
 
-          # Copy docs to wiki, renaming index.md to Home.md
+          # Copy main README.md as Home.md (the wiki root/introduction)
+          # Convert links:
+          # - docs/file.md -> file (remove docs/ prefix and .md extension)
+          # - samples/Basic/... -> samples/Basic/README (point to wiki samples)
+          # - samples/VendingMachine -> samples/VendingMachine/README
+          # - samples/StockPurchaser -> samples/StockPurchaser/README
+          sed 's|\(\[[^]]*\]\)(README\.md)|\1(Home)|g; s|docs/\([^)]*\)\.md|\1|g; s|\(\[[^]]*\]\)(\([^)]*\)\.md)|\1(\2)|g; s|samples/Basic/FunctionalStateMachine.Samples|samples/Basic/README|g; s|samples/VendingMachine)|samples/VendingMachine/README)|g; s|samples/StockPurchaser)|samples/StockPurchaser/README)|g' README.md > wiki/Home.md
+
+          # Copy docs to wiki
           for file in docs/*.md; do
             filename=$(basename "$file")
+            # Skip index.md since README.md is now Home.md
             if [ "$filename" = "index.md" ]; then
-              target="wiki/Home.md"
-            else
-              target="wiki/$filename"
+              continue
             fi
+            target="wiki/$filename"
 
             # Copy file and convert relative .md links to wiki links
             # e.g., [Guards](guards.md) -> [Guards](guards)
             sed 's/\(\[[^]]*\]\)(index\.md)/\1(Home)/g; s/\(\[[^]]*\]\)\(([^)]*\)\.md)/\1\2)/g' "$file" > "$target"
           done
+          
+          # Create samples directory in wiki
+          mkdir -p wiki/samples
+          
+          # Copy samples documentation
+          # Basic samples
+          if [ -f "samples/Basic/README.md" ]; then
+            mkdir -p wiki/samples/Basic
+            sed 's/\(\[[^]]*\]\)\(([^)]*\)\.md)/\1\2)/g' samples/Basic/README.md > wiki/samples/Basic/README.md
+          fi
+          
+          # VendingMachine sample
+          if [ -f "samples/VendingMachine/VendingMachineSampleApp/README.md" ]; then
+            mkdir -p wiki/samples/VendingMachine
+            sed 's/\(\[[^]]*\]\)\(([^)]*\)\.md)/\1\2)/g' samples/VendingMachine/VendingMachineSampleApp/README.md > wiki/samples/VendingMachine/README.md
+          fi
+          
+          # StockPurchaser sample
+          if [ -f "samples/StockPurchaser/StockPurchaserSampleApp/README.md" ]; then
+            mkdir -p wiki/samples/StockPurchaser
+            sed 's/\(\[[^]]*\]\)\(([^)]*\)\.md)/\1\2)/g' samples/StockPurchaser/StockPurchaserSampleApp/README.md > wiki/samples/StockPurchaser/README.md
+          fi
 
       - name: Push to wiki
         run: |
