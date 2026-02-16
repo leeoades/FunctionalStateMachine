@@ -43,10 +43,11 @@ jobs:
           # Copy main README.md as Home.md (the wiki root/introduction)
           # Convert links:
           # - docs/file.md -> file (remove docs/ prefix and .md extension)
-          # - samples/Basic/... -> samples/Basic/README (point to wiki samples)
+          # - file.md -> file (remove .md extension)
+          # - samples/Basic/FunctionalStateMachine.Samples -> samples/Basic/README
           # - samples/VendingMachine -> samples/VendingMachine/README
           # - samples/StockPurchaser -> samples/StockPurchaser/README
-          sed 's|\(\[[^]]*\]\)(README\.md)|\1(Home)|g; s|docs/\([^)]*\)\.md|\1|g; s|\(\[[^]]*\]\)(\([^)]*\)\.md)|\1(\2)|g; s|samples/Basic/FunctionalStateMachine.Samples|samples/Basic/README|g; s|samples/VendingMachine)|samples/VendingMachine/README)|g; s|samples/StockPurchaser)|samples/StockPurchaser/README)|g' README.md > wiki/Home.md
+          sed 's|\(\[[^]]*\]\)(README\.md)|\1(Home)|g; s|docs/\([^)]*\)\.md|\1|g; s|\(\[[^]]*\]\)(\([^)]*\)\.md)|\1(\2)|g; s|(samples/Basic/FunctionalStateMachine.Samples)|(samples/Basic/README)|g; s|(samples/VendingMachine)|(samples/VendingMachine/README)|g; s|(samples/StockPurchaser)|(samples/StockPurchaser/README)|g' README.md > wiki/Home.md
 
           # Copy docs to wiki
           for file in docs/*.md; do

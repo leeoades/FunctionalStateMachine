@@ -199,11 +199,11 @@ A simple timer that counts ticks, demonstrating state data updates and entry/exi
 
 ### States
 - **Running** - Timer is active
-- **Paused** - Timer is paused (not shown in build, but referenced)
+- **Paused** - Timer is paused (defined in the state machine for Resume transitions)
 
 ### Triggers
 - **Tick** - Increment the counter
-- **Resume** - Resume from paused (state exists for completeness)
+- **Resume** - Resume from paused state back to running
 
 ### Commands
 - **WriteLog** - Log timer events
