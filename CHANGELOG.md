@@ -4,6 +4,41 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.0]
+
+### Changed
+- **⚡ Maximum compatibility** - Migrated to .NET Standard 2.0 for vastly broader platform support
+  - Core library: net9.0 → netstandard2.0
+  - CommandRunner: net9.0 → netstandard2.0
+  - Now supports: .NET Framework 4.6.1+, .NET Core 2.0+, .NET 5-9+, Xamarin, Unity 2021.2+, Mono 5.4+, UWP
+  - Added PolySharp for C# 9+ feature polyfills (records, init properties)
+  - Downgraded Microsoft.Extensions.DependencyInjection to v2.0 for compatibility
+  - Fixed modern API usage: `ArgumentNullException.ThrowIfNull` → manual null checks
+  - Fixed KeyValuePair deconstruction for netstandard2.0 compatibility
+- **📁 Project organization** - Restructured solution for better maintainability
+  - Moved library projects to `/src` folder
+  - Moved test projects to `/test` folder
+  - Organized samples into `/samples/Basic`, `/samples/StockPurchaser`, `/samples/VendingMachine`
+  - Updated all project references, solution paths, and documentation links
+- **📚 Documentation overhaul** - Completely rewritten and expanded documentation
+  - Main README reorganized with inline examples and progressive feature introduction
+  - Each feature page rebuilt from basics to advanced with step-by-step examples
+  - Added conceptual pages section for non-feature topics
+  - Improved consistency across all documentation pages
+  - Added comprehensive index page with links to all documentation
+- **🚀 NuGet publishing** - Set up automated Trusted Publishing with GitHub Actions
+  - Configured OIDC-based authentication (no long-lived API keys)
+  - Added comprehensive PUBLISHING.md guide
+  - Fixed symbol package generation for analyzer projects
+  - Added proper package descriptions for all projects
+  - Separate handling for analyzer vs library packages
+
+### Fixed
+- **📦 Analyzer packaging** - Fixed NuGet pack errors for Roslyn analyzer project
+  - Disabled symbol package generation for FunctionalStateMachine.Diagrams
+  - Suppressed NU5128 warnings about missing lib/ref assemblies
+  - Correctly configured analyzer DLL inclusion in package
+
 ## [0.10.0] - 2026-02-07
 
 ### Added
