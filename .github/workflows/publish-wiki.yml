@@ -43,15 +43,18 @@ jobs:
           # Define reusable sed pattern for converting markdown links to wiki links
           WIKI_LINK_PATTERN='s/\(\[[^]]*\]\)\(([^)]*\)\.md)/\1\2)/g'
 
-          # Copy main README.md as Home.md (the wiki root/introduction)
+          # Copy main README.md as Functional-State-Machine.md (the wiki home page)
           # Strip first H1 heading and convert links:
-          # 1. README.md -> Home
+          # 1. README.md -> Functional-State-Machine
           # 2. docs/file.md -> file (remove docs/ prefix and .md extension)
           # 3. file.md -> file (remove .md extension)
           # 4. samples/Basic -> samples-Basic (wiki page names)
           # 5. samples/VendingMachine -> samples-VendingMachine (wiki page names)
           # 6. samples/StockPurchaser -> samples-StockPurchaser (wiki page names)
-          sed '1{/^# /d;}; s|\(\[[^]]*\]\)(README\.md)|\1(Home)|g; s|docs/\([^)]*\)\.md|\1|g; '"$WIKI_LINK_PATTERN"'; s|(samples/Basic/FunctionalStateMachine.Samples)|(samples-Basic)|g; s|(samples/Basic)|(samples-Basic)|g; s|(samples/VendingMachine/VendingMachineSampleApp)|(samples-VendingMachine)|g; s|(samples/VendingMachine)|(samples-VendingMachine)|g; s|(samples/StockPurchaser/StockPurchaserSampleApp)|(samples-StockPurchaser)|g; s|(samples/StockPurchaser)|(samples-StockPurchaser)|g' README.md > wiki/Home.md
+          sed '1{/^# /d;}; s|\(\[[^]]*\]\)(README\.md)|\1(Functional-State-Machine)|g; s|docs/\([^)]*\)\.md|\1|g; '"$WIKI_LINK_PATTERN"'; s|(samples/Basic/FunctionalStateMachine.Samples)|(samples-Basic)|g; s|(samples/Basic)|(samples-Basic)|g; s|(samples/VendingMachine/VendingMachineSampleApp)|(samples-VendingMachine)|g; s|(samples/VendingMachine)|(samples-VendingMachine)|g; s|(samples/StockPurchaser/StockPurchaserSampleApp)|(samples-StockPurchaser)|g; s|(samples/StockPurchaser)|(samples-StockPurchaser)|g' README.md > wiki/Functional-State-Machine.md
+          
+          # Create Home.md that redirects to Functional-State-Machine.md
+          echo "See [Functional State Machine](Functional-State-Machine)" > wiki/Home.md
 
           # Copy docs to wiki
           for file in docs/*.md; do
