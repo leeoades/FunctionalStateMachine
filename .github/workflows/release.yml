@@ -33,11 +33,18 @@ jobs:
       - name: Set Version
         run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
 
+      - name: Extract Release Notes
+        run: |
+          pwsh scripts/extract-changelog.ps1 -Version ${VERSION} > release-notes.txt
+          echo "Release notes extracted:"
+          cat release-notes.txt
+
       - name: Pack
         run: |
-          dotnet pack src/FunctionalStateMachine.Core/FunctionalStateMachine.Core.csproj --configuration Release --no-build --output ./artifacts --include-symbols --include-source /p:PackageVersion=${VERSION}
-          dotnet pack src/FunctionalStateMachine.CommandRunner/FunctionalStateMachine.CommandRunner.csproj --configuration Release --no-build --output ./artifacts --include-symbols --include-source /p:PackageVersion=${VERSION}
-          dotnet pack src/FunctionalStateMachine.Diagrams/FunctionalStateMachine.Diagrams.csproj --configuration Release --no-build --output ./artifacts /p:PackageVersion=${VERSION} /p:IncludeSymbols=false
+          RELEASE_NOTES=$(cat release-notes.txt)
+          dotnet pack src/FunctionalStateMachine.Core/FunctionalStateMachine.Core.csproj --configuration Release --no-build --output ./artifacts --include-symbols --include-source /p:PackageVersion=${VERSION} /p:PackageReleaseNotes="$RELEASE_NOTES"
+          dotnet pack src/FunctionalStateMachine.CommandRunner/FunctionalStateMachine.CommandRunner.csproj --configuration Release --no-build --output ./artifacts --include-symbols --include-source /p:PackageVersion=${VERSION} /p:PackageReleaseNotes="$RELEASE_NOTES"
+          dotnet pack src/FunctionalStateMachine.Diagrams/FunctionalStateMachine.Diagrams.csproj --configuration Release --no-build --output ./artifacts /p:PackageVersion=${VERSION} /p:IncludeSymbols=false /p:PackageReleaseNotes="$RELEASE_NOTES"
 
       - name: NuGet login (Trusted Publishing)
         uses: NuGet/login@v1

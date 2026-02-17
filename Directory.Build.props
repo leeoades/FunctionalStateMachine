@@ -13,7 +13,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>state-machine;functional;actor-model;fsm;dotnet</PackageTags>
-    <PackageReleaseNotes>See CHANGELOG.md for release notes</PackageReleaseNotes>
+    <PackageReleaseNotes Condition="'$(PackageReleaseNotes)' == ''">See CHANGELOG.md for release notes</PackageReleaseNotes>
     
     <!-- Build Settings -->
     <LangVersion>latest</LangVersion>
@@ -28,9 +28,10 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
-  <!-- Include README in packages -->
+  <!-- Include README and CHANGELOG in packages -->
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" />
+    <None Include="$(MSBuildThisFileDirectory)CHANGELOG.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <!-- Source Link for debugging -->
