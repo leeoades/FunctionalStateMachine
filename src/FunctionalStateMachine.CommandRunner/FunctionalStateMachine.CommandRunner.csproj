@@ -8,6 +8,10 @@
         
         <!-- Package metadata -->
         <Description>Command execution framework for FunctionalStateMachine with dependency injection support and source generation</Description>
+        
+        <!-- XML Documentation -->
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
     </PropertyGroup>
 
     <!-- Polyfills for C# 9+ features on netstandard2.0 -->

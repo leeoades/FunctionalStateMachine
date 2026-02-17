@@ -8,6 +8,10 @@
         
         <!-- Package metadata -->
         <Description>Functional state machine library for .NET with command-based side effects, perfect for actor-model architectures and event sourcing</Description>
+        
+        <!-- XML Documentation -->
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
     </PropertyGroup>
 
     <!-- Polyfills for C# 9+ features on netstandard2.0 -->
