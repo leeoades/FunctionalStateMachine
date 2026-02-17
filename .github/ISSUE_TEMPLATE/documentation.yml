@@ -1,0 +1,55 @@
+name: Documentation Issue
+description: Report a problem with documentation or suggest improvements
+title: "[Docs]: "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve our documentation!
+
+  - type: dropdown
+    id: doc-type
+    attributes:
+      label: Documentation Type
+      description: What type of documentation needs attention?
+      options:
+        - README.md
+        - API Documentation
+        - Feature Guide (docs/)
+        - Code Examples
+        - Sample Applications
+        - CHANGELOG
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: location
+    attributes:
+      label: Location
+      description: Where is the documentation issue?
+      placeholder: e.g., docs/Guards-and-Conditional-Flows.md, README.md line 120
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Issue Description
+      description: What's wrong or unclear with the current documentation?
+      placeholder: The documentation says... but it should say...
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested Improvement
+      description: How should it be improved?
+      placeholder: I suggest changing it to...
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other relevant information
+      placeholder: This is confusing because...
