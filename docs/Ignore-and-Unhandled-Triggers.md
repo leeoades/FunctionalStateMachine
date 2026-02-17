@@ -438,6 +438,6 @@ If most states ignore a trigger, maybe it's not a good trigger.
 
 ## Next Steps
 
-- See [Fluent Configuration](fluent-configuration.md) for validation that catches missing triggers
-- Use with [Hierarchical States](hierarchical-states.md) where parent can handle unhandled child triggers
-- Combine with [Execute Steps](execute-steps.md) for sophisticated unhandled handlers
+- See [Fluent Configuration](Fluent-Configuration.md) for validation that catches missing triggers
+- Use with [Hierarchical States](Hierarchical-States.md) where parent can handle unhandled child triggers
+- Combine with [Execute Steps](Execute-Steps-and-Multiple-Commands.md) for sophisticated unhandled handlers

@@ -457,6 +457,6 @@ StateMachine<Screen, NavigationTrigger, NavigationCommand>.Create()
 
 ## Next Steps
 
-- Compare with [State Data](state-data.md) to understand when data is useful
-- See [Guards](guards.md) for state and trigger-based guards
-- Learn about [Execute Steps](execute-steps.md) for emitting commands without data
+- Compare with [State Data](State-Data-and-ModifyData.md) to understand when data is useful
+- See [Guards](Guards-and-Conditional-Flows.md) for state and trigger-based guards
+- Learn about [Execute Steps](Execute-Steps-and-Multiple-Commands.md) for emitting commands without data

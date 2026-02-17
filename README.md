@@ -117,7 +117,7 @@ var machine = StateMachine<PaymentState, PaymentTrigger, PaymentData, PaymentCom
 
 **Benefits:** Pure transitions, easy testing, deterministic replay, natural audit trails.
 
-➡️ **Learn more:** [Commands vs Side Effects](docs/commands-vs-effects.md)
+➡️ **Learn more:** [Commands vs Side Effects](docs/Commands-Instead-of-Side-Effects.md)
 
 ### Packages
 
@@ -127,7 +127,7 @@ Choose only what you need:
 - **`FunctionalStateMachine.CommandRunner`** — Optional DI-based command dispatcher
 - **`FunctionalStateMachine.Diagrams`** — Optional build-time Mermaid diagram generator
 
-➡️ **Learn more:** [Package Guide](docs/packages.md)
+➡️ **Learn more:** [Package Guide](docs/Packages.md)
 
 ---
 
@@ -149,7 +149,7 @@ var machine = StateMachine<OrderState, OrderTrigger, OrderCommand>.Create()
     .Build(); // ✅ Validates: all states reachable, no orphaned states
 ```
 
-➡️ **Learn more:** [Fluent Configuration](docs/fluent-configuration.md)
+➡️ **Learn more:** [Fluent Configuration](docs/Fluent-Configuration.md)
 
 ---
 
@@ -178,7 +178,7 @@ var (newState, newData, commands) = machine.Fire(
 // newData.Score == 100
 ```
 
-➡️ **Learn more:** [State Data and ModifyData](docs/state-data.md)
+➡️ **Learn more:** [State Data and ModifyData](docs/State-Data-and-ModifyData.md)
 
 ---
 
@@ -205,7 +205,7 @@ var machine = StateMachine<OrderState, OrderTrigger, OrderData, OrderCommand>.Cr
 
 **First matching guard wins.** If no guard matches, the trigger is unhandled.
 
-➡️ **Learn more:** [Guards and Conditional Flows](docs/guards.md)
+➡️ **Learn more:** [Guards and Conditional Flows](docs/Guards-and-Conditional-Flows.md)
 
 ---
 
@@ -231,7 +231,7 @@ var machine = StateMachine<ATMState, ATMTrigger, ATMData, ATMCommand>.Create()
     .Build();
 ```
 
-➡️ **Learn more:** [Conditional Steps](docs/conditional-steps.md)
+➡️ **Learn more:** [Conditional Steps](docs/Conditional-Steps.md)
 
 ---
 
@@ -251,7 +251,7 @@ var machine = StateMachine<SessionState, SessionTrigger, SessionData, SessionCom
 
 Entry/exit commands run *only* when the state actually changes, not on internal transitions.
 
-➡️ **Learn more:** [Entry and Exit Commands](docs/entry-exit.md)
+➡️ **Learn more:** [Entry and Exit Commands](docs/Entry-and-Exit-Commands.md)
 
 ---
 
@@ -272,7 +272,7 @@ var machine = StateMachine<OrderState, OrderTrigger, OrderData, OrderCommand>.Cr
 
 Commands are collected and returned in order. Your application executes them sequentially or in parallel.
 
-➡️ **Learn more:** [Execute Steps and Multiple Commands](docs/execute-steps.md)
+➡️ **Learn more:** [Execute Steps and Multiple Commands](docs/Execute-Steps-and-Multiple-Commands.md)
 
 ---
 
@@ -292,7 +292,7 @@ var machine = StateMachine<ServerState, ServerTrigger, ServerData, ServerCommand
 
 **Internal transitions skip entry/exit actions** because the state doesn't change.
 
-➡️ **Learn more:** [Internal Transitions](docs/internal-transitions.md)
+➡️ **Learn more:** [Internal Transitions](docs/Internal-Transitions.md)
 
 ---
 
@@ -318,7 +318,7 @@ var (state, data, commands) = machine.Start(new AppData(ConfigLoaded: true));
 // state == AppState.Ready
 ```
 
-➡️ **Learn more:** [Immediate Transitions](docs/immediate-transitions.md)
+➡️ **Learn more:** [Immediate Transitions](docs/Immediate-Transitions.md)
 
 ---
 
@@ -345,7 +345,7 @@ var machine = StateMachine<ConnectionState, ConnectionTrigger, ConnectionCommand
 
 **Parent transitions take precedence** if both parent and child handle the same trigger.
 
-➡️ **Learn more:** [Hierarchical States](docs/hierarchical-states.md)
+➡️ **Learn more:** [Hierarchical States](docs/Hierarchical-States.md)
 
 ---
 
@@ -366,7 +366,7 @@ var machine = StateMachine<State, Trigger, Data, Command>.Create()
 
 **Unhandled triggers throw an exception by default.** Use `.OnUnhandled()` to customize behavior.
 
-➡️ **Learn more:** [Ignore and Unhandled Triggers](docs/ignore-unhandled.md)
+➡️ **Learn more:** [Ignore and Unhandled Triggers](docs/Ignore-and-Unhandled-Triggers.md)
 
 ---
 
@@ -386,7 +386,7 @@ var machine = StateMachine<LightState, LightTrigger, LightCommand>.Create()
 var (newState, commands) = machine.Fire(new LightTrigger.Toggle(), LightState.Off);
 ```
 
-➡️ **Learn more:** [No-Data Builder](docs/no-data.md)
+➡️ **Learn more:** [No-Data Builder](docs/No-Data-Builder.md)
 
 ---
 
@@ -403,7 +403,7 @@ Detect configuration errors at build time:
 
 Analysis runs automatically when you call `.Build()`. All issues are reported before the state machine is created.
 
-➡️ **Learn more:** [Static Analysis](docs/static-analysis.md)
+➡️ **Learn more:** [Static Analysis](docs/Static-Analysis-for-State-Machine-Configuration.md)
 
 ---
 
@@ -428,7 +428,7 @@ public static StateMachine<OrderState, OrderTrigger, OrderCommand> Build()
 
 **Diagrams update automatically** whenever you change the state machine. Perfect for documentation and PRs.
 
-➡️ **Learn more:** [Mermaid Diagram Generation](docs/diagrams.md)
+➡️ **Learn more:** [Mermaid Diagram Generation](docs/Mermaid-Diagram-Generation.md)
 
 ---
 
@@ -457,7 +457,7 @@ await dispatcher.RunAsync(commands);
 
 **Zero reflection.** The dispatcher is source-generated for maximum performance.
 
-➡️ **Learn more:** [Command Runners](docs/command-runners.md)
+➡️ **Learn more:** [Command Runners](docs/Command-Runners.md)
 
 ---
 

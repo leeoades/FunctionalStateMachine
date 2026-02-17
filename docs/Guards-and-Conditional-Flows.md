@@ -225,7 +225,7 @@ Use when you need all three pieces of information.
     .TransitionTo(State.Complete)       // Both paths go to Complete
 ```
 
-See [Conditional Steps](conditional-steps.md) for more details on If/ElseIf/Else.
+See [Conditional Steps](Conditional-Steps.md) for more details on If/ElseIf/Else.
 
 ---
 
@@ -377,6 +377,6 @@ An unguarded transition matches everything, making subsequent transitions for th
 
 ## Next Steps
 
-- Combine guards with [Conditional Steps](conditional-steps.md) for complex branching
-- Learn about [State Data](state-data.md) to understand what guards can inspect
-- See [Execute Steps](execute-steps.md) for emitting commands after guard evaluation
+- Combine guards with [Conditional Steps](Conditional-Steps.md) for complex branching
+- Learn about [State Data](State-Data-and-ModifyData.md) to understand what guards can inspect
+- See [Execute Steps](Execute-Steps-and-Multiple-Commands.md) for emitting commands after guard evaluation

@@ -44,14 +44,14 @@ jobs:
           WIKI_LINK_PATTERN='s/\(\[[^]]*\]\)\(([^)]*\)\.md)/\1\2)/g'
 
           # Copy main README.md as Home.md (the wiki root/introduction)
-          # Convert links:
+          # Strip first H1 heading and convert links:
           # 1. README.md -> Home
           # 2. docs/file.md -> file (remove docs/ prefix and .md extension)
           # 3. file.md -> file (remove .md extension)
           # 4. samples/Basic -> samples-Basic (wiki page names)
           # 5. samples/VendingMachine -> samples-VendingMachine (wiki page names)
           # 6. samples/StockPurchaser -> samples-StockPurchaser (wiki page names)
-          sed 's|\(\[[^]]*\]\)(README\.md)|\1(Home)|g; s|docs/\([^)]*\)\.md|\1|g; '"$WIKI_LINK_PATTERN"'; s|(samples/Basic/FunctionalStateMachine.Samples)|(samples-Basic)|g; s|(samples/Basic)|(samples-Basic)|g; s|(samples/VendingMachine/VendingMachineSampleApp)|(samples-VendingMachine)|g; s|(samples/VendingMachine)|(samples-VendingMachine)|g; s|(samples/StockPurchaser/StockPurchaserSampleApp)|(samples-StockPurchaser)|g; s|(samples/StockPurchaser)|(samples-StockPurchaser)|g' README.md > wiki/Home.md
+          sed '1{/^# /d;}; s|\(\[[^]]*\]\)(README\.md)|\1(Home)|g; s|docs/\([^)]*\)\.md|\1|g; '"$WIKI_LINK_PATTERN"'; s|(samples/Basic/FunctionalStateMachine.Samples)|(samples-Basic)|g; s|(samples/Basic)|(samples-Basic)|g; s|(samples/VendingMachine/VendingMachineSampleApp)|(samples-VendingMachine)|g; s|(samples/VendingMachine)|(samples-VendingMachine)|g; s|(samples/StockPurchaser/StockPurchaserSampleApp)|(samples-StockPurchaser)|g; s|(samples/StockPurchaser)|(samples-StockPurchaser)|g' README.md > wiki/Home.md
 
           # Copy docs to wiki
           for file in docs/*.md; do
@@ -62,26 +62,28 @@ jobs:
             fi
             target="wiki/$filename"
 
-            # Copy file and convert relative .md links to wiki links
-            sed 's/\(\[[^]]*\]\)(index\.md)/\1(Home)/g; '"$WIKI_LINK_PATTERN" "$file" > "$target"
+            # Copy file, strip first H1 heading, and convert relative .md links to wiki links
+            # Remove first line if it starts with "# " (H1 heading)
+            sed '1{/^# /d;}; s/\(\[[^]]*\]\)(index\.md)/\1(Home)/g; '"$WIKI_LINK_PATTERN" "$file" > "$target"
           done
           
           # Copy sample READMEs to wiki root with unique names
           # GitHub wikis don't support subdirectories, so we use flat naming
+          # Strip H1 headings from sample READMEs too
           
           # Basic samples
           if [ -f "samples/Basic/README.md" ]; then
-            sed "$WIKI_LINK_PATTERN" samples/Basic/README.md > wiki/samples-Basic.md
+            sed '1{/^# /d;}; '"$WIKI_LINK_PATTERN" samples/Basic/README.md > wiki/samples-Basic.md
           fi
           
           # VendingMachine sample
           if [ -f "samples/VendingMachine/VendingMachineSampleApp/README.md" ]; then
-            sed "$WIKI_LINK_PATTERN" samples/VendingMachine/VendingMachineSampleApp/README.md > wiki/samples-VendingMachine.md
+            sed '1{/^# /d;}; '"$WIKI_LINK_PATTERN" samples/VendingMachine/VendingMachineSampleApp/README.md > wiki/samples-VendingMachine.md
           fi
           
           # StockPurchaser sample
           if [ -f "samples/StockPurchaser/StockPurchaserSampleApp/README.md" ]; then
-            sed "$WIKI_LINK_PATTERN" samples/StockPurchaser/StockPurchaserSampleApp/README.md > wiki/samples-StockPurchaser.md
+            sed '1{/^# /d;}; '"$WIKI_LINK_PATTERN" samples/StockPurchaser/StockPurchaserSampleApp/README.md > wiki/samples-StockPurchaser.md
           fi
 
       - name: Push to wiki

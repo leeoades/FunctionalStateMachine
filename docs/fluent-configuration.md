@@ -226,6 +226,6 @@ var (newState, commands) = machine.Fire(new DoorTrigger.InsertKey(), DoorState.L
 
 ## Next Steps
 
-- Add business logic with [Guards](guards.md)
-- Attach data to states with [State Data](state-data.md)
-- Run actions on state entry/exit with [Entry/Exit Commands](entry-exit.md)
+- Add business logic with [Guards](Guards-and-Conditional-Flows.md)
+- Attach data to states with [State Data](State-Data-and-ModifyData.md)
+- Run actions on state entry/exit with [Entry/Exit Commands](Entry-and-Exit-Commands.md)

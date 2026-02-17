@@ -398,6 +398,6 @@ If logic is specific to one transition, use `.Execute()` on that transition inst
 
 ## Next Steps
 
-- Combine with [Execute Steps](execute-steps.md) for transition-specific commands
-- Use with [Hierarchical States](hierarchical-states.md) for parent/child entry/exit
-- See [Internal Transitions](internal-transitions.md) to understand when entry/exit skip
+- Combine with [Execute Steps](Execute-Steps-and-Multiple-Commands.md) for transition-specific commands
+- Use with [Hierarchical States](Hierarchical-States.md) for parent/child entry/exit
+- See [Internal Transitions](Internal-Transitions.md) to understand when entry/exit skip

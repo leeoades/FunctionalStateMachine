@@ -540,6 +540,6 @@ Two levels is usually enough. Deeper hierarchies get complex.
 
 ## Next Steps
 
-- Use with [Entry/Exit Commands](entry-exit.md) to understand how entry/exit work in hierarchies
-- Combine with [Guards](guards.md) for conditional parent transitions
-- See [Internal Transitions](internal-transitions.md) which children can have without affecting parent
+- Use with [Entry/Exit Commands](Entry-and-Exit-Commands.md) to understand how entry/exit work in hierarchies
+- Combine with [Guards](Guards-and-Conditional-Flows.md) for conditional parent transitions
+- See [Internal Transitions](Internal-Transitions.md) which children can have without affecting parent

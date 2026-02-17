@@ -467,6 +467,6 @@ Always return new data instances. Never modify existing data objects.
 
 ## Next Steps
 
-- Use data in [Guards](guards.md) to make decisions based on data values
-- Combine with [Conditional Steps](conditional-steps.md) for complex data transformations
-- See [Execute Steps](execute-steps.md) to emit commands using updated data
+- Use data in [Guards](Guards-and-Conditional-Flows.md) to make decisions based on data values
+- Combine with [Conditional Steps](Conditional-Steps.md) for complex data transformations
+- See [Execute Steps](Execute-Steps-and-Multiple-Commands.md) to emit commands using updated data

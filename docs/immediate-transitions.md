@@ -507,6 +507,6 @@ Not every state needs an immediate transition. Use triggers for external events.
 
 ## Next Steps
 
-- Combine with [Guards](guards.md) to understand condition evaluation
-- See [Hierarchical States](hierarchical-states.md) where substates can have immediate transitions
-- Learn about [Entry/Exit Commands](entry-exit.md) that run during immediate transitions
+- Combine with [Guards](Guards-and-Conditional-Flows.md) to understand condition evaluation
+- See [Hierarchical States](Hierarchical-States.md) where substates can have immediate transitions
+- Learn about [Entry/Exit Commands](Entry-and-Exit-Commands.md) that run during immediate transitions

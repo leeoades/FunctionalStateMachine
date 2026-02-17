@@ -454,6 +454,6 @@ If an event logically means "leave and re-enter", use `.TransitionTo(sameState)`
 
 ## Next Steps
 
-- Learn about [Entry and Exit Commands](entry-exit.md) to understand what gets skipped
-- See [Execute Steps](execute-steps.md) for emitting commands in transitions
-- Compare with [Hierarchical States](hierarchical-states.md) where substates can have internal transitions
+- Learn about [Entry and Exit Commands](Entry-and-Exit-Commands.md) to understand what gets skipped
+- See [Execute Steps](Execute-Steps-and-Multiple-Commands.md) for emitting commands in transitions
+- Compare with [Hierarchical States](Hierarchical-States.md) where substates can have internal transitions

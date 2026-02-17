@@ -484,6 +484,6 @@ Use `ModifyData` for data changes. Execute should only create commands.
 
 ## Next Steps
 
-- Combine with [Entry/Exit Commands](entry-exit.md) for lifecycle actions
-- Use [ModifyData](state-data.md) to update data before executing commands
-- See [Conditional Steps](conditional-steps.md) for branching within execute steps
+- Combine with [Entry/Exit Commands](Entry-and-Exit-Commands.md) for lifecycle actions
+- Use [ModifyData](State-Data-and-ModifyData.md) to update data before executing commands
+- See [Conditional Steps](Conditional-Steps.md) for branching within execute steps

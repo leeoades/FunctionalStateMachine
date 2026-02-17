@@ -205,6 +205,6 @@ If your If/ElseIf chain is very long, consider refactoring.
 
 ## Next Steps
 
-- Compare with [Guards](guards.md) to understand when to use each approach
-- Combine with [ModifyData](state-data.md) for conditional data updates
-- Use with [Execute Steps](execute-steps.md) for conditional command emission
+- Compare with [Guards](Guards-and-Conditional-Flows.md) to understand when to use each approach
+- Combine with [ModifyData](State-Data-and-ModifyData.md) for conditional data updates
+- Use with [Execute Steps](Execute-Steps-and-Multiple-Commands.md) for conditional command emission
