@@ -503,30 +503,6 @@ var machine = StateMachine<CustomState, ...>.Create()
     // ...
 ```
 
-### Custom Analysis Rules
-
-Extend `StateMachineAnalyzer`:
-
-```csharp
-public class CustomAnalyzer : StateMachineAnalyzer
-{
-    protected override void Analyze()
-    {
-        base.Analyze();
-        // Add custom checks
-    }
-}
-```
-
-## Future Architecture
-
-Potential architectural enhancements being considered:
-
-- Parallel states (orthogonal regions)
-- History states (deep and shallow)
-- State machine composition
-- Compiled state machines (AOT)
-
 ---
 
 *Last Updated: February 2026*
