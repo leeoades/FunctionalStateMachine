@@ -17,7 +17,7 @@
     <!-- Polyfills for C# 9+ features on netstandard2.0 -->
     <ItemGroup>
         <PackageReference Include="PolySharp" Version="1.14.1" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.0.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.2.0" />
     </ItemGroup>
 
   <ItemGroup>
