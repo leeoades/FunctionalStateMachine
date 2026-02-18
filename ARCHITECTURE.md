@@ -302,57 +302,31 @@ The library automatically manages entry/exit order.
 
 ### Build-Time Validation
 
-The `.Build()` method performs several checks:
+The `.Build()` method performs several checks internally to catch configuration errors early:
 
 #### 1. Reachability Analysis
 
-```csharp
-// Breadth-first search from initial state to find all reachable states
-var reachable = FindReachableStates(initialState);
-var unreachable = allStates.Except(reachable);
-// Warn about unreachable states
-```
+Detects states that can never be reached from the initial state using breadth-first search. The build will warn about unreachable states that may indicate missing transitions or configuration errors.
+
+**What you'll see**: Warning about unreachable states in your state machine configuration.
 
 #### 2. Cycle Detection
 
-```csharp
-// Detect immediate transition cycles
-foreach (var state in states)
-{
-    if (HasImmediateTransitionCycle(state))
-    {
-        // Error: state → ... → state without trigger
-    }
-}
-```
+Detects immediate transition cycles where states transition to themselves or form circular chains without any trigger, which would cause infinite loops.
+
+**What you'll see**: Error indicating a circular immediate transition chain was detected.
 
 #### 3. Ambiguous Transitions
 
-```csharp
-// Check for multiple unguarded transitions on same trigger
-var groups = transitions.GroupBy(t => (t.State, t.TriggerType));
-foreach (var group in groups)
-{
-    var unguarded = group.Where(t => !t.HasGuard);
-    if (unguarded.Count() > 1)
-    {
-        // Error: ambiguous transition
-    }
-}
-```
+Checks for multiple unguarded transitions on the same trigger from the same state, which would make the behavior ambiguous.
+
+**What you'll see**: Error indicating multiple unguarded transitions exist for the same trigger in a state.
 
 #### 4. Guard Ordering
 
-```csharp
-// Warn if guarded transitions follow unguarded
-foreach (var (state, trigger) in stateTriggerPairs)
-{
-    if (HasUnguardedThenGuarded(state, trigger))
-    {
-        // Error: guarded transitions unreachable
-    }
-}
-```
+Warns if unguarded transitions appear before guarded transitions on the same trigger, which makes the guarded transitions unreachable due to first-match semantics.
+
+**What you'll see**: Error indicating an unguarded transition makes subsequent guarded transitions unreachable.
 
 ### Opt-Out
 
