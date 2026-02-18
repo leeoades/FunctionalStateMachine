@@ -503,15 +503,6 @@ var machine = StateMachine<CustomState, ...>.Create()
     // ...
 ```
 
-### Custom Guard Evaluators
-
-```csharp
-public class AuthorizedGuard : IGuardEvaluator
-{
-    public bool Evaluate(User user) => user.IsAuthorized;
-}
-```
-
 ### Custom Analysis Rules
 
 Extend `StateMachineAnalyzer`:
