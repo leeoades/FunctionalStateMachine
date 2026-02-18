@@ -161,19 +161,21 @@ if (!canHandle)
 
 ### "Multiple transitions match this trigger"
 
+**When detected**: Build time (static analysis)
+
 **Error**:
 ```
-InvalidOperationException: Multiple unguarded transitions found for trigger 'Start' in state 'Idle'
+InvalidOperationException: State 'Idle' has an unguarded transition for trigger 'Start' at position 1, making subsequent transitions unreachable.
 ```
 
-**Cause**: Two or more unguarded transitions for same trigger/state.
+**Cause**: Two or more unguarded transitions for same trigger/state. The first-match semantics mean only the first transition executes, making others unreachable.
 
 **Problem**:
 ```csharp
 .For(MyState.Idle)
     .On<StartTrigger>()
         .TransitionTo(MyState.Active)
-    .On<StartTrigger>()  // ← Duplicate!
+    .On<StartTrigger>()  // ← Duplicate! Unreachable
         .TransitionTo(MyState.Pending)
 ```
 
@@ -231,19 +233,19 @@ Or handle it explicitly:
 **Common Mistakes**:
 
 ```csharp
-// ❌ Wrong: Evaluates immediately during build
+// ❌ Wrong: Capturing variable from outer scope
+var currentTime = DateTime.Now;
+.Guard(() => currentTime.Hour > 9)  // Captures currentTime at build, never changes
+
+// ✅ Right: Evaluates fresh on each Fire()
 .Guard(() => DateTime.Now.Hour > 9)
 
-// ✅ Right: Evaluates during Fire()
-.Guard(() => DateTime.Now.Hour > 9)  // This is actually correct
-
-// But if using data:
-// ❌ Wrong: Capturing wrong data
+// ❌ Wrong: Capturing data from outer scope
 var capturedData = data;
-.Guard(() => capturedData.IsReady)
+.Guard(() => capturedData.IsReady)  // Uses stale captured reference
 
-// ✅ Right: Use data parameter
-.Guard((data) => data.IsReady)
+// ✅ Right: Use lambda parameter
+.Guard((data) => data.IsReady)  // Receives current data on Fire()
 ```
 
 **Debugging Guards**:
