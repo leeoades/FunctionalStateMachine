@@ -1,0 +1,67 @@
+name: Benchmarks
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'test/FunctionalStateMachine.Benchmarks/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'test/FunctionalStateMachine.Benchmarks/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restore
+        run: dotnet restore test/FunctionalStateMachine.Benchmarks/FunctionalStateMachine.Benchmarks.csproj
+
+      - name: Build
+        run: dotnet build test/FunctionalStateMachine.Benchmarks/FunctionalStateMachine.Benchmarks.csproj --configuration Release --no-restore
+
+      - name: Run Benchmarks
+        run: dotnet run --project test/FunctionalStateMachine.Benchmarks/FunctionalStateMachine.Benchmarks.csproj --configuration Release --no-build
+
+      - name: Upload Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmark-results
+          path: test/FunctionalStateMachine.Benchmarks/BenchmarkDotNet.Artifacts/results/
+          retention-days: 30
+
+      - name: Comment PR with Results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const markdownPath = 'test/FunctionalStateMachine.Benchmarks/BenchmarkDotNet.Artifacts/results/StateMachineBenchmarks-report-github.md';
+            
+            if (fs.existsSync(markdownPath)) {
+              const markdown = fs.readFileSync(markdownPath, 'utf8');
+              
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `## 🚀 Benchmark Results\n\n${markdown}`
+              });
+            }

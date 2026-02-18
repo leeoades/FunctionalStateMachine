@@ -1,8 +1,21 @@
 # Functional State Machine
 
+[![NuGet](https://img.shields.io/nuget/v/FunctionalStateMachine.Core.svg)](https://www.nuget.org/packages/FunctionalStateMachine.Core/)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/FunctionalStateMachine.Core.svg)](https://www.nuget.org/packages/FunctionalStateMachine.Core/)
+[![CI](https://github.com/leeoades/FunctionalStateMachine/actions/workflows/ci.yml/badge.svg)](https://github.com/leeoades/FunctionalStateMachine/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 **A persistence-friendly state machine for .NET that returns commands instead of executing side effects.**
 
 Build deterministic, testable workflows where transitions produce logical commands that your application decides how and when to execute. Perfect for actor-based systems, event sourcing, and any scenario where state machines need to be persisted and rehydrated.
+
+## 📚 Quick Links
+
+- [Documentation](docs/index.md) - Complete feature guides
+- [Samples](samples/) - Example applications
+- [Architecture](ARCHITECTURE.md) - Technical deep-dive
+- [Contributing](CONTRIBUTING.md) - How to contribute
+- [Changelog](CHANGELOG.md) - Release history
 
 ## Why Choose This Library?
 
