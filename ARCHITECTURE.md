@@ -210,15 +210,15 @@ Each configuration method returns a specific type that exposes only valid next o
 ### Execution Order
 
 ```
-1. Exit Commands (current state)
+1. Guards (evaluate conditions)
    ↓
-2. Guards (evaluate conditions)
+2. Conditional Steps (if guards pass)
    ↓
-3. Conditional Steps (if guards pass)
+3. Data Modification
    ↓
-4. Data Modification
+4. Transition Commands
    ↓
-5. Transition Commands
+5. Exit Commands (current state)
    ↓
 6. Entry Commands (new state)
    ↓
@@ -249,16 +249,16 @@ Commands are collected in order:
 
 ```csharp
 .For(State)
-    .OnExit(() => new ExitCommand())          // 1. Exit old state
+    .OnExit(() => new ExitCommand())
     .On<Trigger>()
-        .Execute(() => new TransitionCommand1()) // 2. Transition starts
-        .Execute(() => new TransitionCommand2()) // 3. More commands
+        .Execute(() => new TransitionCommand1())
+        .Execute(() => new TransitionCommand2())
         .TransitionTo(NextState)
     .For(NextState)
-        .OnEntry(() => new EntryCommand())     // 4. Enter new state
+        .OnEntry(() => new EntryCommand())
 ```
 
-Results in: `[ExitCommand, TransitionCommand1, TransitionCommand2, EntryCommand]`
+Results in: `[TransitionCommand1, TransitionCommand2, ExitCommand, EntryCommand]`
 
 ## Hierarchical States
 
