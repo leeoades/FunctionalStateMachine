@@ -555,7 +555,7 @@ public class CustomAnalyzer : StateMachineAnalyzer
 
 ## Future Architecture
 
-See [ROADMAP.md](ROADMAP.md) for planned architectural enhancements:
+Potential architectural enhancements being considered:
 
 - Parallel states (orthogonal regions)
 - History states (deep and shallow)

@@ -14,7 +14,6 @@ Build deterministic, testable workflows where transitions produce logical comman
 - [Documentation](docs/index.md) - Complete feature guides
 - [Samples](samples/) - Example applications
 - [Architecture](ARCHITECTURE.md) - Technical deep-dive
-- [Roadmap](ROADMAP.md) - Future plans
 - [Contributing](CONTRIBUTING.md) - How to contribute
 - [Changelog](CHANGELOG.md) - Release history
 
