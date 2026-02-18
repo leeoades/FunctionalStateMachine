@@ -307,7 +307,7 @@ The `.Build()` method performs several checks:
 #### 1. Reachability Analysis
 
 ```csharp
-// BFS from initial state to find all reachable states
+// Breadth-first search from initial state to find all reachable states
 var reachable = FindReachableStates(initialState);
 var unreachable = allStates.Except(reachable);
 // Warn about unreachable states
