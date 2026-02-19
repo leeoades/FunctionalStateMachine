@@ -33,6 +33,15 @@ dotnet test
 
 ## How to Contribute
 
+### Updating AI Documentation
+
+When adding features or making API changes, please update the AI-focused documentation:
+
+- **`.copilot-instructions.md`** - Comprehensive guide for AI assistants
+- **`AI-USAGE-GUIDE.md`** - Quick reference guide (included in NuGet packages)
+
+See [docs/AI-Documentation-Maintenance.md](docs/AI-Documentation-Maintenance.md) for detailed guidance on keeping AI documentation current.
+
 ### Reporting Bugs
 
 Before creating a bug report, please check existing issues to avoid duplicates. When creating a bug report, include:

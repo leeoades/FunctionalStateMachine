@@ -30,3 +30,7 @@ Welcome to the Functional State Machine docs. Each guide introduces a feature, w
 
 - [Mermaid diagram generation](Mermaid-Diagram-Generation.md)
 - [Command runners](Command-Runners.md)
+
+## For Contributors
+
+- [AI documentation maintenance guide](AI-Documentation-Maintenance.md) - How to keep AI docs up-to-date
