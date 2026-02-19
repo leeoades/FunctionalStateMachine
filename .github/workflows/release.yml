@@ -41,7 +41,7 @@ jobs:
 
       - name: Pack
         run: |
-          RELEASE_NOTES=$(cat release-notes.txt)
+          RELEASE_NOTES="See https://github.com/leeoades/FunctionalStateMachine/releases/tag/v${VERSION} for full release notes"
           dotnet pack src/FunctionalStateMachine.Core/FunctionalStateMachine.Core.csproj --configuration Release --no-build --output ./artifacts --include-symbols --include-source /p:PackageVersion=${VERSION} /p:PackageReleaseNotes="$RELEASE_NOTES"
           dotnet pack src/FunctionalStateMachine.CommandRunner/FunctionalStateMachine.CommandRunner.csproj --configuration Release --no-build --output ./artifacts --include-symbols --include-source /p:PackageVersion=${VERSION} /p:PackageReleaseNotes="$RELEASE_NOTES"
           dotnet pack src/FunctionalStateMachine.Diagrams/FunctionalStateMachine.Diagrams.csproj --configuration Release --no-build --output ./artifacts /p:PackageVersion=${VERSION} /p:IncludeSymbols=false /p:PackageReleaseNotes="$RELEASE_NOTES"
