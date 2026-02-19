@@ -130,6 +130,22 @@ FunctionalStateMachine/
 4. **Add CHANGELOG entry** under `[Unreleased]`
 5. **Submit pull request** with bug description
 
+## Dependency Management
+
+### Dependabot Auto-Merge
+
+This repository uses Dependabot to keep dependencies up to date. To reduce maintenance burden, Dependabot PRs for **minor** and **patch** updates are automatically merged when all tests pass.
+
+**How it works:**
+- Dependabot creates PRs for NuGet and GitHub Actions updates weekly
+- Minor (0.x.0) and patch (0.0.x) updates are auto-merged after CI passes
+- Major version updates (x.0.0) require manual review due to potential breaking changes
+
+**Security:**
+- Auto-merge only applies to version updates, not security vulnerabilities
+- All updates run the full CI test suite before merging
+- Failed tests block auto-merge
+
 ## Release Process
 
 Releases are managed by maintainers following semantic versioning:
