@@ -6,6 +6,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-02-19
+
+### Added
+- **🤖 AI-focused documentation** - Comprehensive guides for AI coding assistants and developers
+  - **AI-USAGE-GUIDE.md** - Quick reference for AI assistants with essential patterns, package installation, and common scenarios
+  - **.copilot-instructions.md** - Detailed instructions for GitHub Copilot with complete API reference, examples, and best practices
+  - **.github/copilot-instructions.md** - Repository-specific guidance for working with the codebase
+  - Covers all major features: fluent builder, conditional transitions, hierarchical states, guards, immediate transitions, command runners
+- **🏗️ Professional repository infrastructure** - Complete GitHub setup for open-source project management
+  - **CI/CD workflows**: Continuous integration, benchmark tracking, automated dependency updates, stale issue management, wiki publishing
+  - **Issue templates**: Structured forms for bug reports, feature requests, and documentation improvements
+  - **Pull request template**: Comprehensive checklist for changes, testing, and documentation
+  - **.editorconfig**: 140+ code style rules for consistent formatting across contributors
+  - **Dependabot configuration**: Weekly automated updates for NuGet packages and GitHub Actions
+- **📚 Enhanced documentation** - Comprehensive guides for all audiences
+  - **ARCHITECTURE.md** - Technical deep-dive covering core principles, type system, builder pattern, transition execution, hierarchical states, static analysis, and performance considerations
+  - **TROUBLESHOOTING.md** - Practical problem-solving guide with 25+ scenarios covering build errors, runtime issues, configuration problems, and common patterns
+  - **CONTRIBUTING.md** - Complete contribution guide with getting started, bug reporting, feature requests, PR workflow, coding conventions, and testing standards
+  - **CODE_OF_CONDUCT.md** - Community guidelines based on Contributor Covenant 2.0
+  - **IMPROVEMENTS_SUMMARY.md** - Comprehensive summary of repository improvements and enhancements
+  - **RELEASE.md** - Guide for maintainers on the release process
+- **⚡ Performance benchmarking infrastructure** - Complete BenchmarkDotNet suite
+  - New `FunctionalStateMachine.Benchmarks` project with 6 benchmarks
+  - Measures Fire operations: simple, with guards, with entry/exit, with multiple commands
+  - Measures Build operations: simple machines and complex machines
+  - GitHub Actions workflow for tracking performance across changes
+  - Benchmark results uploaded as artifacts and commented on PRs
+- **📦 Package improvements** - Better NuGet consumer experience
+  - XML documentation enabled for `FunctionalStateMachine.Core` and `FunctionalStateMachine.CommandRunner`
+  - IntelliSense tooltips for all public APIs
+  - Created `assets/` directory for package icons
+  - Enhanced README with badges for NuGet version, downloads, CI status, and license
+
 ## [1.1.0] - 2026-02-16
 
 ### Changed
