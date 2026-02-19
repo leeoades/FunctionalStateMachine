@@ -14,6 +14,7 @@ Build deterministic, testable workflows where transitions produce logical comman
 - [Documentation](docs/index.md) - Complete feature guides
 - [Samples](samples/) - Example applications
 - [Architecture](ARCHITECTURE.md) - Technical deep-dive
+- [AI Usage Guide](AI-USAGE-GUIDE.md) - Guide for AI coding assistants
 - [Contributing](CONTRIBUTING.md) - How to contribute
 - [Changelog](CHANGELOG.md) - Release history
 
@@ -496,6 +497,35 @@ dotnet add package FunctionalStateMachine.CommandRunner
 # Optional: Build-time diagram generator
 dotnet add package FunctionalStateMachine.Diagrams
 ```
+
+---
+
+## Using with AI Coding Assistants
+
+This library includes comprehensive AI-friendly documentation to help coding assistants understand how to effectively use and integrate FunctionalStateMachine in your projects.
+
+### For Developers
+
+When working with AI assistants (GitHub Copilot, Claude, ChatGPT, etc.):
+
+1. **Share the AI Usage Guide** - Point your AI assistant to [AI-USAGE-GUIDE.md](AI-USAGE-GUIDE.md) for quick reference patterns
+2. **Reference Full Instructions** - The [.copilot-instructions.md](.copilot-instructions.md) file contains comprehensive guidance
+3. **Use in Prompts** - Include context like: "Using FunctionalStateMachine library, create a state machine for [your use case]"
+
+### For AI Assistants
+
+When a user is working with FunctionalStateMachine:
+
+- **Quick Reference**: See [AI-USAGE-GUIDE.md](AI-USAGE-GUIDE.md) for essential patterns
+- **Complete Guide**: See [.copilot-instructions.md](.copilot-instructions.md) for comprehensive instructions
+- **Feature Updates**: Check [CHANGELOG.md](CHANGELOG.md) for version-specific features
+
+These documents provide:
+- Type pattern templates (State, Trigger, Data, Command)
+- Fluent API usage patterns
+- Common pitfalls and solutions
+- Testing approaches
+- Command dispatching patterns
 
 ---
 
