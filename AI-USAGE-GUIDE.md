@@ -14,21 +14,22 @@ dotnet add package FunctionalStateMachine.Core
 // 1. States (enum)
 public enum MyState { StateA, StateB, StateC }
 
-// 2. Triggers (abstract record with sealed subtypes)
+// 2. Triggers (abstract record with subtypes)
+// Note: 'sealed' is optional but recommended
 public abstract record MyTrigger
 {
-    public sealed record DoAction(string Value) : MyTrigger;
-    public sealed record Complete : MyTrigger;
+    public record DoAction(string Value) : MyTrigger;
+    public record Complete : MyTrigger;
 }
 
-// 3. Data (sealed record) - optional
-public sealed record MyData(int Counter, string Status);
+// 3. Data (record) - optional
+public record MyData(int Counter, string Status);
 
-// 4. Commands (abstract record with sealed subtypes)
+// 4. Commands (abstract record with subtypes)
 public abstract record MyCommand
 {
-    public sealed record SaveData(string Data) : MyCommand;
-    public sealed record SendNotification(string Message) : MyCommand;
+    public record SaveData(string Data) : MyCommand;
+    public record SendNotification(string Message) : MyCommand;
 }
 ```
 
@@ -191,16 +192,16 @@ public enum OrderState { Cart, Processing, Completed }
 
 public abstract record OrderTrigger
 {
-    public sealed record AddItem(string Id) : OrderTrigger;
-    public sealed record Checkout : OrderTrigger;
+    public record AddItem(string Id) : OrderTrigger;
+    public record Checkout : OrderTrigger;
 }
 
-public sealed record OrderData(List<string> Items, decimal Total);
+public record OrderData(List<string> Items, decimal Total);
 
 public abstract record OrderCommand
 {
-    public sealed record AddToCart(string Id) : OrderCommand;
-    public sealed record ChargeCard(decimal Amount) : OrderCommand;
+    public record AddToCart(string Id) : OrderCommand;
+    public record ChargeCard(decimal Amount) : OrderCommand;
 }
 
 var machine = StateMachine<OrderState, OrderTrigger, OrderData, OrderCommand>
