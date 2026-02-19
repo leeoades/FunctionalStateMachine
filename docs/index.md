@@ -2,9 +2,10 @@
 
 Welcome to the Functional State Machine docs. Each guide introduces a feature, why it is useful, and simple to advanced examples.
 
-## Core Concepts
+## Getting Started
 
 - [Packages and when to reference them](Packages.md)
+- [AI Usage Guide](../AI-USAGE-GUIDE.md) - Quick reference for AI coding assistants
 - [Commands instead of side effects](Commands-Instead-of-Side-Effects.md)
 
 ## Core Features
@@ -29,3 +30,7 @@ Welcome to the Functional State Machine docs. Each guide introduces a feature, w
 
 - [Mermaid diagram generation](Mermaid-Diagram-Generation.md)
 - [Command runners](Command-Runners.md)
+
+## For Contributors
+
+- [AI documentation maintenance guide](AI-Documentation-Maintenance.md) - How to keep AI docs up-to-date
