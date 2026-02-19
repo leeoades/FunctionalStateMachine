@@ -82,6 +82,30 @@ Enhancement suggestions are welcome! Please provide:
 - Follow standard .NET naming conventions
 - Enable nullable reference types
 
+### Fluent API Formatting
+
+The state machine builder uses a fluent API with hierarchical indentation to reflect the logical structure:
+
+```csharp
+var machine = StateMachine<State, Trigger, Data, Command>.Create()
+    .StartWith(State.Initial)
+    .For(State.Initial)
+        .On<Trigger.Start>()
+            .TransitionTo(State.Running)
+            .Execute(() => new Command.Log("Started"))
+    .Build();
+```
+
+**Indentation levels:**
+- Top-level methods (`.StartWith()`, `.For()`, `.Build()`): +4 spaces from assignment
+- Trigger handlers (`.On<>()`, `.OnEntry()`): +8 spaces
+- Transition configuration (`.TransitionTo()`, `.Execute()`): +12 spaces
+
+**IDE Support:**
+- JetBrains Rider/ReSharper: The `.editorconfig` includes settings that maintain this pattern automatically
+- Visual Studio: Limited auto-format support; may require manual indentation adjustment
+- See [Fluent API Formatting Guide](docs/Fluent-API-Formatting.md) for detailed information
+
 ### Testing
 
 - Write tests using xUnit

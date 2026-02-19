@@ -211,3 +211,43 @@ dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggesti
 # Roslynator
 roslynator_accessibility_modifiers = explicit
 roslynator_enum_has_flag_style = method
+
+# ReSharper / Rider - Fluent API and Method Chain Formatting
+# These settings help maintain hierarchical indentation in fluent state machine configurations
+# Note: Visual Studio's built-in formatter has limited support for method chain indentation.
+# Users of VS may need to manually maintain the indentation pattern shown in samples.
+
+# Wrap each method call in a chain on its own line
+resharper_wrap_chained_method_calls = chop_if_long
+
+# Don't add an extra line break before the first method call
+resharper_wrap_before_first_method_call = false
+
+# Keep dots at the start of lines (standard C# style)
+resharper_place_simple_accessor_on_single_line = false
+
+# Align multiline method chains by the first method call
+resharper_align_multiline_calls_chain = false
+
+# Standard indentation for nested structures
+resharper_indent_nested_fixed_width_lists = true
+resharper_indent_nested_for_statement = true
+resharper_indent_nested_foreach_statement = true
+resharper_indent_nested_while_statement = true
+
+# Method argument wrapping
+resharper_wrap_arguments_style = chop_if_long
+resharper_max_invocation_arguments_on_line = 8
+
+# Keep parentheses on same line
+resharper_wrap_before_invocation_lpar = false
+resharper_wrap_after_invocation_lpar = false
+
+# Indentation for method parameters
+resharper_indent_invocation_pars = inside
+
+# Expression alignment
+resharper_align_multiline_expression = false
+
+# Continuous line indentation multiplier (1 = same as base indent)
+resharper_continuous_indent_multiplier = 1
