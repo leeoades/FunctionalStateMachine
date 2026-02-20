@@ -8,7 +8,6 @@ on:
 
 permissions:
   contents: read
-  administration: write
 
 jobs:
   protect-main:
@@ -17,7 +16,9 @@ jobs:
       - name: Apply main branch protection rules
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # Requires a PAT with 'repo' scope (for branch protection admin rights)
+          # stored as the PAT repository secret. GITHUB_TOKEN cannot manage branch protection.
+          github-token: ${{ secrets.PAT }}
           script: |
             await github.rest.repos.updateBranchProtection({
               owner: context.repo.owner,
