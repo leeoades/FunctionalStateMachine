@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  administration: write
 
 jobs:
   protect-main:
