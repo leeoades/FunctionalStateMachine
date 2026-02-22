@@ -22,4 +22,22 @@
         <PackageReference Include="PolySharp" Version="1.15.0" PrivateAssets="all" />
     </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\FunctionalStateMachine.Core.Generator\FunctionalStateMachine.Core.Generator.csproj"
+                          OutputItemType="Analyzer"
+                          ReferenceOutputAssembly="false" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\FunctionalStateMachine.Core.Generator\bin\$(Configuration)\netstandard2.0\FunctionalStateMachine.Core.Generator.dll"
+              Pack="true"
+              PackagePath="analyzers/dotnet/cs"
+              Visible="false" />
+        <None Include="..\FunctionalStateMachine.Core.Generator\bin\$(Configuration)\netstandard2.0\FunctionalStateMachine.Core.Generator.pdb"
+              Pack="true"
+              PackagePath="analyzers/dotnet/cs"
+              Visible="false"
+              Condition="Exists('..\FunctionalStateMachine.Core.Generator\bin\$(Configuration)\netstandard2.0\FunctionalStateMachine.Core.Generator.pdb')" />
+    </ItemGroup>
+
 </Project>
