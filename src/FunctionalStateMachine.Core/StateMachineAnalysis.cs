@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace FunctionalStateMachine.Core;
@@ -26,6 +27,13 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
     /// <summary>
     /// Analyze the state machine configuration for potential issues.
     /// </summary>
+#if NET8_0_OR_GREATER
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode",
+        Justification = "AnalyzeUnusedTriggers uses reflection to scan for derived trigger types. " +
+                        "In trimmed builds, trigger types removed by the trimmer won't be found, " +
+                        "so no 'unused trigger' warnings will be emitted for them. This is acceptable " +
+                        "since trimmed types are genuinely unused by the application.")]
+#endif
     public static AnalysisResult Analyze(
         IReadOnlyDictionary<TState, StateMachine<TState, TTrigger, TData, TCommand>.StateDefinition> states,
         TState initialState)
@@ -421,6 +429,9 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
     /// <summary>
     /// Detect trigger types that are defined but never used in any transition.
     /// </summary>
+#if NET8_0_OR_GREATER
+    [RequiresUnreferencedCode("Uses reflection to discover derived trigger types in the assembly")]
+#endif
     private static void AnalyzeUnusedTriggers(
         IReadOnlyDictionary<TState, StateMachine<TState, TTrigger, TData, TCommand>.StateDefinition> states,
         AnalysisResult result)
@@ -463,6 +474,9 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
         }
     }
 
+#if NET8_0_OR_GREATER
+    [RequiresUnreferencedCode("Uses Assembly.GetTypes() which may not return all types in trimmed builds")]
+#endif
     private static HashSet<Type> GetAllTriggerTypes(Type triggerType)
     {
         var types = new HashSet<Type>();
@@ -494,6 +508,9 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
         return types;
     }
 
+#if NET8_0_OR_GREATER
+    [RequiresUnreferencedCode("Uses Type.GetProperty() to inspect non-public properties, which may be removed by trimming")]
+#endif
     private static bool IsRecordType(Type type)
     {
         // Records are detected by checking for the generated 'EqualityContract' property
