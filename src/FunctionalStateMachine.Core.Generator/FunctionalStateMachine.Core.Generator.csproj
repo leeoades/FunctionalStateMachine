@@ -8,6 +8,11 @@
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <NoWarn>$(NoWarn);RS1035</NoWarn>
     <IsPackable>false</IsPackable>
+
+    <!-- This is a build-time-only analyzer; do not trim or publish it as a runtime dependency -->
+    <IsPublishable>false</IsPublishable>
+    <PublishTrimmed>false</PublishTrimmed>
+    <PublishAot>false</PublishAot>
   </PropertyGroup>
 
   <ItemGroup>

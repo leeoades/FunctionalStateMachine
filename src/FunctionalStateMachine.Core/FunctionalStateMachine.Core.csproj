@@ -15,6 +15,9 @@
         
         <!-- AOT and trimming compatibility (net8.0+) -->
         <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</IsAotCompatible>
+        <!-- Prevent trim/AOT flags from being applied to the netstandard2.0 build by consuming apps -->
+        <PublishTrimmed Condition="'$(TargetFramework)' == 'netstandard2.0'">false</PublishTrimmed>
+        <PublishAot Condition="'$(TargetFramework)' == 'netstandard2.0'">false</PublishAot>
     </PropertyGroup>
 
     <!-- Polyfills for C# 9+ features on netstandard2.0 -->
