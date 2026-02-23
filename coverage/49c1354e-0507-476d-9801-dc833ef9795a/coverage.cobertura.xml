@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<coverage line-rate="0.8823000000000001" branch-rate="0.6" version="1.9" timestamp="1771845892" lines-covered="15" lines-valid="17" branches-covered="6" branches-valid="10">
+  <sources>
+    <source>/home/runner/work/FunctionalStateMachine/FunctionalStateMachine/src/FunctionalStateMachine.CommandRunner/</source>
+  </sources>
+  <packages>
+    <package name="FunctionalStateMachine.CommandRunner" line-rate="0.8823000000000001" branch-rate="0.6" complexity="16">
+      <classes>
+        <class name="FunctionalStateMachine.CommandRunner.CommandRunnerOptions" filename="CommandRunnerOptions.cs" line-rate="1" branch-rate="1" complexity="3">
+          <methods>
+            <method name="get_MissingBehavior" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="7" hits="7" branch="False" />
+              </lines>
+            </method>
+            <method name="get_Lifetime" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="8" hits="14" branch="False" />
+              </lines>
+            </method>
+            <method name="get_AutoRegisterRunners" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="9" hits="10" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="7" hits="7" branch="False" />
+            <line number="8" hits="14" branch="False" />
+            <line number="9" hits="10" branch="False" />
+          </lines>
+        </class>
+        <class name="FunctionalStateMachine.CommandRunner.CommandRunnerRegistration" filename="CommandRunnerRegistration.cs" line-rate="1" branch-rate="0.5" complexity="3">
+          <methods>
+            <method name="get_Register" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="9" hits="8" branch="False" />
+              </lines>
+            </method>
+            <method name=".ctor" signature="(System.Action`2&lt;Microsoft.Extensions.DependencyInjection.IServiceCollection,FunctionalStateMachine.CommandRunner.CommandRunnerOptions&gt;)" line-rate="1" branch-rate="0.5" complexity="2">
+              <lines>
+                <line number="7" hits="3" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="9" hits="8" branch="False" />
+            <line number="7" hits="3" branch="False" />
+          </lines>
+        </class>
+        <class name="FunctionalStateMachine.CommandRunner.CommandRunnerRegistry" filename="CommandRunnerRegistry.cs" line-rate="1" branch-rate="0.5" complexity="4">
+          <methods>
+            <method name="Register" signature="(FunctionalStateMachine.CommandRunner.CommandRunnerRegistration)" line-rate="1" branch-rate="0.5" complexity="2">
+              <lines>
+                <line number="12" hits="3" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="17" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="13" hits="3" branch="False" />
+                <line number="14" hits="3" branch="False" />
+              </lines>
+            </method>
+            <method name="TryGet" signature="(FunctionalStateMachine.CommandRunner.CommandRunnerRegistration&amp;)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="18" hits="5" branch="False" />
+              </lines>
+            </method>
+            <method name=".cctor" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="8" hits="1" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="12" hits="3" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="17" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="13" hits="3" branch="False" />
+            <line number="14" hits="3" branch="False" />
+            <line number="18" hits="5" branch="False" />
+            <line number="8" hits="1" branch="False" />
+          </lines>
+        </class>
+        <class name="FunctionalStateMachine.CommandRunner.ServiceCollectionExtensions" filename="ServiceCollectionExtensions.cs" line-rate="0.7142000000000001" branch-rate="0.6666" complexity="6">
+          <methods>
+            <method name="AddCommandRunners" signature="(Microsoft.Extensions.DependencyInjection.IServiceCollection,FunctionalStateMachine.CommandRunner.CommandRunnerOptions)" line-rate="0.7142000000000001" branch-rate="0.6666" complexity="6">
+              <lines>
+                <line number="11" hits="5" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="1" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="13" hits="5" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="16" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="14" hits="5" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="32" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="16" hits="0" branch="False" />
+                <line number="17" hits="0" branch="False" />
+                <line number="20" hits="5" branch="False" />
+                <line number="21" hits="4" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="11" hits="5" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="1" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="13" hits="5" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="16" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="14" hits="5" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="32" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="16" hits="0" branch="False" />
+            <line number="17" hits="0" branch="False" />
+            <line number="20" hits="5" branch="False" />
+            <line number="21" hits="4" branch="False" />
+          </lines>
+        </class>
+      </classes>
+    </package>
+  </packages>
+</coverage>

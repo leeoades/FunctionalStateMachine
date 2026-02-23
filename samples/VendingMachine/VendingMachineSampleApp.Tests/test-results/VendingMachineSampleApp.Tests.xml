@@ -1,0 +1,18 @@
+<testsuites>
+  <testsuite name="VendingMachineSampleApp.Tests.dll" tests="5" skipped="0" failures="0" errors="0" time="0.1097503" timestamp="2026-02-23T11:24:52" hostname="runnervmwffz4" id="0" package="VendingMachineSampleApp.Tests.dll">
+    <properties />
+    <testcase classname="VendingMachineSampleApp.Tests.VendingMachineSampleTests" name="InsertMoney_NoChange_GoesToIdle" time="0.0988043" />
+    <testcase classname="VendingMachineSampleApp.Tests.VendingMachineSampleTests" name="InsertMoney_Enough_TransitionsToIdle" time="0.0050755" />
+    <testcase classname="VendingMachineSampleApp.Tests.VendingMachineSampleTests" name="SelectItem_OutOfStock_TransitionsToOutOfStock" time="0.0007044" />
+    <testcase classname="VendingMachineSampleApp.Tests.VendingMachineSampleTests" name="SelectItem_InStock_TransitionsToPayment" time="0.0042572" />
+    <testcase classname="VendingMachineSampleApp.Tests.VendingMachineSampleTests" name="InsertMoney_PartialPayment_StaysInMoneyDue" time="0.0009089" />
+    <system-out>
+Test Framework Informational Messages:
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 9.0.12)
+[xUnit.net 00:00:00.10]   Discovering: VendingMachineSampleApp.Tests
+[xUnit.net 00:00:00.14]   Discovered:  VendingMachineSampleApp.Tests
+[xUnit.net 00:00:00.15]   Starting:    VendingMachineSampleApp.Tests
+[xUnit.net 00:00:00.36]   Finished:    VendingMachineSampleApp.Tests
+</system-out>
+  </testsuite>
+</testsuites>

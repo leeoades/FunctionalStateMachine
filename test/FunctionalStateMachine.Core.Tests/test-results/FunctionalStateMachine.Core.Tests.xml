@@ -1,0 +1,177 @@
+<testsuites>
+  <testsuite name="FunctionalStateMachine.Core.Tests.dll" tests="153" skipped="0" failures="0" errors="0" time="4.331842099999998" timestamp="2026-02-23T11:24:41" hostname="runnervmwffz4" id="0" package="FunctionalStateMachine.Core.Tests.dll">
+    <properties />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineInvalidOperationTests" name="Build_ThrowsWhenImmediateTransitionTargetsUnconfiguredState" time="0.0765376" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineNoDataInvalidOperationTests" name="InitialState_ThrowsWhenNoInitialStateConfigured" time="0.0828130" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineInvalidOperationTests" name="Build_ThrowsWhenParentStateNotConfigured" time="0.0104797" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineInvalidOperationTests" name="Start_ThrowsOnImmediateTransitionLoopWhenAnalysisSkipped" time="0.0249594" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineInvalidOperationTests" name="Build_ThrowsWhenStartsWithIsNotDirectChild" time="0.0005706" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineImmediateTransitionTests" name="ImmediateTransition_ExecutesCommands" time="0.1271537" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineInvalidOperationTests" name="Build_ThrowsWhenStartsWithStateNotConfigured" time="0.0089132" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineImmediateTransitionTests" name="Fire_AppliesImmediateTransitionsAfterEntry" time="0.0206239" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineImmediateTransitionTests" name="Start_AppliesEntryAndImmediateTransition" time="0.0015268" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineImmediateTransitionTests" name="ImmediateTransition_WithoutGuard_Transitions" time="0.0103575" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineImmediateTransitionTests" name="ImmediateTransitionGuard_CanBlockTransition" time="0.0125097" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineImmediateTransitionTests" name="ImmediateTransitionLoop_Throws" time="0.0008228" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineInvalidOperationTests" name="Fire_ThrowsWhenStateIsNotConfigured" time="0.0810776" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineInvalidOperationTests" name="Fire_ThrowsWhenCurrentStateIsParent" time="0.0007050" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineExecuteNoDataOverloadTests" name="Execute_NoDataOverloads_ReturnExpectedCommands" time="0.2134969" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineInvalidOperationTests" name="Build_ThrowsWhenImmediateTransitionMissingTargetState" time="0.0041969" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineInvalidOperationTests" name="Build_ThrowsWhenConditionalTransitionTargetsUnconfiguredState" time="0.0122343" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineInvalidOperationTests" name="Build_ThrowsWhenStartsWithHasNoChildren" time="0.0003630" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineInvalidOperationTests" name="InitialState_ThrowsWhenNoInitialStateConfigured" time="0.0003019" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineInvalidOperationTests" name="Build_ThrowsOnHierarchyCycle" time="0.0032866" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineInvalidOperationTests" name="InitialState_ThrowsWhenParentMissingInitialSubState" time="0.0016038" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineValidationTests" name="Build_ThrowsWhenTransitionToUnconfiguredState" time="0.0411902" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.TriggerTypeRegistryTests" name="MultipleMachines_SameTrigger_EachUsesSubsetOfTriggers_BothBuildSuccessfully" time="0.1826512" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="If_NoDataTransition_FuncTriggerBool_EvaluatesPredicate" time="0.1096257" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.TriggerTypeRegistryTests" name="MultipleMachines_SameTrigger_MachinesAreIndependent" time="0.0047482" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.TriggerTypeRegistryTests" name="MultipleMachines_SameTrigger_BothMachinesBuildAndFireCorrectly" time="0.0007694" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.TriggerTypeRegistryTests" name="HierarchicalMachine_TriggerRegistry_PopulatedCorrectly" time="0.0056804" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.TriggerTypeRegistryTests" name="MultipleMachines_SameTrigger_RegistryPopulatedOnce" time="0.0087204" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineOnEntryOverloadTests" name="OnEntry_Overloads_ExecuteOnEntry" time="0.1438237" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="Guard_Immediate_FuncDataBool_EvaluatesGuard" time="0.0780623" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="Guard_GenericTransition_FuncDataDerivedTriggerBool_EvaluatesGuard" time="0.0195531" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="Guard_Transition_FuncStateDataBool_EvaluatesGuard" time="0.0050558" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="Guard_Transition_FuncDataTriggerBool_EvaluatesGuard" time="0.0008916" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="Guard_GenericTransition_FuncDataBool_EvaluatesGuard" time="0.0022261" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="Guard_NoDataTransition_LabelFuncStateTriggerBool_EvaluatesGuard" time="0.0058660" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="Guard_GenericTransition_LabelFuncStateDataDerivedTriggerBool_EvaluatesGuard" time="0.0005065" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineExecutionTests" name="Execute_OverloadsSupportMissingArguments" time="0.1206473" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="If_GenericTransition_FuncDataDerivedTriggerBool_EvaluatesPredicate" time="0.0042745" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineExecutionTests" name="Execute_UsesUpdatedDataFromModifyData" time="0.0037021" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.TriggerTypeRegistryTests" name="HierarchicalMachine_TriggersFire_ThroughParentAndChildStates" time="0.1074460" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="Guard_Transition_LabelFuncStateDataBool_EvaluatesGuard" time="0.0011301" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="Execute_Immediate_FuncIEnumerableCommand_ReturnsCommands" time="0.0015454" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineExecutionTests" name="Execute_AllowsMultipleCommands" time="0.0121424" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineExecutionTests" name="Execute_UsesDataBasedOnOrdering" time="0.0006414" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="OnExit_FuncStateDataCommand_ReturnsCommandWithStateAndData" time="0.0140454" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="Guard_NoDataGenericTransition_LabelFuncStateDerivedTriggerBool_EvaluatesGuard" time="0.0093364" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="ModifyData_Immediate_FuncDataData_UpdatesData" time="0.0037710" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="OnEntry_FuncIEnumerableCommand_ReturnsMultipleCommands" time="0.0009196" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="Guard_Transition_LabelFuncStateDataTriggerBool_EvaluatesGuard" time="0.0004685" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="OnExit_FuncDataCommand_ReturnsCommandWithData" time="0.0008348" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="OnExit_FuncCommand_ReturnsCommand" time="0.0068290" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="ModifyData_GenericConditional_FuncDataData_UpdatesData" time="0.0014529" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineModifyDataTests" name="ModifyData_GenericTransition_UpdatesDataWithDerivedTrigger" time="0.1063826" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="ElseIf_GenericConditional_FuncDataBool_EvaluatesPredicate" time="0.0041437" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineModifyDataTests" name="ModifyData_ConditionalBranch_UpdatesData" time="0.0040066" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="Guard_Transition_LabelFuncDataBool_EvaluatesGuard" time="0.0007624" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineModifyDataTests" name="ModifyData_ImmediateTransition_UpdatesData" time="0.0098934" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="Guard_NoDataTransition_LabelFuncStateBool_EvaluatesGuard" time="0.0116348" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineModifyDataTests" name="ModifyData_TransitionWithTriggerAndState_UpdatesData" time="0.0072852" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineModifyDataTests" name="ModifyData_GenericTransition_ChainsMultipleModifications" time="0.0004404" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="OnEntry_FuncDataCommand_ReturnsCommandWithData" time="0.0079523" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="Guard_NoDataTransition_FuncStateBool_EvaluatesGuard" time="0.0007605" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="ElseIf_GenericConditional_FuncDataDerivedTriggerBool_EvaluatesPredicate" time="0.0008878" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineModifyDataTests" name="ModifyData_NoData_IsNotAvailable" time="0.0049148" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineModifyDataTests" name="On_FromGenericTransition_SwitchesToNonGenericTrigger" time="0.0030523" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="OnEntry_FuncDataIEnumerableCommand_ReturnsMultipleCommandsWithData" time="0.0089315" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="OnEntry_FuncStateDataCommand_ReturnsCommandWithStateAndData" time="0.0007871" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="OnEntry_FuncCommand_ReturnsCommand" time="0.0007179" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.TriggerTypeRegistryTests" name="AnalyzeUnusedTriggers_ReportsWarning_WhenTriggerNotUsed" time="0.1017426" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.TriggerTypeRegistryTests" name="TriggerTypeRegistry_IsPopulatedByGenerator_ForAccessibleTrigger" time="0.0011762" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="If_GenericTransition_FuncDataBool_EvaluatesPredicate" time="0.0168210" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="ModifyData_Transition_FuncDataData_UpdatesData" time="0.0008591" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.TriggerTypeRegistryTests" name="AnalyzeUnusedTriggers_NoWarning_WhenAllTriggersUsed" time="0.0057040" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="ModifyData_GenericTransition_FuncDataDerivedTriggerData_UpdatesData" time="0.0037994" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineConditionalTests" name="ElseIf_OnSpecificTriggerType" time="0.1114832" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="If_Transition_FuncDataTriggerBool_EvaluatesPredicate" time="0.0065923" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="Guard_Transition_FuncDataBool_EvaluatesGuard" time="0.0008161" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="ModifyData_GenericTransition_FuncDataData_UpdatesData" time="0.0008033" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineConditionalTests" name="ElseIf_ThirdConditionMatches" time="0.0073377" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.ConfigurationExtensionOverloadTests" name="ModifyData_GenericConditional_FuncDataDerivedTriggerData_UpdatesData" time="0.0052771" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineConditionalTests" name="If_TrueBranchExecutesStepsInOrder" time="0.0177715" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineConditionalTests" name="If_NonGeneric_ElseIf_EvaluatesMultipleConditions" time="0.0389154" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineConditionalTests" name="If_NonGeneric_ElseIf_ModifyDataInEachBranch" time="0.0102980" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineConditionalTests" name="If_ConditionalTransitionToRequiresSingleTarget" time="0.0128188" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineConditionalTests" name="If_ElseBranchExecutesWhenPredicateIsFalse" time="0.0048305" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineConditionalTests" name="If_NonGeneric_Else_ExecutesWhenPredicateFalse" time="0.0006939" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineConditionalTests" name="If_AllowsSingleConditionalTransitionTo" time="0.0068670" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineStartTests" name="Start_ReturnsInitialStateAndEntryCommands" time="0.1395768" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineConditionalTests" name="ElseIf_StopsAtFirstMatch" time="0.0043117" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineConditionalTests" name="If_NonGeneric_ModifyData_UpdatesDataInBranch" time="0.0006812" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineConditionalTests" name="ElseIf_FirstConditionMatches" time="0.0006942" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineStartTests" name="Start_NoData_ReturnsInitialStateAndEntryCommands" time="0.0063443" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineConditionalTests" name="ElseIf_ElseExecutesWhenNoConditionMatches" time="0.0013808" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineConditionalTests" name="ElseIf_SecondConditionMatches" time="0.0009688" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineConditionalTests" name="ElseIf_WithModifyData" time="0.0013056" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineConditionalBranchTests" name="IfElseIfElse_SelectsExpectedBranch(amount: 15, expected: &quot;Large&quot;)" time="0.1175687" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineConditionalBranchTests" name="IfElseIfElse_SelectsExpectedBranch(amount: 7, expected: &quot;Medium&quot;)" time="0.0008222" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineConditionalBranchTests" name="IfElseIfElse_SelectsExpectedBranch(amount: 3, expected: &quot;Small&quot;)" time="0.0001295" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineGuardOverloadTests" name="Guard_NoData_Overloads_TestAcceptAndDeny" time="0.1758070" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineHierarchyTests" name="Fire_FromUndefinedState_ThrowsInvalidOperationException" time="0.0433406" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineHierarchyTests" name="Build_StartsWithNonChildState_ThrowsInvalidOperationException" time="0.0006284" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineNoDataFeatureTests" name="Immediately_WithExecute_NoData_ExecutesCommandsOnImmediateTransition" time="0.0831024" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineNoDataFeatureTests" name="Immediately_NoData_TransitionsWithoutTrigger" time="0.0005179" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineFireTests" name="Fire_UsesGuardsInOrder" time="0.1039831" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineNoDataFeatureTests" name="ConditionalTransitionTo_Generic_TransitionsToCorrectState" time="0.0200036" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineNoDataFeatureTests" name="ConditionalTransitionTo_NonGeneric_TransitionsToCorrectState" time="0.0015931" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineFireTests" name="Fire_ReturnsNewStateAndCommands" time="0.0097178" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineHierarchyTests" name="Fire_DoesNotRunParentExitEntryBetweenChildren" time="0.0539994" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineFireTests" name="Fire_UpdatesDataWhenConfigured" time="0.0022979" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineHierarchyTests" name="Build_ThrowsWhenParentHasNoInitialSubState" time="0.0003361" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineNoDataFeatureTests" name="SubStateOf_NoData_EstablishesHierarchy" time="0.0078930" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineNoDataFeatureTests" name="Immediately_WithGuard_NoData_OnlyTransitionsWhenGuardPasses" time="0.0070543" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineNoDataFeatureTests" name="SkipAnalysis_NoData_BuildsWithoutValidation" time="0.0002761" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineNoDataFeatureTests" name="OnEntry_NoData_ExecutesOnStateEntry" time="0.0009235" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineNoDataFeatureTests" name="Ignore_NonGenericTrigger_DoesNotThrow" time="0.0006421" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineHierarchyTests" name="Fire_UsesParentTransitions" time="0.0189830" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineNoDataFeatureTests" name="OnExit_NoData_ExecutesOnStateExit" time="0.0071263" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineHierarchyTests" name="Build_SubStateOfUndefinedParent_ThrowsInvalidOperationException" time="0.0003905" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineHierarchyTests" name="Build_TransitionToUndefinedState_ThrowsInvalidOperationException" time="0.0016369" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineGuardOverloadTests" name="Guard_Data_Overloads_TestAcceptAndDeny" time="0.1098970" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineAnalysisTests" name="Validate_WarnsAboutMultipleGuardedTransitions" time="0.0666274" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineTriggerTests" name="DerivedTrigger_MatchesByType" time="0.0913540" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineAnalysisTests" name="Validate_DetectsMultipleTransitionToInSameTransition" time="0.0141825" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineAnalysisTests" name="Validate_WarnsOnUnusedTriggers" time="0.0002142" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineAnalysisTests" name="Validate_DetectsImmediateTransitionInfiniteLoop3Steps" time="0.0097899" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineAnalysisTests" name="Validate_DetectsImmediateTransitionInfiniteLoop2Steps" time="0.0004908" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineNoDataConditionalTests" name="IfElseIfElse_NoData_SelectsExpectedBranch" time="0.0910456" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineAnalysisTests" name="Validate_MarksParentStatesReachable_WhenTransitionTargetsParent" time="0.0034237" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineAnalysisTests" name="Validate_DetectsImmediateTransitionInfiniteLoop1Step" time="0.0003317" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineAnalysisTests" name="Validate_DetectsUnguardedTransitionBeforeOtherTransitions" time="0.0005835" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineNoDataConditionalTests" name="If_WithTriggerPredicate_NoData_EvaluatesTrigger" time="0.0040019" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineAnalysisTests" name="Validate_DetectsTransitionToAfterConditionalChain" time="0.0055895" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineAnalysisTests" name="Validate_AllowsMultipleImmediateTransitionsWithoutCycle" time="0.0003047" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineAnalysisTests" name="Validate_DetectsUnreachableStates" time="0.0004201" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineAnalysisTests" name="Validate_MarksParentStatesReachable_WhenImmediateTransitionTargetsChild" time="0.0002486" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineAnalysisTests" name="Validate_DetectsAmbiguousTransitions" time="0.0009369" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineAnalysisTests" name="Validate_DetectsUnconfiguredConditionalTransitionTarget" time="0.0070553" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineAnalysisTests" name="Validate_CollectsConditionalTransitionTargets_StatesAreReachable" time="0.0003921" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineAnalysisTests" name="Validate_DetectsUnreachableGroupOfStates" time="0.0003980" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineAnalysisTests" name="Validate_MarksGrandparentStatesReachable_WhenTransitionTargetsNestedChild" time="0.0002343" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineAnalysisTests" name="Validate_AllowsGuardedAmbiguousTransitions" time="0.0004263" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineAnalysisTests" name="Validate_AllowsComplexReachableStateMachine" time="0.0003054" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineNoDataConditionalTests" name="IfElseIfElse_DerivedTrigger_NoData_SelectsExpectedBranch" time="0.0249864" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineAnalysisTests" name="Validate_AllowsUnguardedTransitionAsLast" time="0.0114374" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineAnalysisTests" name="Validate_AllowsTerminalStates" time="0.0004092" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineAnalysisTests" name="Validate_DetectsTransitionToInTwoConditionalChains" time="0.0006334" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineAnalysisTests" name="Validate_DetectsConditionalTransitionToAmbiguity" time="0.0010150" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineUnhandledTests" name="Fire_ThrowsWhenUnhandled" time="0.0592844" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineUnhandledTests" name="Fire_NoData_IgnoresDerivedTriggerWhenConfigured" time="0.0493734" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineUnhandledTests" name="Fire_InvokesOnUnhandledHandler" time="0.0013672" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineUnhandledTests" name="Fire_IgnoresTriggersWhenConfigured" time="0.0068663" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineExecuteOverloadTests" name="Execute_Overloads_ReturnExpectedCommands" time="0.1616663" />
+    <testcase classname="FunctionalStateMachine.Core.Tests.StateMachineBenchmarkTests" name="Benchmark_StateMachineDeclarationAndFire" time="0.6722612">
+      <system-out>Declaration iterations: 1000
+Total declaration time: 111 ms
+Avg declaration time: 0.1116 ms
+Fire iterations: 20000
+Total fire time: 426 ms
+Avg fire time: 0.021336 ms
+
+</system-out>
+    </testcase>
+    <system-out>
+Test Framework Informational Messages:
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 9.0.12)
+[xUnit.net 00:00:00.46]   Discovering: FunctionalStateMachine.Core.Tests
+[xUnit.net 00:00:00.78]   Discovered:  FunctionalStateMachine.Core.Tests
+[xUnit.net 00:00:00.79]   Starting:    FunctionalStateMachine.Core.Tests
+Benchmark declaration avg (ms): 0.1116
+Benchmark fire avg (ms): 0.021336
+[xUnit.net 00:00:02.46]   Finished:    FunctionalStateMachine.Core.Tests
+</system-out>
+  </testsuite>
+</testsuites>
