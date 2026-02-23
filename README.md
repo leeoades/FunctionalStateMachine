@@ -3,6 +3,7 @@
 [![NuGet](https://img.shields.io/nuget/v/FunctionalStateMachine.Core.svg)](https://www.nuget.org/packages/FunctionalStateMachine.Core/)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/FunctionalStateMachine.Core.svg)](https://www.nuget.org/packages/FunctionalStateMachine.Core/)
 [![CI](https://github.com/leeoades/FunctionalStateMachine/actions/workflows/ci.yml/badge.svg)](https://github.com/leeoades/FunctionalStateMachine/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/leeoades/FunctionalStateMachine/graph/badge.svg)](https://codecov.io/gh/leeoades/FunctionalStateMachine)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **A persistence-friendly state machine for .NET that returns commands instead of executing side effects.**
