@@ -30,7 +30,7 @@ jobs:
         run: dotnet build FunctionalStateMachine.sln --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test FunctionalStateMachine.sln --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --settings coverage.runsettings --results-directory ./coverage --logger "junit;LogFilePath=./test-results/{assembly}.xml"
+        run: dotnet test FunctionalStateMachine.sln --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --settings coverage.runsettings --results-directory ./coverage --logger "junit;LogFilePath=${{ github.workspace }}/test-results/{assembly}.xml"
 
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v5
