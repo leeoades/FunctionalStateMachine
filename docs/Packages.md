@@ -7,6 +7,8 @@ This library is split into a few packages so you can reference only what you nee
 The core state machine implementation. 
 Most consumers should reference this package otherwise what are you even doing here? 🤣
 
+It includes a bundled source generator (`FunctionalStateMachine.Core.Generator`) that registers your trigger types at compile time. This enables unused-trigger analysis and makes the library fully compatible with NativeAOT and `PublishTrimmed` — no extra package reference needed.
+
 ## FunctionalStateMachine.CommandRunner
 
 Optional command runner integration that dispatches commands through DI.
@@ -16,7 +18,7 @@ Use it when you want:
 - Command handlers as DI-resolved classes.
 - A built-in provider to run commands returned by the state machine.
 
-Note: It includes a source generator so the disptacher does not use reflection.
+Note: It includes a source generator so the dispatcher does not use reflection.
 
 ## FunctionalStateMachine.Diagrams
 

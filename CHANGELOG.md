@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-02-23
+
+### Added
+- **⚡ AOT and trim compatibility** — `FunctionalStateMachine.Core` and `FunctionalStateMachine.CommandRunner` are now fully compatible with NativeAOT (`PublishAot=true`), trimming (`PublishTrimmed=true`), and single-file publishing (`PublishSingleFile=true`) when targeting `net8.0+`
+- **🔧 Source-generated trigger registry** — New `FunctionalStateMachine.Core.Generator` Roslyn source generator bundled automatically inside the `FunctionalStateMachine.Core` NuGet package
+  - Detects all `StateMachine<…, TTrigger, …>.Create()` call sites at compile time and registers concrete trigger subtypes via a `[ModuleInitializer]`
+  - Replaces the previous reflection-based trigger type discovery (`Assembly.GetTypes()`) with zero-reflection runtime code
+  - Enables unused-trigger analysis on AOT and trimmed builds without any extra configuration
+- **📦 Multi-targeting** — `FunctionalStateMachine.Core` and `FunctionalStateMachine.CommandRunner` now ship both `netstandard2.0` and `net8.0` builds in the same NuGet package; the correct build is selected automatically by NuGet
+- **🔁 Multiple state machines sharing a trigger type** — Multiple state machines in the same project that share a `TTrigger` base type are fully supported; the generator registers trigger types once (deduplicated) and each machine independently reports unused triggers at `.Build()` time
+- **📚 New documentation pages**
+  - `docs/AOT-and-Trim-Compatibility.md` — Complete guide covering NativeAOT, `PublishTrimmed`, single-file publishing, and how the source generator eliminates reflection
+  - `docs/Target-Framework-Compatibility.md` — Framework targeting guide describing what each target (`netstandard2.0` vs `net8.0`) provides
+
 ## [1.2.0] - 2026-02-19
 
 ### Added
