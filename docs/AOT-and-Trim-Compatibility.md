@@ -34,16 +34,7 @@ Add `<PublishTrimmed>true</PublishTrimmed>` to your `.csproj`:
 </Project>
 ```
 
-Reference the source generator so the trigger registry is populated at startup:
-
-```xml
-<ItemGroup>
-  <ProjectReference Include="..." />
-  <!-- Or from NuGet: the generator is bundled inside FunctionalStateMachine.Core -->
-</ItemGroup>
-```
-
-When consuming the NuGet package, the generator is automatically included as an analyzer — no extra configuration needed.
+The source generator is bundled inside the `FunctionalStateMachine.Core` NuGet package and applied automatically — no extra package reference needed.
 
 Then publish:
 
@@ -123,10 +114,6 @@ var machineB = StateMachine<StateB, OrderTrigger, DataB, CmdB>.Create()
 ```
 
 Both machines build successfully — unused-trigger warnings are informational and never block construction.
-
-## Trim propagation to analyzer projects
-
-If you reference the library projects (rather than NuGet packages) from an application that sets `PublishTrimmed=true`, the trim flag propagates to referenced projects. The analyzer-only projects (`Diagrams`, `Core.Generator`, `CommandRunner.Generator`) handle this correctly: they set `<IsPublishable>false</IsPublishable>` so they are never part of the published output.
 
 ## Related pages
 
