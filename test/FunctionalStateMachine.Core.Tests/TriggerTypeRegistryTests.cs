@@ -151,7 +151,45 @@ public class TriggerTypeRegistryTests
         Assert.Equal(MultiAlphaState.Y, s2);    // machine2 still at Y
     }
 
-    // ── Hierarchical (sub-state) machines with trigger registry ──────────────
+    [Fact]
+    public void MultipleMachines_SameTrigger_EachUsesSubsetOfTriggers_BothBuildSuccessfully()
+    {
+        // machineAlpha only uses TriggerA (TriggerB is unused in Alpha)
+        // machineBeta only uses TriggerB (TriggerA is unused in Beta)
+        // Both should build successfully — unused-trigger analysis is per-machine and
+        // emits warnings (not errors), so a trigger unused in one machine doesn't block
+        // the other machine.
+
+        var machineAlpha = StateMachine<MultiAlphaState, AccessibleTrigger, AccessibleData, AccessibleCommand>.Create()
+            .StartWith(MultiAlphaState.X)
+            .For(MultiAlphaState.X)
+                .On<AccessibleTrigger.TriggerA>()   // TriggerB never used in Alpha
+                    .TransitionTo(MultiAlphaState.Y)
+            .For(MultiAlphaState.Y)
+                .On<AccessibleTrigger.TriggerA>()
+                    .TransitionTo(MultiAlphaState.X)
+            .Build();  // ⚠️ warning about TriggerB, but no error
+
+        var machineBeta = StateMachine<MultiBetaState, AccessibleTrigger, AccessibleData, AccessibleCommand>.Create()
+            .StartWith(MultiBetaState.P)
+            .For(MultiBetaState.P)
+                .On<AccessibleTrigger.TriggerB>()   // TriggerA never used in Beta
+                    .TransitionTo(MultiBetaState.Q)
+            .For(MultiBetaState.Q)
+                .On<AccessibleTrigger.TriggerB>()
+                    .TransitionTo(MultiBetaState.P)
+            .Build();  // ⚠️ warning about TriggerA, but no error
+
+        Assert.NotNull(machineAlpha);
+        Assert.NotNull(machineBeta);
+
+        // Both machines respond correctly to their own triggers
+        var (alphaNext, _, _) = machineAlpha.Fire(new AccessibleTrigger.TriggerA(), MultiAlphaState.X, new AccessibleData());
+        Assert.Equal(MultiAlphaState.Y, alphaNext);
+
+        var (betaNext, _, _) = machineBeta.Fire(new AccessibleTrigger.TriggerB(), MultiBetaState.P, new AccessibleData());
+        Assert.Equal(MultiBetaState.Q, betaNext);
+    }
 
     [Fact]
     public void HierarchicalMachine_TriggerRegistry_PopulatedCorrectly()

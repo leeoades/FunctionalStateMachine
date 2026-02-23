@@ -31,6 +31,11 @@ Welcome to the Functional State Machine docs. Each guide introduces a feature, w
 - [Mermaid diagram generation](Mermaid-Diagram-Generation.md)
 - [Command runners](Command-Runners.md)
 
+## Advanced
+
+- [Target framework compatibility (.NET Standard 2.0 vs .NET 8+)](Target-Framework-Compatibility.md)
+- [AOT and trim compatibility](AOT-and-Trim-Compatibility.md)
+
 ## For Contributors
 
 - [AI documentation maintenance guide](AI-Documentation-Maintenance.md) - How to keep AI docs up-to-date
