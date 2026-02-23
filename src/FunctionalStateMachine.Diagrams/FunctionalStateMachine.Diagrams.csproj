@@ -17,6 +17,11 @@
     
     <!-- Suppress warning about no lib/ref assemblies -->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
+
+    <!-- This is a build-time-only analyzer; do not trim or publish it as a runtime dependency -->
+    <IsPublishable>false</IsPublishable>
+    <PublishTrimmed>false</PublishTrimmed>
+    <PublishAot>false</PublishAot>
   </PropertyGroup>
 
   <ItemGroup>

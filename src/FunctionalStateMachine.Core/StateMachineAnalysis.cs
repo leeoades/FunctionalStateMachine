@@ -1,5 +1,3 @@
-using System.Reflection;
-
 namespace FunctionalStateMachine.Core;
 
 /// <summary>
@@ -420,14 +418,22 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
 
     /// <summary>
     /// Detect trigger types that are defined but never used in any transition.
+    /// Requires the FunctionalStateMachine.Core source generator to populate the
+    /// <see cref="TriggerTypeRegistry"/> at startup. Silently skips if not populated.
     /// </summary>
     private static void AnalyzeUnusedTriggers(
         IReadOnlyDictionary<TState, StateMachine<TState, TTrigger, TData, TCommand>.StateDefinition> states,
         AnalysisResult result)
     {
+        // Require source-generated type registry; skip if not populated
+        if (!TriggerTypeRegistry.TryGet<TTrigger>(out var allTriggerTypes))
+        {
+            return;
+        }
+
         // Collect all used trigger types
         var usedTriggers = new HashSet<object>();
-        
+
         foreach (var definition in states.Values)
         {
             foreach (var triggerKey in definition.Transitions.Keys)
@@ -436,21 +442,13 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
             }
         }
 
-        // Get all possible trigger types from the TTrigger type
-        var triggerType = typeof(TTrigger);
-        
-        // If TTrigger is a sealed record hierarchy, find all derived types
-        var allTriggerTypes = GetAllTriggerTypes(triggerType);
-        
         // Find unused trigger types
         foreach (var possibleTrigger in allTriggerTypes)
         {
-            // Check if this trigger type is used
-            bool isUsed = usedTriggers.Any(t => 
+            bool isUsed = usedTriggers.Any(t =>
             {
-                // Handle both type-based and value-based triggers
-                if (t is Type)
-                    return (Type)t == possibleTrigger;
+                if (t is Type type)
+                    return type == possibleTrigger;
                 return t.GetType() == possibleTrigger;
             });
 
@@ -463,47 +461,9 @@ internal static class StateMachineAnalyzer<TState, TTrigger, TData, TCommand>
         }
     }
 
-    private static HashSet<Type> GetAllTriggerTypes(Type triggerType)
-    {
-        var types = new HashSet<Type>();
-        
-        // Add the base trigger type if it's abstract/record
-        if (triggerType.IsAbstract || IsRecordType(triggerType))
-        {
-            // Find all derived types in the same assembly
-            var assembly = triggerType.Assembly;
-            foreach (var type in assembly.GetTypes())
-            {
-                // Check if it's a record/sealed record deriving from the trigger type
-                if (type != triggerType && 
-                    triggerType.IsAssignableFrom(type) && 
-                    !type.IsAbstract &&
-                    IsRecordType(type))
-                {
-                    types.Add(type);
-                }
-            }
-        }
-        
-        // Always add the trigger type itself as a fallback
-        if (types.Count == 0)
-        {
-            types.Add(triggerType);
-        }
-
-        return types;
-    }
-
-    private static bool IsRecordType(Type type)
-    {
-        // Records are detected by checking for the generated 'EqualityContract' property
-        return type.GetProperty("EqualityContract", 
-            BindingFlags.NonPublic | BindingFlags.Instance) != null;
-    }
-
     private static string GetTriggerTypeName(object triggerKey)
     {
-        // triggerKey is typically the trigger type or trigger value
-        return triggerKey.GetType().Name;
+        // triggerKey is either a Type (for On<T>() calls) or a trigger instance (for On(value) calls)
+        return triggerKey is Type type ? type.Name : triggerKey.GetType().Name;
     }
 }

@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
@@ -12,11 +12,35 @@
         <!-- XML Documentation -->
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <NoWarn>$(NoWarn);CS1591</NoWarn>
+        
+        <!-- AOT and trimming compatibility (net8.0+) -->
+        <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</IsAotCompatible>
+        <!-- Prevent trim/AOT flags from being applied to the netstandard2.0 build by consuming apps -->
+        <PublishTrimmed Condition="'$(TargetFramework)' == 'netstandard2.0'">false</PublishTrimmed>
+        <PublishAot Condition="'$(TargetFramework)' == 'netstandard2.0'">false</PublishAot>
     </PropertyGroup>
 
     <!-- Polyfills for C# 9+ features on netstandard2.0 -->
-    <ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
         <PackageReference Include="PolySharp" Version="1.15.0" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\FunctionalStateMachine.Core.Generator\FunctionalStateMachine.Core.Generator.csproj"
+                          OutputItemType="Analyzer"
+                          ReferenceOutputAssembly="false" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\FunctionalStateMachine.Core.Generator\bin\$(Configuration)\netstandard2.0\FunctionalStateMachine.Core.Generator.dll"
+              Pack="true"
+              PackagePath="analyzers/dotnet/cs"
+              Visible="false" />
+        <None Include="..\FunctionalStateMachine.Core.Generator\bin\$(Configuration)\netstandard2.0\FunctionalStateMachine.Core.Generator.pdb"
+              Pack="true"
+              PackagePath="analyzers/dotnet/cs"
+              Visible="false"
+              Condition="Exists('..\FunctionalStateMachine.Core.Generator\bin\$(Configuration)\netstandard2.0\FunctionalStateMachine.Core.Generator.pdb')" />
     </ItemGroup>
 
 </Project>
