@@ -44,5 +44,6 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          test_results_files: ./test-results/*.xml
+          files: ./test-results/*.xml
+          report_type: test_results
           fail_ci_if_error: false
