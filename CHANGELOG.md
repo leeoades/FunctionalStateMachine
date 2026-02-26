@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-02-26
+
+### Changed
+- **⬆️ .NET 10 upgrade** — The entire solution is now built on .NET 10
+  - SDK pinned to `10.0.102` via `global.json` (`rollForward: latestFeature`)
+  - Library projects (`FunctionalStateMachine.Core`, `FunctionalStateMachine.CommandRunner`) now ship `netstandard2.0` and `net10.0` builds (previously `net8.0`)
+  - Test and sample projects target `net10.0` (previously `net9.0`)
+  - `Microsoft.Extensions.DependencyInjection.Abstractions` updated `2.2.0` → `10.0.0`
+  - `Microsoft.Extensions.DependencyInjection` updated `9.0.0` → `10.0.0`
+
 ## [1.3.0] - 2026-02-23
 
 ### Added

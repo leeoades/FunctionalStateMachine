@@ -488,9 +488,9 @@ Explore complete, runnable examples in the `/samples` directory:
 
 ## Advanced Topics
 
-This library targets both `netstandard2.0` (broad compatibility) and `net8.0` (AOT/trim-ready). Both NativeAOT and `PublishTrimmed` publishing are supported with zero runtime reflection.
+This library targets both `netstandard2.0` (broad compatibility) and `net10.0` (AOT/trim-ready). Both NativeAOT and `PublishTrimmed` publishing are supported with zero runtime reflection.
 
-- **[Target framework compatibility](docs/Target-Framework-Compatibility.md)** — .NET Standard 2.0 vs .NET 8+, what each target provides
+- **[Target framework compatibility](docs/Target-Framework-Compatibility.md)** — .NET Standard 2.0 vs .NET 10+, what each target provides
 - **[AOT and trim compatibility](docs/AOT-and-Trim-Compatibility.md)** — NativeAOT, `PublishTrimmed`, how source generators eliminate reflection
 
 ---

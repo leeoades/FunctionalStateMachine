@@ -33,7 +33,7 @@ Welcome to the Functional State Machine docs. Each guide introduces a feature, w
 
 ## Advanced
 
-- [Target framework compatibility (.NET Standard 2.0 vs .NET 8+)](Target-Framework-Compatibility.md)
+- [Target framework compatibility (.NET Standard 2.0 vs .NET 10+)](Target-Framework-Compatibility.md)
 - [AOT and trim compatibility](AOT-and-Trim-Compatibility.md)
 
 ## For Contributors

@@ -7,15 +7,15 @@
 | Target framework | Gets |
 |---|---|
 | `netstandard2.0` | Broadest compatibility — .NET Framework 4.6.1+, .NET Core 2.0+, Xamarin, Unity |
-| `net8.0` | AOT-compatible build with full trim analysis |
+| `net10.0` | AOT-compatible build with full trim analysis |
 
-When you reference the NuGet package from a `net8.0` or `net9.0` project, NuGet automatically selects the `net8.0` build. When you reference it from a `netstandard2.0`-compatible target, NuGet selects the `netstandard2.0` build.
+When you reference the NuGet package from a `net10.0` project, NuGet automatically selects the `net10.0` build. When you reference it from any other target (including `net8.0`, `net9.0`, or `netstandard2.0`-compatible targets), NuGet selects the `netstandard2.0` build.
 
 ## Feature comparison
 
 All state machine features are identical across both targets. The only difference is in the internals:
 
-| Feature | `netstandard2.0` | `net8.0+` |
+| Feature | `netstandard2.0` | `net10.0` |
 |---|---|---|
 | Full fluent API | ✅ | ✅ |
 | Guards, conditionals | ✅ | ✅ |
