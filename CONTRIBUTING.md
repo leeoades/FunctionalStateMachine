@@ -10,7 +10,7 @@ This project adheres to a Code of Conduct that all contributors are expected to 
 
 ### Prerequisites
 
-- [.NET 9.0 SDK](https://dotnet.microsoft.com/download) or later
+- [.NET 10.0 SDK](https://dotnet.microsoft.com/download) or later
 - Git
 - A code editor (Visual Studio, VS Code, Rider, etc.)
 

@@ -33,7 +33,7 @@ Results will be saved to `BenchmarkDotNet.Artifacts/results/` including:
 
 ## Typical Results
 
-*Benchmarks run on .NET 9.0*
+*Benchmarks run on .NET 10.0*
 
 | Method                      | Mean      | Allocated |
 |---------------------------- |----------:|----------:|
@@ -63,8 +63,7 @@ Use BenchmarkDotNet's built-in analysis:
 
 ```bash
 # Compare different .NET versions
-dotnet run -c Release -f net8.0
-dotnet run -c Release -f net9.0
+dotnet run -c Release -f net10.0
 
 # Memory profiling
 dotnet run -c Release --filter *Fire*

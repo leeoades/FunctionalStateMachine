@@ -1,6 +1,6 @@
 # AOT and Trim Compatibility
 
-The `net8.0` build of `FunctionalStateMachine.Core` and `FunctionalStateMachine.CommandRunner` is fully compatible with:
+The `net10.0` build of `FunctionalStateMachine.Core` and `FunctionalStateMachine.CommandRunner` is fully compatible with:
 
 - **NativeAOT** (`PublishAot=true`) — compiled ahead of time to a self-contained native binary
 - **Trimming** (`PublishTrimmed=true`) — unused code removed at publish time to reduce binary size
@@ -10,8 +10,8 @@ The `net8.0` build of `FunctionalStateMachine.Core` and `FunctionalStateMachine.
 
 | Package | `IsAotCompatible` | Reflection-free | Trim-safe |
 |---|---|---|---|
-| `FunctionalStateMachine.Core` | ✅ (`net8.0+`) | ✅ | ✅ |
-| `FunctionalStateMachine.CommandRunner` | ✅ (`net8.0+`) | ✅ | ✅ |
+| `FunctionalStateMachine.Core` | ✅ (`net10.0`) | ✅ | ✅ |
+| `FunctionalStateMachine.CommandRunner` | ✅ (`net10.0`) | ✅ | ✅ |
 | `FunctionalStateMachine.Diagrams` | N/A (build-time only) | N/A | N/A |
 | `FunctionalStateMachine.Core.Generator` | N/A (build-time only) | N/A | N/A |
 | `FunctionalStateMachine.CommandRunner.Generator` | N/A (build-time only) | N/A | N/A |
@@ -28,7 +28,7 @@ Add `<PublishTrimmed>true</PublishTrimmed>` to your `.csproj`:
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <PublishTrimmed>true</PublishTrimmed>
   </PropertyGroup>
 </Project>
