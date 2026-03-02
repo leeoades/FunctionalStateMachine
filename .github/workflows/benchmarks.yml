@@ -40,7 +40,7 @@ jobs:
         run: dotnet run --project test/FunctionalStateMachine.Benchmarks/FunctionalStateMachine.Benchmarks.csproj --configuration Release --no-build
 
       - name: Upload Results
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: benchmark-results
